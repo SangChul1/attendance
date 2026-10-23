@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>도깨비 문파 출석부</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Song+Myung&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: 상단 문파 헤더 + 탭 3개(출석 체크 / 통계 / 문파원·설정). 체크 탭은 회차 목록 | 체크리스트 2열, 모바일은 1열 */
+:root{
+  --bg:#eaefee; --surface:#fbfcfc; --sunken:#f1f5f4; --ink:#16242a; --muted:#5a6b70; --line:#d2dcda;
+  --accent:#1f6d68; --accent-soft:#d6ebe8; --accent-ink:#ffffff;
+  --seal:#b3372b; --seal-soft:#f6dedb; --good:#2c7a4c; --good-soft:#dcefe3; --warn:#9c6a12; --warn-soft:#f5ead2;
+  --c-yosin:#2a776c; --c-gyeol:#3a5a9a; --c-singi:#9c6f22; --c-mihok:#874682;
+  --scrim:rgba(10,20,22,.45);
+  --f-display:"Song Myung","Nanum Myeongjo","Batang",serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e181b; --surface:#152328; --sunken:#111d21; --ink:#e2ebe9; --muted:#8fa2a3; --line:#273e43;
+  --accent:#53b5aa; --accent-soft:#183a38; --accent-ink:#04201d;
+  --seal:#ec7466; --seal-soft:#3d1f1c; --good:#62c48c; --good-soft:#173527; --warn:#e3ad4f; --warn-soft:#3a2d14;
+  --c-yosin:#5cc1b1; --c-gyeol:#86a4e4; --c-singi:#dcb062; --c-mihok:#cc8fc8; --scrim:rgba(0,0,0,.6); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e181b; --surface:#152328; --sunken:#111d21; --ink:#e2ebe9; --muted:#8fa2a3; --line:#273e43;
+  --accent:#53b5aa; --accent-soft:#183a38; --accent-ink:#04201d;
+  --seal:#ec7466; --seal-soft:#3d1f1c; --good:#62c48c; --good-soft:#173527; --warn:#e3ad4f; --warn-soft:#3a2d14;
+  --c-yosin:#5cc1b1; --c-gyeol:#86a4e4; --c-singi:#dcb062; --c-mihok:#cc8fc8; --scrim:rgba(0,0,0,.6); color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 20px}
+.brand{display:flex;align-items:center;gap:14px}
+.seal{width:46px;height:46px;flex:none;border-radius:8px;background:var(--seal);color:#fff;display:grid;place-items:center;
+  font-family:var(--f-display);font-size:24px;line-height:1;transform:rotate(-4deg)}
+.brand h1{font-family:var(--f-display);font-weight:400;font-size:clamp(24px,4vw,32px);margin:0;line-height:1.15;text-wrap:balance}
+.brand .sub{color:var(--muted);font-size:13px}
+.sync{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.dot.on{background:var(--good)} .dot.err{background:var(--seal)}
+
+nav.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);overflow-x:auto}
+nav.tabs button{background:none;border:0;padding:10px 16px;border-bottom:2px solid transparent;color:var(--muted);font-weight:500;white-space:nowrap}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.col{display:flex;flex-direction:column;gap:20px;min-width:0}
+h2{font-family:var(--f-display);font-weight:400;font-size:21px;margin:0;line-height:1.3}
+h3{font-size:14px;margin:0;font-weight:600}
+.hint{color:var(--muted);font-size:13px;margin:0}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.spread{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between}
+.grow{flex:1}
+
+.btn{border:1px solid var(--line);background:var(--surface);padding:7px 12px;border-radius:8px;font-size:14px;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.danger{color:var(--seal);border-color:var(--seal)}
+.btn.small{padding:4px 9px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+input[type=text],input[type=search],input[type=date],input[type=number],select,textarea{background:var(--sunken);border:1px solid var(--line);border-radius:8px;padding:7px 10px;min-width:0}
+textarea{width:100%;resize:vertical;min-height:84px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+label.chk{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap;
+  color:var(--cc);background:color-mix(in srgb,var(--cc) 14%,transparent)}
+.chip::before{content:"";width:7px;height:7px;border-radius:2px;background:var(--cc)}
+.k-yosin{--cc:var(--c-yosin)} .k-gyeol{--cc:var(--c-gyeol)} .k-singi{--cc:var(--c-singi)} .k-mihok{--cc:var(--c-mihok)}
+.tag{font-size:11px;padding:1px 6px;border-radius:4px;background:var(--sunken);color:var(--muted);border:1px solid var(--line);white-space:nowrap}
+.tag.extra{color:var(--warn);background:var(--warn-soft);border-color:transparent}
+.tag.rank{color:var(--accent);background:var(--accent-soft);border-color:transparent}
+.pill-low{font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;background:var(--seal-soft);color:var(--seal);white-space:nowrap}
+.pill-streak{font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;background:var(--warn-soft);color:var(--warn);white-space:nowrap}
+
+/* 출석 체크 */
+.check-grid{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.check-grid{grid-template-columns:minmax(0,1fr)}}
+.quick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.quick button{text-align:left;border:1px solid var(--line);background:var(--sunken);border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;gap:2px}
+.quick button:hover{border-color:var(--cc)}
+.quick .qn{font-weight:600;font-size:14px;color:var(--cc)}
+.quick .qs{font-size:11px;color:var(--muted)}
+.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:end}
+.formgrid .full{grid-column:1/-1}
+.slist{display:flex;flex-direction:column;gap:2px;max-height:520px;overflow-y:auto;margin:0 -6px;padding:0 6px}
+.sday{font-size:12px;color:var(--muted);font-weight:600;padding:10px 4px 4px}
+.sitem{display:flex;align-items:center;gap:6px;padding:7px 8px;border-radius:8px;border:1px solid transparent;background:none;text-align:left;width:100%;flex-wrap:wrap}
+.sitem:hover{background:var(--sunken)}
+.sitem[aria-current="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.sitem .cnt{margin-left:auto;font-size:12px;color:var(--muted)}
+
+.counts{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px}
+.counts b{font-weight:600}
+.c-o{color:var(--good)} .c-a{color:var(--warn)} .c-x{color:var(--seal)} .c-n{color:var(--muted)}
+.notebox{background:var(--sunken);border-radius:8px;padding:8px 12px;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.mlist{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.mrow{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.mrow .nm{flex:1 1 140px;min-width:0;display:flex;align-items:center;gap:6px 8px;flex-wrap:wrap;overflow-wrap:anywhere}
+.by{font-size:11px;color:var(--muted);white-space:nowrap}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:none}
+.seg button{border:0;background:var(--surface);padding:6px 12px;font-size:13px;font-weight:500;color:var(--muted);min-width:56px}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"][data-v="O"]{background:var(--good);color:#fff}
+.seg button[aria-pressed="true"][data-v="A"]{background:var(--warn);color:#fff}
+.seg button[aria-pressed="true"][data-v="X"]{background:var(--seal);color:#fff}
+.seg button:disabled{cursor:default}
+.confirm{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px;border-radius:8px;background:var(--seal-soft);color:var(--seal);font-size:13px}
+
+/* 통계 */
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:720px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.tile .v{font-size:28px;font-weight:600;line-height:1.2;font-variant-numeric:tabular-nums}
+.tile .l{font-size:12px;color:var(--muted);letter-spacing:.02em}
+.tile.alert .v{color:var(--seal)}
+.scroll{overflow-x:auto;margin:0 -4px;padding:0 4px}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th{font-size:12px;font-weight:600;color:var(--muted);text-align:right;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+tr.low td{background:color-mix(in srgb,var(--seal) 7%,transparent)}
+tr.low td:first-child{box-shadow:inset 3px 0 0 var(--seal)}
+.rate{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+.bar{width:80px;height:6px;border-radius:3px;background:var(--sunken);overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;background:var(--accent)}
+tr.low .bar i{background:var(--seal)}
+.dash{color:var(--muted)}
+.heat{border-radius:6px;padding:4px 8px;display:inline-block;min-width:64px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+@media (max-width:900px){.two{grid-template-columns:minmax(0,1fr)}}
+svg text{fill:var(--muted);font-family:var(--f-body)}
+.demo-banner{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:8px;background:var(--warn-soft);color:var(--warn);font-size:13px;font-weight:500}
+.attn{display:flex;flex-wrap:wrap;gap:8px}
+.attn .who{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:8px;background:var(--sunken);border:1px solid var(--line);font-size:14px}
+textarea.preview{min-height:180px;font-size:13px;line-height:1.6}
+
+.empty{padding:28px 16px;text-align:center;color:var(--muted);display:flex;flex-direction:column;gap:10px;align-items:center}
+.empty h3{color:var(--ink);font-size:16px}
+
+/* 문파원 */
+.members-grid{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.members-grid{grid-template-columns:minmax(0,1fr)}}
+.medit{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.medit input[type=text]{flex:1 1 140px}
+.medit.off{opacity:.55}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);
+  padding:10px 16px;border-radius:8px;font-size:14px;max-width:calc(100% - 32px);z-index:30}
+.overlay{position:fixed;inset:0;background:var(--scrim);display:grid;place-items:center;z-index:25;
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.overlay .panel{width:min(520px,100%)}
+.authwho{font-size:13px;color:var(--muted)}
+.code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;background:var(--sunken);border:1px solid var(--line);border-radius:6px;padding:2px 6px;overflow-wrap:anywhere}
+.readonly-note{font-size:13px;color:var(--muted);background:var(--sunken);border:1px dashed var(--line);border-radius:8px;padding:8px 12px}
+@media (prefers-reduced-motion:no-preference){.sitem,.btn,.seg button{transition:background-color .12s,border-color .12s,color .12s}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="seal" aria-hidden="true">鬼</div>
+      <div>
+        <h1 id="guildTitle">문파 출석부</h1>
+        <div class="sub">도깨비의세계 · 요신 토벌령 · 결계지 방어 · 신기쟁탈전 · 미혹의 정원</div>
+      </div>
+    </div>
+    <div class="row"><div class="sync" id="sync"><span class="dot"></span><span>저장소 연결 중</span></div><div class="row" id="authbar"></div></div>
+  </header>
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-action="tab" data-tab="check" aria-selected="true">출석 체크</button>
+    <button role="tab" data-action="tab" data-tab="stats" aria-selected="false">통계</button>
+    <button role="tab" data-action="tab" data-tab="members" aria-selected="false">문파원 · 설정</button>
+  </nav>
+  <main id="app"><div class="panel"><div class="empty"><h3>출석부를 불러오는 중</h3><p class="hint">잠시만 기다려 주세요.</p></div></div></main>
+</div>
+<div class="overlay" id="copybox" hidden>
+  <div class="panel" role="dialog" aria-label="복사할 내용">
+    <div class="spread"><h2>복사할 내용</h2><button class="btn small" data-action="closeCopy">닫기</button></div>
+    <p class="hint">자동 복사가 막힌 화면이에요. 아래 글을 길게 눌러 전체 선택한 뒤 복사해 주세요.</p>
+    <textarea id="copyArea" class="preview" data-keep="0" readonly></textarea>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc as fdoc, collection as fcol, setDoc, updateDoc, deleteDoc, getDoc, getDocs, onSnapshot as fsnap, query, orderBy as fOrder, limit as fLimit, where as fWhere } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* ====== 여기에 Firebase 콘솔의 firebaseConfig 값을 붙여 넣으세요 ====== */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBCeivCZpH7HUebPeIcv83svyP5wOJR3ME",
+  authDomain: "dokkaebi-attendance.firebaseapp.com",
+  projectId: "dokkaebi-attendance",
+  storageBucket: "dokkaebi-attendance.firebasestorage.app",
+  messagingSenderId: "897374921549",
+  appId: "1:897374921549:web:622cb27a8148bf1d99cd04"
+};
+/* ==================================================================== */
+
+(function(){
+const CONTENTS=[
+  {k:'singi',name:'신기쟁탈전',short:'신기',sched:'금·토 20:00–21:00'},
+  {k:'mihok',name:'미혹의 정원',short:'미혹',sched:'금·토 20:00–21:00'},
+  {k:'yosin',name:'요신 토벌령',short:'요신',sched:'랭킹전 · 신기/미혹 후'},
+  {k:'gyeol',name:'결계지 방어',short:'결계',sched:'랭킹전 · 신기/미혹 후'},
+];
+const CMAP=Object.fromEntries(CONTENTS.map(c=>[c.k,c]));
+const ROLES=['문주','부문주','간부','문파원'];
+const DAYS=['일','월','화','수','목','금','토'];
+const CFG0={guild:'',threshold:50,weekStart:1,excuse:'absent',streak:3};
+
+const S={db:null,fs:null,auth:null,authUser:null,myNick:'',isOwner:false,admins:[],ready:false,err:false,setup:false,canWrite:false,
+  members:[],sessions:[],config:{...CFG0},
+  tab:'check',openSid:null,editSid:null,period:'4',cfilter:'all',demo:false,confirm:null,showOff:false,
+  search:'',onlyUnchecked:false,mSearch:''};
+let pending={},inflight={},flushing=false,flushTimer=null;
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+function todayStr(){const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function parseD(s){const[y,m,d]=s.split('-').map(Number);return new Date(Date.UTC(y,m-1,d))}
+const iso=d=>d.toISOString().slice(0,10);
+const dow=s=>parseD(s).getUTCDay();
+function addDays(s,n){const d=parseD(s);d.setUTCDate(d.getUTCDate()+n);return iso(d)}
+function weekStart(s){const ws=+S.config.weekStart||0;return addDays(s,-((dow(s)-ws+7)%7))}
+const md=s=>{const[,m,d]=s.split('-');return (+m)+'/'+(+d)};
+const mdd=s=>md(s)+'('+DAYS[dow(s)]+')';
+const pct=v=>v==null?'–':Math.round(v*100)+'%';
+function hm(ms){const d=new Date(ms);return (d.getMonth()+1)+'/'+d.getDate()+' '+pad(d.getHours())+':'+pad(d.getMinutes())}
+const validMark=v=>v==='O'||v==='A'||v==='X';
+
+function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2600)}
+function setSync(){const el=$('#sync');
+  const [cls,txt]=S.setup?['err','설정 필요']:S.err?['err','저장소에 연결할 수 없어요']:S.ready?['on',S.canWrite?'실시간 저장 중':'보기 전용']:['','저장소 연결 중'];
+  el.innerHTML='<span class="dot '+cls+'"></span><span>'+txt+'</span>'}
+
+/* ---------- data helpers ---------- */
+function marksOf(s){ if(S.demo) return s.marks||{}; return Object.assign({},s.marks||{},inflight[s.id]||{},pending[s.id]||{}) }
+function data(){ return S.demo?demoData():{members:S.members,sessions:S.sessions} }
+function activeMembers(list){return list.filter(m=>m.active!==false).sort(memberSort)}
+function memberSort(a,b){const r=ROLES.indexOf(a.role)-ROLES.indexOf(b.role);return r||String(a.name).localeCompare(String(b.name),'ko')}
+function sessionSort(a,b){return a.date<b.date?1:a.date>b.date?-1:(CONTENTS.findIndex(c=>c.k===a.content)-CONTENTS.findIndex(c=>c.k===b.content))||((a.createdAt||0)-(b.createdAt||0))}
+function rateOf(o,a,x){const den=S.config.excuse==='exclude'?o+x:o+a+x;return den?o/den:null}
+function countSession(s,mid){let o=0,a=0,x=0;const mk=marksOf(s);for(const id in mk){if(!mid.has(id))continue;const v=mk[id];if(v==='O')o++;else if(v==='A')a++;else if(v==='X')x++}return {o,a,x}}
+function periodFrom(){return S.period==='all'?null:addDays(weekStart(todayStr()),-7*(+S.period-1))}
+function periodLabel(){const f=periodFrom();return f?`최근 ${S.period}주 (${md(f)}~${md(todayStr())})`:'최근 26주'}
+function nameOf(v){return v?String(v):''}
+function myName(){return S.myNick||(S.isOwner?'문파장':'운영진')}
+
+/* ---------- render ---------- */
+let composing=false,needRender=false;
+document.addEventListener('compositionstart',()=>{composing=true});
+document.addEventListener('compositionend',e=>{composing=false;const a=e.target.dataset&&e.target.dataset.action;if(a==='search')S.search=e.target.value;else if(a==='mSearch')S.mSearch=e.target.value;if(needRender||a==='search'||a==='mSearch'){needRender=false;render()}});
+function render(){
+  if(composing){needRender=true;return}
+  const app=$('#app');
+  const ae=document.activeElement, aid=ae&&app.contains(ae)&&ae.id, sel=aid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
+  const vals={};app.querySelectorAll('input[id],textarea[id],select[id]').forEach(e=>{if(e.dataset.keep!=='0')vals[e.id]=e.type==='checkbox'?e.checked:e.value});
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===S.tab));
+  $('#guildTitle').textContent=(S.config.guild?S.config.guild+' ':'')+'문파 출석부';
+  document.title=$('#guildTitle').textContent;
+  setSync();renderAuth();
+  if(S.setup){app.innerHTML='<div class="panel"><div class="empty"><h3>Firebase 설정값이 비어 있어요</h3><p class="hint">index.html 위쪽 FIREBASE_CONFIG에 Firebase 콘솔의 firebaseConfig 값을 붙여 넣고 다시 올려 주세요.</p></div></div>';return}
+  if(S.err){app.innerHTML='<div class="panel"><div class="empty"><h3>저장소에 연결할 수 없어요</h3><p class="hint">Firestore 데이터베이스가 만들어졌는지, 보안 규칙이 게시됐는지 확인해 주세요. 잠시 후 새로고침해도 같으면 운영진에게 알려 주세요.</p></div></div>';return}
+  app.innerHTML=S.tab==='check'?renderCheck():S.tab==='stats'?renderStats():renderMembers();
+  for(const id in vals){const e=document.getElementById(id);if(!e||e.dataset.keep==='0')continue;if(e.type==='checkbox')e.checked=vals[id];else e.value=vals[id]}
+  if(aid){const e=document.getElementById(aid);if(e){e.focus();if(sel&&e.setSelectionRange)try{e.setSelectionRange(sel[0],sel[1])}catch(_){}}}
+}
+const loading='<div class="panel"><div class="empty"><h3>출석부를 불러오는 중</h3></div></div>';
+function roNote(){if(S.canWrite)return '';
+  if(S.authUser)return `<div class="readonly-note">${esc(S.authUser.email||'')} 계정은 운영진으로 등록되지 않았어요. 문파장에게 이 이메일로 운영진 등록을 요청해 주세요.</div>`;
+  return '<div class="readonly-note">보기 전용 화면이에요. 운영진은 오른쪽 위 <b>운영진 로그인</b>으로 들어와 주세요.</div>'}
+const inKakao=/KAKAOTALK/i.test(navigator.userAgent);
+function renderAuth(){const el=$('#authbar');if(!el)return;
+  if(S.setup||!S.auth){el.innerHTML='';return}
+  el.innerHTML=S.authUser?`<span class="authwho">${esc(S.myNick||S.authUser.email||'')}${S.isOwner?' · 문파장':S.canWrite?' · 운영진':''}</span><button class="btn small" data-action="logout">로그아웃</button>`
+    :`<button class="btn small" data-action="login">운영진 로그인</button>`}
+
+function renderCheck(){
+  if(!S.ready) return loading;
+  const today=todayStr(), d=dow(today);
+  const members=activeMembers(S.members);
+  const sessions=[...S.sessions].sort(sessionSort);
+  const isFS=d===5||d===6, isTue=d===2;
+  const quickKeys=isTue?['yosin','gyeol']:['singi','mihok','yosin','gyeol'];
+  const quick=S.canWrite?`<div class="panel">
+      <div class="spread"><h2>오늘 회차</h2><span class="hint num">${mdd(today)}${isTue?' · 추가 진행':''}</span></div>
+      <div class="quick">${quickKeys.map(k=>{const c=CMAP[k];const ex=findSession(today,k,isTue);
+        return `<button class="k-${k}" data-action="quick" data-k="${k}" data-extra="${isTue?1:0}"><span class="qn">${c.name}</span><span class="qs">${ex?'기록 열기':'새 회차 만들기'} · ${isTue?'화요일 추가':c.sched}</span></button>`}).join('')}</div>
+      ${!isFS&&!isTue?'<p class="hint">오늘은 정규 진행일(금·토)이 아니에요. 다른 날짜는 아래에서 직접 만들 수 있어요.</p>':''}
+      <details><summary class="hint" style="cursor:pointer">다른 날짜로 회차 만들기</summary>
+        <div class="formgrid" style="margin-top:10px">
+          <label class="f">날짜<input type="date" id="nDate" value="${today}"></label>
+          <label class="f">콘텐츠<select id="nContent">${CONTENTS.map(c=>`<option value="${c.k}">${c.name}</option>`).join('')}</select></label>
+          <label class="full chk"><input type="checkbox" id="nExtra"> 순위가 밀려 추가 진행한 회차</label>
+          <button class="btn primary full" data-action="create">회차 만들기</button>
+        </div>
+      </details>
+    </div>`:'';
+  let list='';
+  if(!sessions.length) list='<div class="empty"><h3>아직 기록된 회차가 없어요</h3><p class="hint">위에서 오늘 진행한 콘텐츠를 누르면 회차가 만들어지고 바로 체크할 수 있어요.</p></div>';
+  else{let last='';const mid=new Set(members.map(m=>m.id));for(const s of sessions.slice(0,80)){
+    if(s.date!==last){last=s.date;list+=`<div class="sday num">${mdd(s.date)}</div>`}
+    const c=countSession(s,mid);
+    list+=`<button class="sitem" data-action="open" data-sid="${s.id}" aria-current="${S.openSid===s.id}"><span class="chip k-${s.content}">${CMAP[s.content]?.name||esc(s.content)}</span>${s.extra?'<span class="tag extra">추가</span>':''}${s.rank?`<span class="tag rank">${esc(s.rank)}</span>`:''}<span class="cnt num">참여 ${c.o}/${members.length}</span></button>`}}
+  return `${roNote()}<div class="check-grid"><div class="col">${quick}
+    <div class="panel"><h2>회차 기록</h2><div class="slist">${list}</div></div></div>
+    <div class="col" id="sheetCol">${renderSheet(members)}</div></div>`;
+}
+function findSession(date,k,extra){return S.sessions.find(s=>s.date===date&&s.content===k&&!!s.extra===!!extra)}
+
+function renderSheet(members){
+  const s=S.sessions.find(x=>x.id===S.openSid);
+  if(!s) return `<div class="panel"><div class="empty"><h3>체크할 회차를 고르세요</h3><p class="hint">왼쪽에서 회차를 누르면 문파원 명단이 열려요. 참여 · 사전공지(미리 알리고 빠짐) · 불참 중에 고르면 바로 저장돼요.</p></div></div>`;
+  if(!members.length) return `<div class="panel"><div class="empty"><h3>문파원 명단이 비어 있어요</h3><p class="hint">문파원 · 설정 탭에서 닉네임을 먼저 추가해 주세요.</p><button class="btn primary" data-action="tab" data-tab="members">문파원 추가하러 가기</button></div></div>`;
+  const mk=marksOf(s);const c=CMAP[s.content];const by=s.marksBy||{};
+  const cnt={O:0,A:0,X:0,N:0};members.forEach(m=>cnt[validMark(mk[m.id])?mk[m.id]:'N']++);
+  const dis=S.canWrite?'':' disabled';
+  const q=S.search.trim().toLowerCase();
+  const shown=members.filter(m=>(!q||String(m.name).toLowerCase().includes(q))&&(!S.onlyUnchecked||!validMark(mk[m.id])));
+  const rows=shown.map(m=>{const v=mk[m.id]||'';const b=by[m.id];
+    return `<div class="mrow"><div class="nm"><span>${esc(m.name)}</span>${m.role&&m.role!=='문파원'?`<span class="tag">${esc(m.role)}</span>`:''}${b&&b.at&&validMark(v)?`<span class="by num" title="마지막으로 체크한 운영진">${b.by?esc(nameOf(b.by))+' · ':''}${hm(b.at)}</span>`:''}</div>
+      <div class="seg" role="group" aria-label="${esc(m.name)} 출석">${[['O','참여'],['A','사전공지'],['X','불참']].map(([k,l])=>`<button data-action="mark" data-sid="${s.id}" data-mid="${m.id}" data-v="${k}" aria-pressed="${v===k}"${dis}>${l}</button>`).join('')}</div></div>`}).join('');
+  const conf=S.confirm==='s:'+s.id?`<div class="confirm">이 회차와 체크 기록을 모두 지울까요? 되돌릴 수 없어요. <button class="btn small danger" data-action="delSession" data-sid="${s.id}">삭제</button><button class="btn small" data-action="cancel">취소</button></div>`:'';
+  const editing=S.editSid===s.id&&S.canWrite;
+  const edit=editing?`<div class="formgrid">
+      <label class="f">날짜<input type="date" id="eDate" data-keep="0" value="${esc(s.date)}"></label>
+      <label class="f">콘텐츠<select id="eContent" data-keep="0">${CONTENTS.map(x=>`<option value="${x.k}"${x.k===s.content?' selected':''}>${x.name}</option>`).join('')}</select></label>
+      <label class="full chk"><input type="checkbox" id="eExtra" data-keep="0"${s.extra?' checked':''}> 순위가 밀려 추가 진행한 회차</label>
+      <label class="f full">순위·결과 (예: 3위, 결계 12단계)<input type="text" id="eRank" data-keep="0" maxlength="30" value="${esc(s.rank||'')}"></label>
+      <label class="f full">메모<textarea id="eNote" data-keep="0" maxlength="500" placeholder="예: 화요일 보강, 22시 집결">${esc(s.note||'')}</textarea></label>
+      <div class="row full"><button class="btn primary" data-action="saveEdit" data-sid="${s.id}">저장</button><button class="btn" data-action="cancelEdit">취소</button></div></div>`:'';
+  const meta=[s.createdBy?`만든 사람 ${esc(nameOf(s.createdBy))}`:'',s.updatedAt?`마지막 수정 ${s.updatedBy?esc(nameOf(s.updatedBy))+' · ':''}${hm(s.updatedAt)}`:''].filter(Boolean).join(' · ');
+  return `<div class="panel">
+    <div class="spread"><div class="row"><span class="chip k-${s.content}">${c?.name||esc(s.content)}</span>${s.extra?'<span class="tag extra">순위 보강 추가 진행</span>':''}${s.rank?`<span class="tag rank">${esc(s.rank)}</span>`:''}</div>
+      <span class="hint num">${s.date.replace(/-/g,'.')} (${DAYS[dow(s.date)]})</span></div>
+    ${edit||(s.note?`<div class="notebox">${esc(s.note)}</div>`:'')}
+    <div class="counts num"><span class="c-o">참여 <b>${cnt.O}</b></span><span class="c-a">사전공지 <b>${cnt.A}</b></span><span class="c-x">불참 <b>${cnt.X}</b></span><span class="c-n">미체크 <b>${cnt.N}</b></span></div>
+    <div class="row">
+      ${S.canWrite?`<button class="btn small" data-action="bulk" data-sid="${s.id}" data-v="O"${cnt.N?'':' disabled'}>미체크 전원 참여</button><button class="btn small" data-action="bulk" data-sid="${s.id}" data-v="X"${cnt.N?'':' disabled'}>미체크 전원 불참</button>`:''}
+      <button class="btn small" data-action="copySession" data-sid="${s.id}">카톡용 복사</button>
+      <span class="grow"></span>
+      ${S.canWrite&&!editing?`<button class="btn small" data-action="edit" data-sid="${s.id}">회차 수정 · 메모</button><button class="btn small danger" data-action="askDel" data-sid="${s.id}">삭제</button>`:''}
+    </div>
+    ${conf}
+    <div class="row"><input type="search" id="sheetSearch" data-keep="0" data-action="search" placeholder="닉네임 검색" value="${esc(S.search)}" class="grow" aria-label="닉네임 검색"><label class="chk"><input type="checkbox" id="onlyUnc" data-keep="0" data-action="onlyUnc"${S.onlyUnchecked?' checked':''}> 미체크만</label></div>
+    <div class="mlist">${rows||'<p class="hint" style="padding:12px 2px">조건에 맞는 문파원이 없어요.</p>'}</div>
+    <p class="hint">체크하지 않은 사람은 통계에서 빠져요. 같은 칸을 한 번 더 누르면 체크가 지워져요.${meta?'<br>'+meta:''}</p>
+  </div>`;
+}
+function sessionText(s){
+  const members=activeMembers(S.members);const mk=marksOf(s);
+  const g={O:[],A:[],X:[],N:[]};members.forEach(m=>g[validMark(mk[m.id])?mk[m.id]:'N'].push(m.name));
+  const L=[`[${mdd(s.date)} ${CMAP[s.content]?.name||s.content}${s.extra?' · 추가 진행':''}]${s.rank?' '+s.rank:''}`,
+    `참여 ${g.O.length} · 사전공지 ${g.A.length} · 불참 ${g.X.length}${g.N.length?' · 미체크 '+g.N.length:''}`];
+  if(g.O.length)L.push('','참여: '+g.O.join(', '));
+  if(g.A.length)L.push('사전공지: '+g.A.join(', '));
+  if(g.X.length)L.push('불참: '+g.X.join(', '));
+  if(g.N.length)L.push('미체크: '+g.N.join(', '));
+  if(s.note)L.push('','메모: '+s.note);
+  return L.join('\n');
+}
+
+/* ---------- stats ---------- */
+function computeStats(){
+  const {members:allM,sessions:allS}=data();
+  const members=activeMembers(allM);
+  const mid=new Set(members.map(m=>m.id));
+  const from=periodFrom();
+  const sessions=from?allS.filter(s=>s.date>=from):allS.slice();
+  const scoped=S.cfilter==='all'?sessions:sessions.filter(s=>s.content===S.cfilter);
+  const per={};members.forEach(m=>per[m.id]={m,O:0,A:0,X:0,byC:Object.fromEntries(CONTENTS.map(c=>[c.k,{O:0,A:0,X:0}]))});
+  for(const s of sessions){const mk=marksOf(s);for(const id in mk){const v=mk[id];if(!mid.has(id)||!validMark(v))continue;const p=per[id];
+      const b=p.byC[s.content];if(b)b[v]++;
+      if(S.cfilter==='all'||s.content===S.cfilter)p[v]++}}
+  // streak: 콘텐츠 필터만 적용, 기간 제한 없이 최근 회차부터
+  const stScope=(S.cfilter==='all'?allS:allS.filter(s=>s.content===S.cfilter)).slice().sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:(b.createdAt||0)-(a.createdAt||0));
+  const th=(S.config.threshold??50)/100, sk=+S.config.streak||3;
+  const rows=Object.values(per).map(p=>{
+    let n=0;for(const s of stScope){const v=marksOf(s)[p.m.id];if(!validMark(v))continue;if(v==='O')break;if(v==='A'&&S.config.excuse==='exclude')continue;n++}
+    const rate=rateOf(p.O,p.A,p.X);return {...p,T:p.O+p.A+p.X,rate,streak:n,low:rate!=null&&rate<th,streakHit:n>=sk}});
+  rows.sort((a,b)=>(b.rate??-1)-(a.rate??-1)||b.O-a.O||memberSort(a.m,b.m));
+  let tO=0,tA=0,tX=0;rows.forEach(r=>{tO+=r.O;tA+=r.A;tX+=r.X});
+  const wk={};
+  for(const s of scoped){const w=weekStart(s.date);const c=countSession(s,mid);
+    const W=wk[w]??={w,n:0,o:0,a:0,x:0,byC:{}};W.n++;W.o+=c.o;W.a+=c.a;W.x+=c.x;const B=W.byC[s.content]??={n:0,o:0};B.n++;B.o+=c.o}
+  const weeks=Object.values(wk).sort((a,b)=>a.w<b.w?-1:1);
+  const dc={};
+  for(const s of sessions){const dd=dow(s.date);const key=dd===2?'화':dd===5?'금':dd===6?'토':'기타';const c=countSession(s,mid);
+    const D=dc[key]??={};for(const k of [s.content,'_all']){const C=D[k]??={n:0,o:0,a:0,x:0};C.n++;C.o+=c.o;C.a+=c.a;C.x+=c.x}}
+  return {members,rows,scoped,sessionsN:scoped.length,avg:rateOf(tO,tA,tX),lowN:rows.filter(r=>r.low).length,attn:rows.filter(r=>r.low||r.streakHit),weeks,dc,th,sk};
+}
+function heat(rate){if(rate==null)return '';const col=rate>=0.7?'var(--good)':rate>=0.4?'var(--warn)':'var(--seal)';return `background:color-mix(in srgb,${col} ${8+Math.round(rate*16)}%,transparent);color:${col}`}
+function rateFormula(){return S.config.excuse==='exclude'?'출석률 = 참여 ÷ (참여+불참), 사전공지는 계산에서 제외':'출석률 = 참여 ÷ (참여+사전공지+불참)'}
+function kakaoText(st){
+  const g=S.config.guild?`[${S.config.guild} 문파] `:'';
+  const L=[`${g}출석 현황 · ${periodLabel()}${S.cfilter!=='all'?' · '+CMAP[S.cfilter].name:''}`,`기록 ${st.sessionsN}회 · 평균 출석률 ${pct(st.avg)}`];
+  const top=st.rows.filter(r=>r.rate!=null&&r.O>0&&!r.low).slice(0,5);
+  if(top.length){L.push('','▶ 출석 우수');top.forEach((r,i)=>L.push(`${i+1}. ${r.m.name} ${pct(r.rate)} (참여 ${r.O}회)`))}
+  const low=st.rows.filter(r=>r.low).sort((a,b)=>a.rate-b.rate);
+  L.push('',`▶ 출석 저조 (${Math.round(st.th*100)}% 미만)`,low.length?low.map(r=>`${r.m.name} ${pct(r.rate)}`).join(', '):'없음');
+  const sk=st.rows.filter(r=>r.streakHit).sort((a,b)=>b.streak-a.streak);
+  L.push('',`▶ 연속 불참 ${st.sk}회 이상`,sk.length?sk.map(r=>`${r.m.name} ${r.streak}회`).join(', '):'없음');
+  return L.join('\n');
+}
+function renderStats(){
+  if(!S.ready&&!S.demo) return loading;
+  if(!S.demo&&!S.sessions.length) return `<div class="panel"><div class="empty"><h3>통계를 낼 기록이 아직 없어요</h3><p class="hint">출석 체크 탭에서 회차를 만들고 체크하면 여기에 개인별 출석률, 주간 추이, 요일별 참여가 쌓여요.</p><div class="row" style="justify-content:center"><button class="btn" data-action="demo">예시 데이터로 미리보기</button><button class="btn primary" data-action="tab" data-tab="check">출석 체크하러 가기</button></div></div></div>`;
+  const st=computeStats();
+  const filt=`<div class="spread">
+    <div class="row">
+      <label class="f">기간<select id="fPeriod" data-keep="0" data-action="period">${[['4','최근 4주'],['8','최근 8주'],['12','최근 12주'],['all','최근 26주 전체']].map(([v,l])=>`<option value="${v}"${S.period===v?' selected':''}>${l}</option>`).join('')}</select></label>
+      <label class="f">콘텐츠<select id="fContent" data-keep="0" data-action="cfilter"><option value="all">4개 전체</option>${CONTENTS.map(c=>`<option value="${c.k}"${S.cfilter===c.k?' selected':''}>${c.name}</option>`).join('')}</select></label>
+    </div>
+    <div class="row"><button class="btn" data-action="csv">엑셀(CSV) 내보내기</button></div></div>
+    <p class="hint">${rateFormula()} · 저조 기준 ${Math.round(st.th*100)}% 미만 · 주는 ${DAYS[+S.config.weekStart||0]}요일 시작</p>`;
+  const banner=S.demo?`<div class="demo-banner"><span>예시 데이터로 보는 화면이에요. 실제 기록이 아니며 저장되지 않아요.</span><button class="btn small" data-action="demoOff">예시 닫기</button></div>`:'';
+  const tiles=`<div class="tiles">
+    <div class="tile"><span class="l">활동 문파원</span><span class="v">${st.members.length}</span></div>
+    <div class="tile"><span class="l">기록된 회차</span><span class="v">${st.sessionsN}</span></div>
+    <div class="tile"><span class="l">평균 출석률</span><span class="v">${pct(st.avg)}</span></div>
+    <div class="tile${st.attn.length?' alert':''}"><span class="l">관리 필요 인원</span><span class="v">${st.attn.length}</span></div></div>`;
+  const attn=`<div class="panel"><div class="spread"><h2>관리가 필요한 문파원</h2><span class="hint">저조 ${Math.round(st.th*100)}% 미만 또는 연속 불참 ${st.sk}회 이상</span></div>
+    ${st.attn.length?`<div class="attn">${st.attn.map(r=>`<span class="who">${esc(r.m.name)}${r.low?`<span class="pill-low">출석 ${pct(r.rate)}</span>`:''}${r.streakHit?`<span class="pill-streak">연속 불참 ${r.streak}회</span>`:''}</span>`).join('')}</div>`:'<p class="hint">해당하는 문파원이 없어요.</p>'}</div>`;
+  const ctitle=S.cfilter==='all'?'':` · ${CMAP[S.cfilter].name}`;
+  const mrows=st.rows.map(r=>`<tr class="${r.low?'low':''}"><td><span>${esc(r.m.name)}</span> ${r.low?'<span class="pill-low">저조</span>':''} ${r.streakHit?`<span class="pill-streak">연속 ${r.streak}</span>`:''}</td>
+    <td><div class="rate"><span>${pct(r.rate)}</span><span class="bar"><i style="width:${r.rate==null?0:Math.round(r.rate*100)}%"></i></span></div></td>
+    <td class="c-o">${r.O}</td><td class="c-a">${r.A}</td><td class="c-x">${r.X}</td>
+    ${CONTENTS.map(c=>{const b=r.byC[c.k];const rr=rateOf(b.O,b.A,b.X);return (b.O+b.A+b.X)?`<td><span class="heat" style="${heat(rr)}">${pct(rr)} <small>(${b.O}/${b.O+b.A+b.X})</small></span></td>`:'<td class="dash">–</td>'}).join('')}</tr>`).join('');
+  const members=`<div class="panel"><div class="spread"><h2>개인별 출석률${ctitle}</h2><span class="hint">오른쪽 네 칸은 콘텐츠별 출석률 (참여/기록)</span></div>
+    <div class="scroll"><table><thead><tr><th>닉네임</th><th>출석률</th><th>참여</th><th>사전공지</th><th>불참</th>${CONTENTS.map(c=>`<th>${c.short}</th>`).join('')}</tr></thead><tbody>${mrows||'<tr><td colspan="9" class="dash">문파원이 없어요</td></tr>'}</tbody></table></div></div>`;
+  const kakao=`<div class="panel"><div class="spread"><h2>카톡 공지용 요약</h2><button class="btn primary small" data-action="copyKakao">복사하기</button></div>
+    <p class="hint">위 기간·콘텐츠 필터 기준이에요. 복사해서 문파 공지방에 붙여 넣으세요.</p>
+    <textarea class="preview" id="kakaoPreview" data-keep="0" readonly>${esc(kakaoText(st))}</textarea></div>`;
+  const wv=st.weeks.slice(-12);
+  const chart=wv.length?weekChart(wv):'<p class="hint">이 기간에는 기록이 없어요.</p>';
+  const wrows=[...wv].reverse().map(W=>`<tr><td class="num">${md(W.w)}~${md(addDays(W.w,6))}</td><td>${W.n}</td>${CONTENTS.map(c=>{const B=W.byC[c.k];return B?`<td>${(B.o/B.n).toFixed(1)}명${B.n>1?` <small class="dash">×${B.n}</small>`:''}</td>`:'<td class="dash">–</td>'}).join('')}<td><span class="heat" style="${heat(rateOf(W.o,W.a,W.x))}">${pct(rateOf(W.o,W.a,W.x))}</span></td></tr>`).join('');
+  const weekly=`<div class="panel"><div class="spread"><h2>주간 요약${ctitle}</h2><span class="hint">칸은 회차당 평균 참여 인원</span></div>${chart}
+    <div class="scroll"><table><thead><tr><th>주</th><th>회차</th>${CONTENTS.map(c=>`<th>${c.short}</th>`).join('')}<th>출석률</th></tr></thead><tbody>${wrows}</tbody></table></div></div>`;
+  const order=['금','토','화','기타'].filter(k=>st.dc[k]);
+  const drows=order.map(k=>{const D=st.dc[k];return `<tr><td>${k==='기타'?'그 외 요일':k+'요일'}</td>${CONTENTS.map(c=>{const C=D[c.k];return C?`<td><span class="heat" style="${heat(rateOf(C.o,C.a,C.x))}">${(C.o/C.n).toFixed(1)}명 · ${pct(rateOf(C.o,C.a,C.x))}</span></td>`:'<td class="dash">–</td>'}).join('')}<td><b>${pct(rateOf(D._all.o,D._all.a,D._all.x))}</b></td></tr>`}).join('');
+  const best=bestDay(st.dc);
+  const days=`<div class="panel"><div class="spread"><h2>요일별 참여</h2><span class="hint">회차당 평균 참여 인원 · 출석률</span></div>
+    ${best?`<p class="hint">이 기간 출석률이 가장 높은 요일은 <b style="color:var(--ink)">${best}</b>이에요. 추가 진행(화) 회차와 비교해 일정 조정에 참고하세요.</p>`:''}
+    <div class="scroll"><table><thead><tr><th>요일</th>${CONTENTS.map(c=>`<th>${c.short}</th>`).join('')}<th>전체</th></tr></thead><tbody>${drows||'<tr><td colspan="6" class="dash">기록 없음</td></tr>'}</tbody></table></div></div>`;
+  return `<div class="col">${banner}${filt}${tiles}${attn}${members}<div class="two">${weekly}${days}</div>${kakao}</div>`;
+}
+function bestDay(dc){let b=null,br=-1;for(const k in dc){if(k==='기타')continue;const A=dc[k]._all;const r=rateOf(A.o,A.a,A.x);if(r!=null&&r>br){br=r;b=k+'요일'}}return b}
+function weekChart(wv){
+  const W=520,H=170,L=34,R=8,T=14,B=28,iw=W-L-R,ih=H-T-B;const n=wv.length;const step=iw/n;const bw=Math.min(36,step*0.6);
+  let g='';[0,50,100].forEach(p=>{const y=T+ih*(1-p/100);g+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${y+4}" text-anchor="end" font-size="11">${p}%</text>`});
+  wv.forEach((w,i)=>{const r=rateOf(w.o,w.a,w.x)??0;const h=ih*r;const x=L+step*i+(step-bw)/2;const last=i===n-1;
+    g+=`<rect x="${x}" y="${T+ih-h}" width="${bw}" height="${Math.max(h,1)}" rx="3" fill="var(--accent)" opacity="${last?1:.55}"><title>${md(w.w)} 주 ${pct(r)}</title></rect>`;
+    if(last||n<=8)g+=`<text x="${x+bw/2}" y="${Math.max(T+ih-h-4,11)}" text-anchor="middle" font-size="11" style="fill:var(--ink)">${Math.round(r*100)}</text>`;
+    if(n<=8||i%2===(n-1)%2)g+=`<text x="${x+bw/2}" y="${H-8}" text-anchor="middle" font-size="11">${md(w.w)}</text>`});
+  return `<div class="scroll"><svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px;min-width:300px;display:block" role="img" aria-label="주간 출석률 막대그래프">${g}</svg></div>`;
+}
+function csvText(){
+  const st=computeStats();
+  const sess=[...st.scoped].sort((a,b)=>-sessionSort(a,b));
+  const cell=v=>{const s=String(v??'');return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
+  const head=['닉네임','직위','출석률','참여','사전공지','불참','연속불참',...sess.map(s=>`${md(s.date)}(${DAYS[dow(s.date)]}) ${CMAP[s.content]?.short||s.content}${s.extra?'(추가)':''}`)];
+  const lab={O:'참여',A:'사전공지',X:'불참'};
+  const lines=[head.map(cell).join(',')];
+  st.rows.forEach(r=>{lines.push([r.m.name,r.m.role||'',pct(r.rate),r.O,r.A,r.X,r.streak,...sess.map(s=>lab[marksOf(s)[r.m.id]]||'')].map(cell).join(','))});
+  return '﻿'+lines.join('\r\n');
+}
+
+/* ---------- members ---------- */
+function renderMembers(){
+  if(!S.ready) return loading;
+  const q=S.mSearch.trim().toLowerCase();
+  const list=[...S.members].sort(memberSort).filter(m=>(S.showOff||m.active!==false)&&(!q||String(m.name).toLowerCase().includes(q)));
+  const offN=S.members.filter(m=>m.active===false).length;
+  const dis=S.canWrite?'':' disabled';
+  const C=S.config;
+  const rows=list.map(m=>{const off=m.active===false;
+    const conf=S.confirm==='m:'+m.id?`<div class="confirm" style="flex-basis:100%">${esc(m.name)} 님을 명단에서 지울까요? 지금까지의 출석 기록도 통계에서 빠져요. 기록을 남기려면 '탈퇴 처리'를 쓰세요. <button class="btn small danger" data-action="delMember" data-mid="${m.id}">삭제</button><button class="btn small" data-action="cancel">취소</button></div>`:'';
+    return `<div class="medit${off?' off':''}"><input type="text" id="mn-${m.id}" data-keep="0" value="${esc(m.name)}" data-action="rename" data-mid="${m.id}" aria-label="닉네임" maxlength="24"${dis}>
+      <select data-action="role" data-mid="${m.id}" aria-label="직위"${dis}>${ROLES.map(r=>`<option${m.role===r?' selected':''}>${r}</option>`).join('')}</select>
+      ${S.canWrite?`<button class="btn small" data-action="toggleOff" data-mid="${m.id}">${off?'복귀':'탈퇴 처리'}</button><button class="btn small danger" data-action="askDelM" data-mid="${m.id}">삭제</button>`:''}${conf}</div>`}).join('');
+  return `${roNote()}<div class="members-grid"><div class="col">
+    ${S.canWrite?`<div class="panel"><h2>문파원 추가</h2>
+      <label class="f">닉네임 (여러 명은 줄바꿈이나 쉼표로 구분)<textarea id="addNames" placeholder="예: 묘룡, 청풍&#10;흑월"></textarea></label>
+      <div class="row"><label class="chk">직위 <select id="addRole">${ROLES.map(r=>`<option${r==='문파원'?' selected':''}>${r}</option>`).join('')}</select></label><span class="grow"></span><button class="btn primary" data-action="addMembers">추가</button></div>
+      <p class="hint">이미 있는 닉네임은 건너뛰어요.</p></div>
+    <div class="panel"><h2>설정</h2>
+      <label class="f">문파 이름 (머리말과 카톡 요약에 표시)<input type="text" id="cfgGuild" maxlength="30" placeholder="예: 학살" value="${esc(C.guild||'')}"></label>
+      <label class="f">주 시작 요일 (랭킹 리셋 요일에 맞추세요)<select id="cfgWeek">${DAYS.map((d,i)=>`<option value="${i}"${+C.weekStart===i?' selected':''}>${d}요일</option>`).join('')}</select></label>
+      <label class="f">사전공지 처리<select id="cfgExcuse"><option value="absent"${C.excuse!=='exclude'?' selected':''}>불참과 똑같이 출석률에 반영</option><option value="exclude"${C.excuse==='exclude'?' selected':''}>출석률 계산에서 제외</option></select></label>
+      <div class="formgrid">
+        <label class="f">저조 기준 출석률 (%)<input type="number" id="cfgTh" min="0" max="100" step="5" value="${C.threshold??50}"></label>
+        <label class="f">연속 불참 경고 (회)<input type="number" id="cfgStreak" min="2" max="20" step="1" value="${C.streak??3}"></label>
+      </div>
+      <button class="btn" data-action="saveCfg">설정 저장</button></div>`:''}
+    </div>
+    <div class="panel"><div class="spread"><h2>명단 <span class="hint num">${S.members.length-offN}명${offN?` · 탈퇴 ${offN}명`:''}</span></h2>
+      ${offN?`<label class="chk"><input type="checkbox" id="showOff" data-keep="0" data-action="showOff"${S.showOff?' checked':''}> 탈퇴자 보기</label>`:''}</div>
+      ${S.members.length?`<input type="search" id="memSearch" data-keep="0" data-action="mSearch" placeholder="닉네임 검색" value="${esc(S.mSearch)}" aria-label="닉네임 검색">`:''}
+      <div>${rows||(S.members.length?'<p class="hint">조건에 맞는 문파원이 없어요.</p>':'<div class="empty"><h3>명단이 비어 있어요</h3><p class="hint">왼쪽에서 닉네임을 추가하면 출석 체크 명단에 바로 나타나요.</p></div>')}</div>
+      <p class="hint">탈퇴 처리한 문파원은 체크 명단과 통계에서 숨겨지고, 복귀하면 기록이 다시 보여요.</p></div></div>
+    ${renderAdmins()}`;
+}
+
+function renderAdmins(){
+  let out='';
+  if(S.isOwner){
+    const rows=S.admins.map(a=>`<div class="medit"><span class="grow">${esc(a.nick||'')} <span class="hint">${esc(a.id)}</span></span>${S.confirm==='a:'+a.id?`<button class="btn small danger" data-action="delAdmin" data-email="${esc(a.id)}">정말 해제</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small danger" data-action="askDelA" data-email="${esc(a.id)}">운영진 해제</button>`}</div>`).join('');
+    out+=`<div class="panel"><h2>운영진 관리 <span class="hint">문파장만 보여요</span></h2>
+      <p class="hint">운영진의 구글 이메일과 게임 닉네임을 등록하면, 그 계정으로 로그인했을 때 체크와 수정을 할 수 있어요. 체크 기록에는 닉네임이 표시돼요.</p>
+      <div class="formgrid"><label class="f">구글 이메일<input type="text" id="adEmail" inputmode="email" autocomplete="off" placeholder="example@gmail.com"></label>
+      <label class="f">게임 닉네임<input type="text" id="adNick" maxlength="24" placeholder="예: 청풍"></label>
+      <button class="btn primary full" data-action="addAdmin">운영진 등록</button></div>
+      <div>${rows||'<p class="hint">아직 등록된 운영진이 없어요. 본인 닉네임도 표시하려면 자기 이메일을 등록하세요.</p>'}</div></div>`;
+  }
+  if(S.authUser){
+    out+=`<div class="panel"><h2>내 계정</h2><p class="hint">처음 설정할 때 이 UID를 Firestore 보안 규칙의 OWNER_UID 자리에 넣으면 문파장 권한이 생겨요.</p>
+      <div class="row"><span class="hint">${esc(S.authUser.email||'')}</span></div>
+      <div class="row"><span class="code">${esc(S.authUser.uid)}</span><button class="btn small" data-action="copyUid">UID 복사</button></div></div>`;
+  }
+  return out?`<div class="col" style="margin-top:20px">${out}</div>`:'';
+}
+
+/* ---------- writes ---------- */
+async function guard(fn,okMsg){
+  if(!S.db){toast('저장소에 연결되지 않았어요');return false}
+  try{await fn();if(okMsg)toast(okMsg);return true}catch(e){
+    if(e&&e.code==='invalid_argument'&&S.canWrite){S.canWrite=false;render();toast('편집 권한이 없어 저장되지 않았어요');return false}
+    if(e&&e.code==='quota_exceeded'){toast('저장 공간이 가득 찼어요. 오래된 회차를 지워 주세요');return false}
+    toast('저장하지 못했어요. 잠시 후 다시 시도해 주세요');console.error(e);return false}
+}
+async function createSession(date,content,extra){
+  const ex=findSession(date,content,extra);
+  if(ex){S.openSid=ex.id;S.editSid=null;render();scrollSheet();return}
+  await guard(async()=>{const ref=S.db.collection('sessions').doc();S.openSid=ref.id;S.editSid=null;
+    await ref.set({date,content,extra:!!extra,marks:{},marksBy:{},note:'',rank:'',createdAt:Date.now(),createdBy:myName()});render();scrollSheet()});
+}
+function scrollSheet(){if(innerWidth<820)$('#sheetCol')?.scrollIntoView({behavior:'smooth',block:'start'})}
+function queueMark(sid,mid,v){(pending[sid]??={})[mid]=v;render();clearTimeout(flushTimer);flushTimer=setTimeout(flush,350)}
+async function flush(){
+  if(flushing){clearTimeout(flushTimer);flushTimer=setTimeout(flush,300);return}
+  const batch=pending;pending={};if(!Object.keys(batch).length)return;flushing=true;
+  for(const sid in batch){inflight[sid]=Object.assign(inflight[sid]||{},batch[sid])}
+  for(const sid in batch){
+    const now=Date.now(),by={};for(const mid in batch[sid])by[mid]={by:myName(),at:now};
+    await guard(()=>S.db.doc('sessions/'+sid).update({marks:batch[sid],marksBy:by,updatedAt:now,updatedBy:myName()}));
+    for(const mid in batch[sid]){if(inflight[sid]&&inflight[sid][mid]===batch[sid][mid])delete inflight[sid][mid]}
+  }
+  flushing=false;render();
+}
+function copyText(text,msg){
+  const fallback=()=>{const box=$('#copybox'),ta=$('#copyArea');ta.value=text;box.hidden=false;ta.focus();ta.select()};
+  try{const p=navigator.clipboard&&navigator.clipboard.writeText(text);
+    if(!p){fallback();return}
+    p.then(()=>toast(msg||'복사했어요. 카톡에 붙여 넣으세요'),fallback)}catch(_){fallback()}
+}
+function exportCsv(){
+  try{const blob=new Blob([csvText()],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);a.download=`문파출석_${todayStr()}${S.demo?'_예시':''}.csv`;document.body.appendChild(a);a.click();
+    setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}catch(e){console.error(e);toast('파일을 만들지 못했어요')}
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-action]');if(!b||b.disabled)return;const a=b.dataset.action;
+  if(b.tagName==='SELECT'||b.tagName==='INPUT'||b.tagName==='TEXTAREA')return;
+  if(a==='tab'){S.tab=b.dataset.tab;S.confirm=null;render();window.scrollTo({top:0});return}
+  if(a==='open'){S.openSid=b.dataset.sid;S.confirm=null;S.editSid=null;S.search='';render();scrollSheet();return}
+  if(a==='quick'){createSession(todayStr(),b.dataset.k,b.dataset.extra==='1');return}
+  if(a==='create'){const d=$('#nDate').value;if(!d){toast('날짜를 골라 주세요');return}createSession(d,$('#nContent').value,$('#nExtra').checked);return}
+  if(a==='mark'){const s=S.sessions.find(x=>x.id===b.dataset.sid);if(!s)return;const cur=marksOf(s)[b.dataset.mid]||null;queueMark(s.id,b.dataset.mid,cur===b.dataset.v?null:b.dataset.v);return}
+  if(a==='bulk'){const s=S.sessions.find(x=>x.id===b.dataset.sid);if(!s)return;const mk=marksOf(s);activeMembers(S.members).forEach(m=>{if(!validMark(mk[m.id]))(pending[s.id]??={})[m.id]=b.dataset.v});render();clearTimeout(flushTimer);flushTimer=setTimeout(flush,100);return}
+  if(a==='edit'){S.editSid=b.dataset.sid;S.confirm=null;render();return}
+  if(a==='cancelEdit'){S.editSid=null;render();return}
+  if(a==='saveEdit'){const sid=b.dataset.sid;const date=$('#eDate').value;if(!date){toast('날짜를 골라 주세요');return}
+    const upd={date,content:$('#eContent').value,extra:$('#eExtra').checked,rank:$('#eRank').value.trim().slice(0,30),note:$('#eNote').value.trim().slice(0,500),updatedAt:Date.now(),updatedBy:myName()};
+    guard(()=>S.db.doc('sessions/'+sid).update(upd),'회차를 수정했어요').then(ok=>{if(ok){S.editSid=null;render()}});return}
+  if(a==='copySession'){const s=S.sessions.find(x=>x.id===b.dataset.sid);if(s)copyText(sessionText(s));return}
+  if(a==='copyKakao'){copyText(kakaoText(computeStats()));return}
+  if(a==='closeCopy'){$('#copybox').hidden=true;return}
+  if(a==='csv'){exportCsv();return}
+  if(a==='askDel'){S.confirm='s:'+b.dataset.sid;render();return}
+  if(a==='askDelM'){S.confirm='m:'+b.dataset.mid;render();return}
+  if(a==='cancel'){S.confirm=null;render();return}
+  if(a==='delSession'){const sid=b.dataset.sid;S.confirm=null;guard(async()=>{await S.db.doc('sessions/'+sid).delete();if(S.openSid===sid)S.openSid=null;render()},'회차를 지웠어요');return}
+  if(a==='delMember'){const mid=b.dataset.mid;S.confirm=null;guard(()=>S.db.doc('members/'+mid).delete(),'명단에서 지웠어요');return}
+  if(a==='toggleOff'){const m=S.members.find(x=>x.id===b.dataset.mid);if(m)guard(()=>S.db.doc('members/'+m.id).update({active:m.active===false}));return}
+  if(a==='addMembers'){addMembers();return}
+  if(a==='saveCfg'){
+    const guild=$('#cfgGuild').value.trim().slice(0,30);
+    let th=Math.round(+$('#cfgTh').value);if(!(th>=0&&th<=100))th=50;
+    let sk=Math.round(+$('#cfgStreak').value);if(!(sk>=2&&sk<=20))sk=3;
+    const weekStart=Math.min(6,Math.max(0,+$('#cfgWeek').value||0));const excuse=$('#cfgExcuse').value==='exclude'?'exclude':'absent';
+    guard(()=>S.db.doc('config/main').set({guild,threshold:th,streak:sk,weekStart,excuse,updatedBy:myName(),updatedAt:Date.now()}),'설정을 저장했어요');return}
+  if(a==='login'){
+    if(inKakao){copyText(location.href,'주소를 복사했어요. 크롬이나 사파리에 붙여 넣어 열어 주세요');return}
+    const pv=new GoogleAuthProvider();pv.setCustomParameters({prompt:'select_account'});
+    signInWithPopup(S.auth,pv).catch(e=>{const c=e&&e.code;
+      if(c==='auth/popup-blocked'||c==='auth/operation-not-supported-in-this-environment')signInWithRedirect(S.auth,pv);
+      else if(c==='auth/unauthorized-domain')toast('Firebase 승인된 도메인에 이 사이트 주소를 추가해 주세요');
+      else if(c!=='auth/popup-closed-by-user'&&c!=='auth/cancelled-popup-request'){console.error(e);toast('로그인하지 못했어요')}});return}
+  if(a==='logout'){signOut(S.auth);return}
+  if(a==='copyUid'){if(S.authUser)copyText(S.authUser.uid,'UID를 복사했어요');return}
+  if(a==='addAdmin'){const email=$('#adEmail').value.trim().toLowerCase();const nick=$('#adNick').value.trim().slice(0,24);
+    if(!/^[^\s@\/]+@[^\s@\/]+\.[^\s@\/]+$/.test(email)){toast('이메일 형식을 확인해 주세요');return}
+    if(!nick){toast('게임 닉네임을 입력해 주세요');return}
+    guard(()=>S.db.doc('admins/'+email).set({nick,addedAt:Date.now()}),'운영진으로 등록했어요').then(ok=>{if(ok){$('#adEmail').value='';$('#adNick').value='';if(S.authUser&&email===(S.authUser.email||'').toLowerCase())S.myNick=nick;render()}});return}
+  if(a==='askDelA'){S.confirm='a:'+b.dataset.email;render();return}
+  if(a==='delAdmin'){const em=b.dataset.email;S.confirm=null;guard(()=>S.db.doc('admins/'+em).delete(),'운영진에서 해제했어요');return}
+  if(a==='demo'){S.demo=true;render();return}
+  if(a==='demoOff'){S.demo=false;render();return}
+});
+document.addEventListener('input',e=>{
+  const t=e.target,a=t.dataset&&t.dataset.action;
+  if(e.isComposing)return;
+  if(a==='search'){S.search=t.value;render()}
+  else if(a==='mSearch'){S.mSearch=t.value;render()}
+});
+document.addEventListener('change',e=>{
+  const t=e.target,a=t.dataset&&t.dataset.action;if(!a)return;
+  if(a==='period'){S.period=t.value;render()}
+  else if(a==='cfilter'){S.cfilter=t.value;render()}
+  else if(a==='showOff'){S.showOff=t.checked;render()}
+  else if(a==='onlyUnc'){S.onlyUnchecked=t.checked;render()}
+  else if(a==='role'){guard(()=>S.db.doc('members/'+t.dataset.mid).update({role:t.value}))}
+  else if(a==='rename'){const name=t.value.trim().slice(0,24);const m=S.members.find(x=>x.id===t.dataset.mid);
+    if(!m)return;if(!name||name===m.name){t.value=m.name;return}
+    if(S.members.some(x=>x.id!==m.id&&x.name===name)){toast('같은 닉네임이 이미 있어요');t.value=m.name;return}
+    guard(()=>S.db.doc('members/'+m.id).update({name}),'닉네임을 바꿨어요')}
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&e.target.dataset&&e.target.dataset.action==='rename')e.target.blur();
+  if(e.key==='Escape'&&!$('#copybox').hidden)$('#copybox').hidden=true;
+});
+async function addMembers(){
+  const ta=$('#addNames');const names=[...new Set(ta.value.split(/[\n,]+/).map(s=>s.trim().slice(0,24)).filter(Boolean))];
+  if(!names.length){toast('닉네임을 입력해 주세요');return}
+  const have=new Set(S.members.map(m=>m.name));const add=names.filter(n=>!have.has(n));const role=$('#addRole').value;
+  if(!add.length){toast('모두 이미 명단에 있어요');return}
+  let ok=0;
+  await guard(async()=>{for(const name of add){await S.db.collection('members').doc().set({name,role,active:true,createdAt:Date.now(),createdBy:myName()});ok++}});
+  if(ok){ta.value='';toast(ok+'명을 추가했어요'+(names.length>add.length?` (${names.length-add.length}명은 이미 있어서 건너뜀)`:''));render()}
+}
+
+/* ---------- demo (통계 미리보기 전용, 저장 안 함) ---------- */
+let demoCache=null;
+function demoData(){
+  if(demoCache)return demoCache;
+  let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+  const members=Array.from({length:14},(_,i)=>({id:'d'+i,name:'예시문파원'+(i+1),role:i===0?'문주':i<3?'부문주':i<5?'간부':'문파원',active:true,p:0.3+rnd()*0.65}));
+  const sessions=[];const base=addDays(todayStr(),-((dow(todayStr())+6)%7));
+  for(let w=7;w>=0;w--){const mon=addDays(base,-7*w);
+    const days=[[addDays(mon,4),['singi','mihok','yosin']],[addDays(mon,5),['singi','mihok','gyeol']]];
+    if(rnd()<0.5)days.push([addDays(mon,1),['yosin','gyeol']]);
+    for(const [d,ks] of days){if(d>todayStr())continue;ks.forEach(k=>{const marks={};
+      members.forEach(m=>{const r=rnd();const p=m.p*(dow(d)===2?0.75:1);marks[m.id]=r<p?'O':r<p+0.12?'A':'X'});
+      sessions.push({id:'s'+sessions.length,date:d,content:k,extra:dow(d)===2,marks})})}}
+  return demoCache={members,sessions};
+}
+
+/* ---------- firebase adapter ---------- */
+function mapErr(e){const c=(e&&e.code)||'';return {code:c==='permission-denied'?'invalid_argument':c==='resource-exhausted'?'quota_exceeded':c==='unavailable'?'unavailable':(c||'unavailable'),message:e&&e.message}}
+const wrapSnap=x=>({id:x.id,exists:x.exists(),data:()=>x.exists()?x.data():undefined});
+function flat(obj,pre,out){out=out||{};for(const k in obj){const v=obj[k];const key=pre?pre+'.'+k:k;
+  if(v&&typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).length)flat(v,key,out);else out[key]=v}return out}
+function makeDb(fs){
+  const D=ref=>({id:ref.id,path:ref.path,
+    set:d=>setDoc(ref,d).catch(e=>{throw mapErr(e)}),
+    update:d=>updateDoc(ref,flat(d)).catch(e=>{throw mapErr(e)}),
+    delete:()=>deleteDoc(ref).catch(e=>{throw mapErr(e)}),
+    onSnapshot:(n,er)=>fsnap(ref,x=>n(wrapSnap(x)),e=>er&&er(mapErr(e)))});
+  const Q=(q,cref)=>({doc:id=>D(id?fdoc(cref,id):fdoc(cref)),
+    orderBy:(f,d)=>Q(query(q,fOrder(f,d||'asc')),cref),where:(f,o,v)=>Q(query(q,fWhere(f,o,v)),cref),limit:n=>Q(query(q,fLimit(n)),cref),
+    onSnapshot:(n,er)=>fsnap(q,x=>n({docs:x.docs.map(wrapSnap),size:x.size,empty:x.empty}),e=>er&&er(mapErr(e)))});
+  return {doc:p=>D(fdoc(fs,p)),collection:p=>{const c=fcol(fs,p);return Q(c,c)}};
+}
+
+/* ---------- boot ---------- */
+render();
+(function(){
+  if(!FIREBASE_CONFIG.apiKey||!FIREBASE_CONFIG.projectId){S.setup=true;render();return}
+  let app;try{app=initializeApp(FIREBASE_CONFIG)}catch(e){console.error(e);S.err=true;render();return}
+  S.fs=getFirestore(app);S.auth=getAuth(app);S.db=makeDb(S.fs);
+  const db=S.db;
+  const got={m:false,s:false};const done=()=>{if(got.m&&got.s)S.ready=true;render()};
+  const onErr=e=>{console.error(e);S.err=true;render()};
+  db.collection('members').onSnapshot(snap=>{S.members=snap.docs.map(d=>({id:d.id,...d.data()}));got.m=true;done()},onErr);
+  db.collection('sessions').where('date','>=',addDays(todayStr(),-182)).orderBy('date','desc').limit(1000).onSnapshot(snap=>{
+    S.sessions=snap.docs.map(d=>({id:d.id,...d.data()})).filter(s=>s.date&&s.content);got.s=true;done()},onErr);
+  db.doc('config/main').onSnapshot(snap=>{if(snap.exists)S.config=Object.assign({...CFG0},snap.data());render()},()=>{});
+  let unAdmins=null;
+  onAuthStateChanged(S.auth,async u=>{
+    S.authUser=u;S.canWrite=false;S.isOwner=false;S.myNick='';S.admins=[];if(unAdmins){unAdmins();unAdmins=null}
+    if(u){
+      const email=(u.email||'').toLowerCase();
+      try{const x=await getDoc(fdoc(S.fs,'admins',email));if(x.exists()){S.canWrite=true;S.myNick=x.data().nick||''}}catch(_){}
+      try{await getDocs(query(fcol(S.fs,'admins'),fLimit(1)));S.isOwner=true;S.canWrite=true;
+        unAdmins=fsnap(fcol(S.fs,'admins'),x=>{S.admins=x.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>String(a.nick).localeCompare(String(b.nick),'ko'));render()},()=>{})}catch(_){}
+    }
+    render();
+  });
+})();
+})();
+</script>
+</body>
+</html>
