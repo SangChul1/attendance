@@ -237,6 +237,9 @@ input[type=date].mini{padding:5px 8px;font-size:14px}
 .ct-opts{display:flex;flex-wrap:wrap;gap:8px 20px}
 .row input[type=search]{flex:1 1 180px;min-width:0}
 .row select[data-action="nsort"]{flex:0 1 auto;max-width:100%}
+.role-row{display:grid;grid-template-columns:2em minmax(0,1fr) auto;gap:6px 8px;align-items:center}
+.role-row .meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+@media (max-width:600px){.role-row{grid-template-columns:2em minmax(0,1fr)}.role-row .meta{grid-column:2}}
 div.f{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
 .ct-card input[type=text],.ct-card input[type=number]{background:var(--surface)}
 .readonly-note{font-size:14px;color:var(--muted);background:var(--sunken);border:1px dashed var(--line);border-radius:8px;padding:8px 12px}
@@ -313,7 +316,12 @@ const LEGACY={yosin:'rank',gyeol:'rank'};
 const normS=s=>LEGACY[s.content]?{...s,content:LEGACY[s.content]}:s;
 const isBonus=s=>!!s.extra;
 function sessPts(s){return isBonus(s)?pts('bonus'):pts(s.content)}
-const ROLES=['문주','부문주','간부','문파원'];
+const DEFAULT_ROLES=['문주','부문주','간부','문파원'];
+let ROLES=DEFAULT_ROLES;
+function cleanRoles(r){const out=[...new Set((Array.isArray(r)?r:[]).map(x=>String(x??'').trim().slice(0,12)).filter(Boolean))];return out.length?out:DEFAULT_ROLES}
+function applyRoles(){ROLES=S.demo?DEFAULT_ROLES:cleanRoles(S.config.roles)}
+const baseRole=()=>ROLES[ROLES.length-1];
+const roleIdx=r=>{const i=ROLES.indexOf(r);return i<0?ROLES.length:i};
 const DAYS=['일','월','화','수','목','금','토'];
 const CFG0={guild:'',weekStart:1,streak:3,points:{singi:1,mihok:1,rank:1,bonus:1}};
 
@@ -355,7 +363,7 @@ const COLL=new Intl.Collator('ko',{numeric:true,sensitivity:'base'});
 const scriptOf=n=>{const c=String(n).trim().charAt(0);return /[가-힣ㄱ-ㅎㅏ-ㅣ]/.test(c)?0:/[A-Za-z]/.test(c)?1:2};
 function nameCmp(a,b,mode){const A=String(a??''),B=String(b??'');const ord=mode==='en'?[1,0,2]:[0,1,2];const sa=ord.indexOf(scriptOf(A)),sb=ord.indexOf(scriptOf(B));return (sa-sb)||COLL.compare(A,B)}
 function nameMode(){return S.nsort==='en'?'en':'ko'}
-function memberSort(a,b){if(S.nsort==='ko'||S.nsort==='en')return nameCmp(a.name,b.name,S.nsort);const r=ROLES.indexOf(a.role)-ROLES.indexOf(b.role);return r||nameCmp(a.name,b.name,'ko')}
+function memberSort(a,b){if(S.nsort==='ko'||S.nsort==='en')return nameCmp(a.name,b.name,S.nsort);const r=roleIdx(a.role)-roleIdx(b.role);return r||nameCmp(a.name,b.name,'ko')}
 function nsortSel(id){return `<select id="${id}" data-keep="0" data-action="nsort" aria-label="명단 정렬">${[['role','직위순'],['ko','가나다순 (한글 먼저)'],['en','ABC순 (영어 먼저)']].map(([v,l])=>`<option value="${v}"${S.nsort===v?' selected':''}>${l}</option>`).join('')}</select>`}
 function sessionSort(a,b){return a.date<b.date?1:a.date>b.date?-1:(CONTENTS.findIndex(c=>c.k===a.content)-CONTENTS.findIndex(c=>c.k===b.content))||((a.createdAt||0)-(b.createdAt||0))}
 /* ---------- 판정 기준 ---------- */
@@ -405,7 +413,7 @@ let composing=false,needRender=false;
 document.addEventListener('compositionstart',()=>{composing=true});
 document.addEventListener('compositionend',e=>{composing=false;const a=e.target.dataset&&e.target.dataset.action;if(a==='search')S.search=e.target.value;else if(a==='mSearch')S.mSearch=e.target.value;else if(a==='ssearch')S.ssearch=e.target.value;if(needRender||a==='search'||a==='mSearch'||a==='ssearch'){needRender=false;render()}});
 function render(){
-  EFF=null;applyContents();
+  EFF=null;applyContents();applyRoles();
   if(composing){needRender=true;return}
   const app=$('#app');
   const ae=document.activeElement, aid=ae&&app.contains(ae)&&ae.id, sel=aid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
@@ -487,7 +495,7 @@ function renderSheet(members){
   const q=S.search.trim().toLowerCase();
   const shown=members.filter(m=>(!q||String(m.name).toLowerCase().includes(q))&&(!S.onlyUnchecked||!validMark(mk[m.id])));
   const rows=shown.map(m=>{const v=mk[m.id]||'';const b=by[m.id];
-    return `<div class="mrow"><div class="nm"><span>${esc(m.name)}</span>${m.role&&m.role!=='문파원'?`<span class="tag">${esc(m.role)}</span>`:''}${b&&b.at&&validMark(v)?`<span class="by num" title="마지막으로 체크한 운영진">${b.by?esc(nameOf(b.by))+' · ':''}${hm(b.at)}</span>`:''}</div>
+    return `<div class="mrow"><div class="nm"><span>${esc(m.name)}</span>${m.role&&m.role!==baseRole()?`<span class="tag">${esc(m.role)}</span>`:''}${b&&b.at&&validMark(v)?`<span class="by num" title="마지막으로 체크한 운영진">${b.by?esc(nameOf(b.by))+' · ':''}${hm(b.at)}</span>`:''}</div>
       <div class="seg" role="group" aria-label="${esc(m.name)} 출석">${[['O','참여'],['A','사전공지'],['X','불참']].map(([k,l])=>`<button data-action="mark" data-sid="${s.id}" data-mid="${m.id}" data-v="${k}" aria-pressed="${v===k}"${dis}>${l}</button>`).join('')}</div></div>`}).join('');
   const allConf=S.confirm&&S.confirm.startsWith('all:'+s.id+':')?S.confirm.slice(-1):null;
   const allChanged=allConf?members.filter(m=>validMark(mk[m.id])&&mk[m.id]!==allConf).length:0;
@@ -746,7 +754,7 @@ function renderMemberAdmin(){
   const rows=list.map(m=>{const off=m.active===false;
     const conf=S.confirm==='m:'+m.id?`<div class="confirm" style="flex-basis:100%">${esc(m.name)} 님을 명단에서 지울까요? 지금까지의 출석 기록도 통계에서 빠져요. 기록을 남기려면 '탈퇴 처리'를 쓰세요. <button class="btn small danger" data-action="delMember" data-mid="${m.id}">삭제</button><button class="btn small" data-action="cancel">취소</button></div>`:'';
     return `<div class="medit${off?' off':''}"><input type="text" id="mn-${m.id}" data-keep="0" value="${esc(m.name)}" data-action="rename" data-mid="${m.id}" aria-label="닉네임" maxlength="24"${dis}>
-      <select data-action="role" data-mid="${m.id}" aria-label="직위"${dis}>${ROLES.map(r=>`<option${m.role===r?' selected':''}>${r}</option>`).join('')}</select>
+      <select data-action="role" data-mid="${m.id}" aria-label="직위"${dis}>${[...ROLES,...(m.role&&!ROLES.includes(m.role)?[m.role]:[])].map(r=>`<option value="${esc(r)}"${m.role===r?' selected':''}>${esc(r)}</option>`).join('')}</select>
       ${S.canWrite&&warnCount(m.id)?`<span class="tag" title="집계 기간 안의 경고">경고 ${warnCount(m.id)}</span>`:''}
       <input type="date" class="mini" data-action="join" data-mid="${m.id}" value="${esc(m.joinedAt||'')}" aria-label="가입일" title="가입일"${dis}>
       ${(m.leaves||[]).some(l=>l&&(l.to||'9999')>=todayStr())?`<span class="tag" title="휴식 기간">휴식 ${(m.leaves||[]).filter(l=>l&&(l.to||'9999')>=todayStr()).map(l=>`${md(l.from)}~${l.to?md(l.to):''}`).join(', ')}</span>`:''}
@@ -760,7 +768,7 @@ function renderMemberAdmin(){
     <div class="panel"><h2>문파원 추가</h2>
       <label class="f">닉네임 (여러 명은 줄바꿈이나 쉼표로 구분)<textarea id="addNames" placeholder="예: 묘룡, 청풍&#10;흑월"></textarea></label>
       <label class="f">가입일 (비워 두면 모든 회차가 대상)<input type="date" id="addJoin"></label>
-      <div class="row"><label class="chk">직위 <select id="addRole">${ROLES.map(r=>`<option${r==='문파원'?' selected':''}>${r}</option>`).join('')}</select></label><span class="grow"></span><button class="btn primary" data-action="addMembers">추가</button></div>
+      <div class="row"><label class="chk">직위 <select id="addRole">${ROLES.map(r=>`<option value="${esc(r)}"${r===baseRole()?' selected':''}>${esc(r)}</option>`).join('')}</select></label><span class="grow"></span><button class="btn primary" data-action="addMembers">추가</button></div>
       <p class="hint">이미 있는 닉네임은 건너뛰어요.</p></div>
     <div class="panel"><h2>도움말</h2>${notes(['<b>가입일</b>: 이름 옆 날짜 칸이에요. 그날 이후 회차만 체크 명단과 출석률에 들어가요','<b>휴식</b>: 정한 기간의 회차는 출석률·개근·경고 판정에서 빠져요','<b>메모</b>: 운영진만 보는 메모예요','<b>탈퇴 처리</b>: 명단과 통계에서 숨기지만 기록은 남아요','<b>삭제</b>: 기록까지 통계에서 빠져요. 잘못 넣은 닉네임에만 쓰세요'])}</div>
     </div>
@@ -787,6 +795,14 @@ function renderSettings(){
         <label class="f">문파 이름<input type="text" id="cfgGuild" maxlength="30" placeholder="예: 학살" value="${esc(C.guild||'')}"></label>
         <label class="f">주 시작 요일<select id="cfgWeek">${DAYS.map((d,i)=>`<option value="${i}"${+C.weekStart===i?' selected':''}>${d}요일</option>`).join('')}</select></label></div>
         ${notes(['<b>문파 이름</b>은 머리말과 카톡 공지 문구에 들어가요','<b>주 시작 요일</b>은 랭킹이 초기화되는 요일로 맞추세요. 주간 통계와 주 1회 콘텐츠가 이 기준으로 나뉘어요'])}</div>
+      <div class="cfg-group"><h3>직위</h3>
+        <div class="col" style="gap:6px">${ROLES.map((r,i)=>{const n=S.members.filter(m=>m.role===r).length;return `<div class="role-row"><span class="hint num">${i+1}.</span>
+          <input type="text" id="role-${i}" data-keep="0" data-action="roleRename" data-i="${i}" maxlength="12" value="${esc(r)}" aria-label="직위 이름">
+          <span class="meta"><span class="hint">${n}명${i===ROLES.length-1?' · 기본 직위':''}</span><span class="grow"></span>
+          <button class="btn small" data-action="roleMove" data-i="${i}" data-d="-1"${i===0?' disabled':''} aria-label="위로">▲</button><button class="btn small" data-action="roleMove" data-i="${i}" data-d="1"${i===ROLES.length-1?' disabled':''} aria-label="아래로">▼</button>
+          ${S.confirm==='role:'+i?`<button class="btn small danger" data-action="roleDel" data-i="${i}">정말 삭제</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small danger" data-action="askRoleDel" data-i="${i}"${ROLES.length<=1?' disabled':''}>삭제</button>`}</span></div>`}).join('')}</div>
+        <div class="row"><input type="text" id="roleNew" maxlength="12" placeholder="새 직위 이름 (예: 장로)" style="flex:1 1 180px"><button class="btn primary" data-action="roleAdd">직위 추가</button></div>
+        ${notes(['<b>위에 있을수록 높은 직위</b>예요. ▲▼로 순서를 바꾸면 직위순 정렬에 바로 반영돼요','<b>맨 아래 직위</b>가 새 문파원의 기본 직위예요. 새 직위는 기본 직위 바로 위에 추가돼요','이름을 고치고 칸 밖을 누르면, 그 직위의 문파원도 함께 바뀌어요','직위를 지우면 그 직위의 문파원은 기본 직위로 바뀌어요','직위는 바꾸는 즉시 저장돼요. <b>설정 저장</b>을 누르지 않아도 돼요'])}</div>
       <div class="cfg-group"><h3>출석률 계산</h3><div class="fg3">
         <label class="f">사전공지 면제 (한 달 최대)<input type="number" id="cfgExLim" min="0" max="31" step="1" value="${excuseLimit()>31?31:excuseLimit()}"></label>
         <label class="f">판정 최소 회차 (정규)<input type="number" id="cfgMinJ" min="1" max="100" step="1" value="${minJudge()}"></label>
@@ -861,6 +877,10 @@ function renderAdmins(){
   return out?`<div class="col" style="margin-top:20px">${out}</div>`:'';
 }
 
+async function saveRoles(list,moves,msg){
+  return guard(async()=>{await S.db.doc('config/main').set({...cfgBase(),roles:list,updatedBy:myName(),updatedAt:Date.now()});
+    for(const mid in moves)await S.db.doc('members/'+mid).update({role:moves[mid]})},msg);
+}
 function cfgBase(){const c={...S.config};delete c.threshold;delete c.excuse;return c}
 /* ---------- 오늘 회차 한 번에 ---------- */
 async function createToday(){
@@ -1063,7 +1083,7 @@ function renderMe(){
   const list=recs.slice(0,30).map(s=>{const v=effOf(s,me.id);return `<div class="rec"><span class="d">${mdd(s.date)}</span><span class="chip" ${ck(s.content)}>${CMAP[s.content]?.name||esc(s.content)}</span>${s.extra?'<span class="tag extra">추가</span>':''}<span class="grow"></span><span class="mk ${cls[v]}">${lab[v]}</span></div>`}).join('');
   const adm=S.canWrite;
   return `<div class="col">
-    <div class="panel"><div class="spread"><h2>${esc(me.name)} 님의 출석</h2>${me.role&&me.role!=='문파원'?`<span class="tag">${esc(me.role)}</span>`:''}</div>${sel}
+    <div class="panel"><div class="spread"><h2>${esc(me.name)} 님의 출석</h2>${me.role&&me.role!==baseRole()?`<span class="tag">${esc(me.role)}</span>`:''}</div>${sel}
       ${(me.leaves||[]).filter(l=>l&&(l.to||'9999')>=addDays(todayStr(),-60)).map(l=>`<div class="lockbar">휴식 ${esc(l.from)} ~ ${esc(l.to||'미정')}${l.note&&S.canWrite?' · '+esc(l.note):''} · 이 기간은 판정에서 빠져요</div>`).join('')}
       ${w26.t<mj?`<p class="hint">정규 회차 기록이 ${w26.t}회라 아직 판정 보류예요 (${mj}회부터 판정).</p>`:''}
       ${adm&&low4.t>=mj&&low4.r!=null&&low4.r<th?`<div class="readonly-note">최근 4주 ${W.scope==='main'?'메인 ':''}출석률이 기준(${Math.round(th*100)}%)보다 낮아요.</div>`:''}
@@ -1107,7 +1127,7 @@ function buildImport(text){
   for(const r of rows.slice(1)){const name=(r[0]||'').trim().slice(0,24);if(!name)continue;
     const rr=ri>=0?(r[ri]||'').trim():'';const mk={};
     cols.forEach((c,ci)=>{const v=MK[(r[c.i]||'').trim()];if(v){mk[ci]=v;marks++}});
-    const jd=ji>=0?(r[ji]||'').trim():'';people.push({name,role:ROLES.includes(rr)?rr:'문파원',mk,active:!(si>=0&&(r[si]||'').trim()==='탈퇴'),joinedAt:/^\d{4}-\d{2}-\d{2}$/.test(jd)?jd:''})}
+    const jd=ji>=0?(r[ji]||'').trim():'';people.push({name,role:ROLES.includes(rr)?rr:baseRole(),mk,active:!(si>=0&&(r[si]||'').trim()==='탈퇴'),joinedAt:/^\d{4}-\d{2}-\d{2}$/.test(jd)?jd:''})}
   const have=new Set(S.members.map(m=>m.name));
   const newSess=cols.filter(c=>!findAny(c.date,c.content,c.extra)).length;
   return {cols,people,marks,newPeople:people.filter(x=>!have.has(x.name)).length,newSess,oldSess:cols.length-newSess};
@@ -1279,6 +1299,13 @@ document.addEventListener('click',e=>{
   if(a==='delAdmin'){const em=b.dataset.email;S.confirm=null;guard(()=>S.db.doc('admins/'+em).delete(),'운영진에서 해제했어요');return}
   if(a==='stab'){S.stab=b.dataset.k;remember('stab',S.stab);render();return}
   if(a==='quickAll'){createToday();return}
+  if(a==='roleAdd'){const nm=($('#roleNew').value||'').trim().slice(0,12);if(!nm){toast('새 직위 이름을 입력해 주세요');return}
+    if(ROLES.includes(nm)){toast('이미 있는 직위예요');return}if(ROLES.length>=12){toast('직위는 12개까지 만들 수 있어요');return}
+    const list=[...ROLES];list.splice(list.length-1,0,nm);saveRoles(list,{},'직위를 추가했어요').then(ok=>{if(ok)$('#roleNew')&&($('#roleNew').value='')});return}
+  if(a==='roleMove'){const i=+b.dataset.i,j=i+(+b.dataset.d);if(j<0||j>=ROLES.length)return;const list=[...ROLES];[list[i],list[j]]=[list[j],list[i]];saveRoles(list,{},null);return}
+  if(a==='askRoleDel'){S.confirm='role:'+b.dataset.i;render();return}
+  if(a==='roleDel'){const i=+b.dataset.i;S.confirm=null;if(ROLES.length<=1)return;const gone=ROLES[i];const list=ROLES.filter((_,k)=>k!==i);const to=list[list.length-1];
+    const moves={};S.members.forEach(m=>{if(m.role===gone)moves[m.id]=to});saveRoles(list,moves,`${gone} 직위를 지웠어요`+(Object.keys(moves).length?` (${Object.keys(moves).length}명은 ${to}로 바뀜)`:''));return}
   if(a==='atab'){S.atab=b.dataset.k;remember('atab',S.atab);S.confirm=null;render();return}
   if(a==='gotoMembers'){S.tab='admin';S.atab='members';remember('tab','admin');remember('atab','members');render();window.scrollTo({top:0});return}
   if(a==='gotoWarn'){S.tab='admin';S.atab='warn';remember('tab','admin');remember('atab','warn');render();window.scrollTo({top:0});return}
@@ -1347,6 +1374,9 @@ document.addEventListener('change',e=>{
   else if(a==='impFile'){const f=t.files&&t.files[0];if(f)readImport(f)}
   else if(a==='showOff'){S.showOff=t.checked;render()}
   else if(a==='onlyUnc'){S.onlyUnchecked=t.checked;render()}
+  else if(a==='roleRename'){const i=+t.dataset.i,old=ROLES[i],nm=t.value.trim().slice(0,12);
+    if(!nm||nm===old){t.value=old;return}if(ROLES.includes(nm)){toast('이미 있는 직위예요');t.value=old;return}
+    const list=[...ROLES];list[i]=nm;const moves={};S.members.forEach(m=>{if(m.role===old)moves[m.id]=nm});saveRoles(list,moves,'직위 이름을 바꿨어요')}
   else if(a==='role'){guard(()=>S.db.doc('members/'+t.dataset.mid).update({role:t.value}))}
   else if(a==='rename'){const name=t.value.trim().slice(0,24);const m=S.members.find(x=>x.id===t.dataset.mid);
     if(!m)return;if(!name||name===m.name){t.value=m.name;return}
@@ -1354,7 +1384,8 @@ document.addEventListener('change',e=>{
     guard(()=>S.db.doc('members/'+m.id).update({name}),'닉네임을 바꿨어요')}
 });
 document.addEventListener('keydown',e=>{
-  if(e.key==='Enter'&&e.target.dataset&&e.target.dataset.action==='rename')e.target.blur();
+  if(e.key==='Enter'&&e.target.dataset&&(e.target.dataset.action==='rename'||e.target.dataset.action==='roleRename'))e.target.blur();
+  if(e.key==='Enter'&&e.target.id==='roleNew'){e.preventDefault();$('[data-action="roleAdd"]')?.click()}
   if(e.key==='Escape'&&!$('#copybox').hidden)$('#copybox').hidden=true;
 });
 async function addMembers(){
