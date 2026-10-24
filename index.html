@@ -335,12 +335,12 @@ const roleIdx=r=>{const i=ROLES.indexOf(r);return i<0?ROLES.length:i};
 const DAYS=['일','월','화','수','목','금','토'];
 const CFG0={guild:'',weekStart:1,streak:3,points:{singi:1,mihok:1,rank:1,bonus:1}};
 
-const S={db:null,fs:null,auth:null,authUser:null,myNick:'',isOwner:false,admins:[],ready:false,err:false,setup:false,canWrite:false,older:[],olderRange:null,olderLoading:false,cutoff:'',me:'',month:'',imp:null,stab:'sum',ssort:'rate',ssearch:'',warnings:[],warnBlocked:false,logBlocked:false,wmonth:'',dist:null,hist:null,delLogs:null,atab:'warn',nsort:'role',notes:{},locks:{},rewards:[],leaveFor:null,noteFor:null,cdraft:null,tierDraft:null,pay:null,selMode:false,sel:new Set(),
+const S={rf:{mon:'all',kind:'all',q:''},db:null,fs:null,auth:null,authUser:null,myNick:'',isOwner:false,admins:[],ready:false,err:false,setup:false,canWrite:false,older:[],olderRange:null,olderLoading:false,cutoff:'',me:'',month:'',imp:null,stab:'sum',ssort:'rate',ssearch:'',warnings:[],warnBlocked:false,logBlocked:false,wmonth:'',dist:null,hist:null,delLogs:null,atab:'warn',nsort:'role',notes:{},locks:{},rewards:[],leaveFor:null,noteFor:null,cdraft:null,tierDraft:null,pay:null,selMode:false,sel:new Set(),
   members:[],sessions:[],config:{...CFG0},
   tab:'check',openSid:null,editSid:null,period:'4',cfilter:'all',demo:false,confirm:null,showOff:false,
   search:'',onlyUnchecked:false,mSearch:''};
 let pending={},inflight={},flushing=false,flushTimer=null;
-try{const t=localStorage.getItem('att.tab');if(['check','stats','settle','me','admin'].includes(t))S.tab=t;if(t==='members')S.tab='admin';const ns=localStorage.getItem('att.nsort');if(['role','ko','en'].includes(ns))S.nsort=ns;const at=localStorage.getItem('att.atab');if(['warn','members','cfg','team'].includes(at))S.atab=at;S.me=localStorage.getItem('att.me')||'';const st=localStorage.getItem('att.stab');if(['sum','mem','trend'].includes(st))S.stab=st}catch(_){}
+try{const t=localStorage.getItem('att.tab');if(['check','stats','settle','me','admin'].includes(t))S.tab=t;if(t==='members')S.tab='admin';const ns=localStorage.getItem('att.nsort');if(['role','ko','en'].includes(ns))S.nsort=ns;const at=localStorage.getItem('att.atab');if(['warn','members','cfg','team','pay'].includes(at))S.atab=at;S.me=localStorage.getItem('att.me')||'';const st=localStorage.getItem('att.stab');if(['sum','mem','trend'].includes(st))S.stab=st}catch(_){}
 function remember(k,v){try{localStorage.setItem('att.'+k,v)}catch(_){}}
 
 const $=s=>document.querySelector(s);
@@ -769,9 +769,9 @@ function csvText(opt){
 function renderAdmin(){
   if(!S.ready||!S.authKnown) return loading;
   if(!S.canWrite) return `<div class="col">${roNote()}${renderAdmins()}</div>`;
-  const tabs=[['warn','경고 · 추방'],['members','문파원 명단'],['cfg','설정 · 콘텐츠'],['team','운영진 · 백업']];
+  const tabs=[['warn','경고 · 추방'],['members','문파원 명단'],['pay','지급 기록'],['cfg','설정 · 콘텐츠'],['team','운영진 · 백업']];
   const sub=`<div class="subtabs" role="tablist">${tabs.map(([k,l])=>`<button role="tab" data-action="atab" data-k="${k}" aria-selected="${S.atab===k}">${l}</button>`).join('')}</div>`;
-  const body=S.atab==='members'?renderMemberAdmin():S.atab==='cfg'?renderSettings():S.atab==='team'?`${renderAdmins()}<div class="two"><div class="col">${renderBackup()}</div>${renderDeleted()}</div>`:renderWarn();
+  const body=S.atab==='members'?renderMemberAdmin():S.atab==='pay'?renderPayLog():S.atab==='cfg'?renderSettings():S.atab==='team'?`${renderAdmins()}<div class="two"><div class="col">${renderBackup()}</div>${renderDeleted()}</div>`:renderWarn();
   return `<div class="col">${blockNote()}${sub}${body}</div>`;
 }
 function renderMemberAdmin(){
@@ -980,17 +980,68 @@ function renderSettle(){
     ${perf.length?`<div class="attn">${perf.map(r=>`<span class="who">${esc(r.m.name)}<span class="pill-perfect">개근</span></span>`).join('')}</div>`:'<p class="hint">이 달 개근자는 아직 없어요.</p>'}
     <div class="scroll"><table><thead><tr><th>순위 · 닉네임</th><th>포인트</th><th>출석률</th><th>참여 / 정규 회차</th><th>공지 면제</th><th>불참</th><th>추가 진행 참여</th></tr></thead><tbody>${rows||'<tr><td colspan="7" class="dash">기록 없음</td></tr>'}</tbody></table></div>
     ${notes([`<b>▲▼</b>는 지난달(${monLabel(prev.mon)})과 비교한 변화예요. 출석률은 %p 단위예요`,`<b>포인트</b> = 참여 1회당 ${activeContents().map(c=>esc(c.short)+' '+pts(c.k)).join(' · ')} · 추가 진행 ${pts('bonus')}`,'<b>개근</b> = 그 달 정규 회차를 모두 참여. 면제된 사전공지는 괜찮고, 체크 안 된 회차가 있으면 개근이 아니에요',adm?`<b>경고 기준</b>: ${critText()} · 정규 ${minJudge()}회 미만은 판정 보류`:''])}</div>`;
-  return `<div class="col">${head}${table}${adm?`${renderPay(ms)}<div class="two">${renderDist(ms)}${renderRewards(ms)}</div>`:''}</div>`;
+  return `<div class="col">${head}${table}${adm?`${renderPay(ms)}${renderDist(ms)}${rewardLink(ms)}`:''}</div>`;
 }
-function renderRewards(ms){
-  const list=S.rewards.filter(r=>r.month===ms.mon).sort((a,b)=>(b.at||0)-(a.at||0));
-  const items=list.map(r=>`<div class="it" style="flex-direction:column;align-items:flex-start;gap:4px">
-      <div class="row" style="width:100%"><b>${r.kind==='money'?`${esc(r.name)} · ${won(r.amount)}금전`:`${esc(r.name)} ${r.N}개`}</b><span class="hint">${r.kind==='money'?`금전 분배 · 금고 ${won(r.rest||0)}`:r.mode==='equal'?'균등':'포인트 비례'} · ${esc(r.by||'')} · ${r.at?hm(r.at):''}</span><span class="grow"></span>
+function rewardItem(r){
+  return `<div class="it" style="flex-direction:column;align-items:flex-start;gap:4px">
+      <div class="row" style="width:100%"><span class="tag">${monLabel(r.month)}</span><span class="tag${r.kind==='money'?' extra':''}">${r.kind==='money'?'금전':'아이템'}</span><b>${r.kind==='money'?`${esc(r.name)} · ${won(r.amount)}금전`:`${esc(r.name)} ${r.N}개`}</b><span class="hint">${r.kind==='money'?`분배 ${won(r.amount-(r.rest||0))} · 금고 ${won(r.rest||0)}`:r.mode==='equal'?'균등':'포인트 비례'} · ${esc(r.by||'')} · ${r.at?hm(r.at):''}</span><span class="grow"></span>
       <button class="btn small" data-action="copyReward" data-id="${esc(r.id)}">카톡용 복사</button>
-      ${S.isOwner?(S.confirm==='rw:'+r.id?`<button class="btn small danger" data-action="delReward" data-id="${esc(r.id)}">정말 삭제</button>`:`<button class="btn small" data-action="askDelR" data-id="${esc(r.id)}">삭제</button>`):''}</div>
-      <span class="hint">${r.kind==='money'?(r.items||[]).filter(x=>x.amt>0).map(x=>`${esc(x.name)} ${won(x.amt)}`).join(' · '):(r.items||[]).filter(x=>x.n>0).map(x=>`${esc(x.name)} ${x.n}`).join(' · ')}</span></div>`).join('');
-  return `<div class="panel"><h2>지급 기록</h2><p class="hint">분배 계산 결과를 저장하면 여기에 남아요. 운영진만 볼 수 있어요.</p>
-    ${list.length?`<div class="attnlist">${items}</div>`:'<p class="hint">이 달에 저장된 지급 기록이 없어요.</p>'}</div>`;
+      ${S.isOwner?(S.confirm==='rw:'+r.id?`<button class="btn small danger" data-action="delReward" data-id="${esc(r.id)}">정말 삭제</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small" data-action="askDelR" data-id="${esc(r.id)}">삭제</button>`):''}</div>
+      <span class="hint">${r.kind==='money'?(r.items||[]).filter(x=>x.amt>0).map(x=>`${esc(x.name)} ${won(x.amt)}`).join(' · '):(r.items||[]).filter(x=>x.n>0).map(x=>`${esc(x.name)} ${x.n}`).join(' · ')}</span></div>`;
+}
+function rewardLink(ms){
+  const n=S.rewards.filter(r=>r.month===ms.mon).length;
+  return `<div class="panel"><div class="spread"><h2>지급 기록</h2><button class="btn small primary" data-action="gotoPayLog" data-mon="${ms.mon}">지급 기록 보기</button></div>
+    <p class="hint">${n?`${monLabel(ms.mon)}에 저장된 지급 기록이 <b>${n}건</b> 있어요.`:`${monLabel(ms.mon)}에 저장된 지급 기록이 없어요.`} 모든 지급 기록은 <b>관리 → 지급 기록</b>에서 따로 볼 수 있어요.</p></div>`;
+}
+function payLogData(){
+  const F=S.rf,q=F.q.trim().toLowerCase();
+  const recs=S.rewards.filter(r=>(F.mon==='all'||r.month===F.mon)&&(F.kind==='all'||(F.kind==='money')===(r.kind==='money')));
+  const per=new Map();
+  for(const r of recs){const money=r.kind==='money';
+    for(const x of r.items||[]){const v=money?(x.amt||0):(x.n||0);if(!(v>0))continue;
+      const k=x.mid||('n:'+x.name);const cur=S.members.find(m=>m.id===x.mid);
+      const o=per.get(k)||{name:cur?cur.name:x.name,money:0,item:0,times:0,last:''};
+      if(money)o.money+=v;else o.item+=v;o.times++;if((r.month||'')>o.last)o.last=r.month||'';per.set(k,o)}}
+  const hit=r=>!q||String(r.name||'').toLowerCase().includes(q)||(r.items||[]).some(x=>String(x.name||'').toLowerCase().includes(q)&&((x.amt||0)>0||(x.n||0)>0));
+  const list=recs.filter(hit).sort((a,b)=>(b.month||'').localeCompare(a.month||'')||(b.at||0)-(a.at||0));
+  const people=[...per.values()].filter(o=>!q||o.name.toLowerCase().includes(q)).sort((a,b)=>b.money-a.money||b.item-a.item||nameCmp(a.name,b.name));
+  const M=recs.filter(r=>r.kind==='money');
+  return {recs,list,people,sold:M.reduce((t,r)=>t+(r.amount||0),0),vault:M.reduce((t,r)=>t+(r.rest||0),0),paid:M.reduce((t,r)=>t+(r.amount||0)-(r.rest||0),0),items:recs.filter(r=>r.kind!=='money').reduce((t,r)=>t+(r.N||0),0)};
+}
+function renderPayLog(){
+  const F=S.rf,D=payLogData();
+  const mons=[...new Set(S.rewards.map(r=>r.month).filter(Boolean))].sort().reverse();
+  if(F.mon!=='all'&&!mons.includes(F.mon))mons.unshift(F.mon);
+  const filt=`<div class="row">
+      <select data-action="rfMon" aria-label="달">${['all',...mons].map(m=>`<option value="${m}"${F.mon===m?' selected':''}>${m==='all'?'전체 기간':monLabel(m)}</option>`).join('')}</select>
+      <select data-action="rfKind" aria-label="종류">${[['all','전체 종류'],['money','금전 분배'],['item','아이템 분배']].map(([k,l])=>`<option value="${k}"${F.kind===k?' selected':''}>${l}</option>`).join('')}</select>
+      <input type="search" id="rfQ" data-keep="0" data-action="rfQ" value="${esc(F.q)}" placeholder="닉네임 또는 기록 이름 검색" style="flex:1 1 180px">
+      <button class="btn small" data-action="payLogCsv"${D.recs.length?'':' disabled'}>CSV 내보내기</button></div>`;
+  const tiles=`<div class="tiles">
+      <div class="tile"><span class="l">지급 기록</span><span class="v">${D.recs.length}건</span></div>
+      <div class="tile"><span class="l">문파원에게 나간 금전</span><span class="v">${won(D.paid)}</span></div>
+      <div class="tile"><span class="l">금고 적립 (자투리)</span><span class="v">${won(D.vault)}</span></div>
+      <div class="tile"><span class="l">아이템 지급</span><span class="v">${won(D.items)}개</span></div></div>`;
+  const hasM=D.people.some(o=>o.money),hasI=D.people.some(o=>o.item);
+  const ppl=D.people.length?`<div class="scroll"><table><thead><tr><th>닉네임</th>${hasM?'<th>받은 금전</th>':''}${hasI?'<th>받은 아이템</th>':''}<th>횟수</th><th>마지막 지급</th></tr></thead><tbody>${D.people.map(o=>`<tr><td>${esc(o.name)}</td>${hasM?`<td>${o.money?won(o.money):'–'}</td>`:''}${hasI?`<td>${o.item?o.item+'개':'–'}</td>`:''}<td>${o.times}회</td><td>${o.last?monLabel(o.last):''}</td></tr>`).join('')}</tbody></table></div>`:'<p class="hint">조건에 맞는 문파원이 없어요.</p>';
+  const recs=D.list.length?`<div class="attnlist">${D.list.map(rewardItem).join('')}</div>`:'<p class="hint">조건에 맞는 지급 기록이 없어요. 월간 정산 → 금전 분배 / 아이템 개수 분배에서 <b>지급 기록으로 저장</b>을 누르면 여기에 쌓여요.</p>';
+  return `<div class="col">
+    <div class="panel"><div class="spread"><h2>지급 기록</h2><span class="hint">운영진만 볼 수 있어요</span></div>${filt}
+      ${notes(['위에서 <b>달 · 종류 · 닉네임</b>을 골라 기록을 좁혀 볼 수 있어요','<b>문파원별 누적</b>은 고른 조건 안에서 각자 받은 금전과 아이템을 더한 값이에요','기록은 고칠 수 없어요. 잘못 저장했다면 문주가 지우고 다시 저장해 주세요'])}</div>
+    ${tiles}
+    <div class="two"><div class="panel"><h2>문파원별 누적</h2>${ppl}</div><div class="panel"><h2>기록 목록</h2>${recs}</div></div></div>`;
+}
+function payLogCsv(){
+  const D=payLogData(),c=v=>{v=String(v??'');return /[",\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+  const lines=[['달','종류','기록 이름','닉네임','포인트','비율(%)','금전','아이템 개수','저장한 사람','저장 시각'].join(',')];
+  for(const r of D.list){const money=r.kind==='money';
+    for(const x of r.items||[]){const v=money?(x.amt||0):(x.n||0);if(!(v>0))continue;
+      lines.push([r.month,money?'금전':'아이템',r.name,x.name,x.P??'',money?(x.pct??''):'',money?v:'',money?'':v,r.by||'',r.at?new Date(r.at).toLocaleString('ko-KR'):''].map(c).join(','))}
+    if(money&&r.rest)lines.push([r.month,'금전',r.name,'(문파 금고)','','',r.rest,'',r.by||'',r.at?new Date(r.at).toLocaleString('ko-KR'):''].map(c).join(','))}
+  try{const blob=new Blob(['﻿'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);a.download=`문파_지급기록_${S.rf.mon==='all'?'전체':S.rf.mon}_${todayStr()}.csv`;document.body.appendChild(a);a.click();
+    setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}catch(e){console.error(e);toast('파일을 만들지 못했어요')}
 }
 function rewardText(r){const g=S.config.guild?`[${S.config.guild} 문파] `:'';if(r.kind==='money')return payTextOf(r);return [`${g}${monLabel(r.month)} ${r.name} 지급 (총 ${r.N}개)`,'',...(r.items||[]).filter(x=>x.n>0).map(x=>`${x.name} ${x.n}개 (${x.P}점)`)].join('\n')}
 function monthText(ms){
@@ -1038,7 +1089,7 @@ function renderPay(ms){
       ${R.rows.length?`<div class="scroll"><table class="dist pay"><thead><tr><th>닉네임</th><th>포인트</th><th>출석률</th><th>비율</th><th>분배 금액</th></tr></thead><tbody>${R.rows.map(x=>`<tr><td>${esc(x.r.m.name)}</td><td>${x.r.P}</td><td>${pct(x.r.rate)}</td><td>${x.pct}%</td><td><b>${won(x.amt)}</b></td></tr>`).join('')}</tbody>
         <tfoot><tr><td>합계</td><td></td><td></td><td></td><td><b>${won(R.paid)}</b></td></tr></tfoot></table></div>`:'<p class="hint">분배 대상이 없어요. 기준을 확인해 주세요.</p>'}
       ${R.out.length?`<p class="hint"><b>분배 제외 ${R.out.length}명</b>: ${R.out.map(o=>`${esc(o.r.m.name)}(${esc(o.why)})`).join(', ')}</p>`:''}
-      ${P.saved?'<p class="hint"><b style="color:var(--good)">지급 기록으로 저장했어요.</b></p>':S.locks[P.mon]?'':'<p class="hint">이 달이 아직 마감 전이에요. 마감한 뒤 다시 계산해서 저장하는 걸 권해요.</p>'}
+      ${P.saved?`<p class="hint"><b style="color:var(--good)">지급 기록으로 저장했어요.</b> <button class="btn small" data-action="gotoPayLog" data-mon="${P.mon}">지급 기록 보기</button></p>`:S.locks[P.mon]?'':'<p class="hint">이 달이 아직 마감 전이에요. 마감한 뒤 다시 계산해서 저장하는 걸 권해요.</p>'}
       <div class="row">${P.saved?'':'<button class="btn small primary" data-action="savePay">지급 기록으로 저장</button>'}<button class="btn small" data-action="copyPay">카톡용 복사</button></div>`}
   return `<div class="panel"><div class="spread"><h2>금전 분배</h2><span class="hint">${monLabel(ms.mon)} 포인트 기준</span></div>
     <div class="cfg-stack">
@@ -1077,7 +1128,7 @@ function renderDist(ms){
     res=`<div class="scroll"><table class="dist"><thead><tr><th>닉네임</th><th>포인트</th><th>${esc(D.name)}</th></tr></thead><tbody>${D.items.map(x=>`<tr><td>${esc(x.r.m.name)}</td><td>${x.r.P}</td><td>${x.n}개</td></tr>`).join('')}</tbody></table></div>
       <p class="hint">총 ${D.N}개 · ${D.mode==='equal'?`${D.items.length}명 균등`:`포인트 합 ${D.tot}점 기준 비례 (1점당 ${(D.N/D.tot).toFixed(2)}개)`} · 나머지는 소수점이 큰 순서로 1개씩 더 줬어요</p>
       ${D.excluded.length?`<p class="hint">제외: ${D.excluded.map(r=>`${esc(r.m.name)}(${why(r)})`).join(', ')}</p>`:''}
-      ${D.saved?'<p class="hint"><b style="color:var(--good)">지급 기록으로 저장했어요.</b></p>':S.locks[D.mon]?'':'<p class="hint">이 달이 아직 마감 전이에요. 체크가 바뀌면 포인트도 바뀌니, 마감한 뒤 다시 계산해서 저장하는 걸 권해요.</p>'}
+      ${D.saved?`<p class="hint"><b style="color:var(--good)">지급 기록으로 저장했어요.</b> <button class="btn small" data-action="gotoPayLog" data-mon="${D.mon}">지급 기록 보기</button></p>`:S.locks[D.mon]?'':'<p class="hint">이 달이 아직 마감 전이에요. 체크가 바뀌면 포인트도 바뀌니, 마감한 뒤 다시 계산해서 저장하는 걸 권해요.</p>'}
       <div class="row">${D.saved?'':'<button class="btn small primary" data-action="saveReward">지급 기록으로 저장</button>'}<button class="btn small" data-action="copyDist">카톡용 복사</button></div>`}
   return `<div class="panel"><h2>아이템 개수 분배</h2>
     <p class="hint">아이템을 개수로 나눠 줄 때 써요. ${monLabel(ms.mon)} 포인트 기준이에요.</p>
@@ -1421,6 +1472,8 @@ document.addEventListener('click',e=>{
   if(a==='askRoleDel'){S.confirm='role:'+b.dataset.i;render();return}
   if(a==='roleDel'){const i=+b.dataset.i;S.confirm=null;if(ROLES.length<=1)return;const gone=ROLES[i];const list=ROLES.filter((_,k)=>k!==i);const to=list[list.length-1];
     const moves={};S.members.forEach(m=>{if(m.role===gone)moves[m.id]=to});saveRoles(list,moves,`${gone} 직위를 지웠어요`+(Object.keys(moves).length?` (${Object.keys(moves).length}명은 ${to}로 바뀜)`:''));return}
+  if(a==='gotoPayLog'){S.rf={mon:b.dataset.mon||'all',kind:'all',q:''};S.tab='admin';S.atab='pay';remember('tab','admin');remember('atab','pay');S.confirm=null;S.selMode=false;S.sel=new Set();render();window.scrollTo({top:0});return}
+  if(a==='payLogCsv'){payLogCsv();return}
   if(a==='atab'){S.atab=b.dataset.k;remember('atab',S.atab);S.confirm=null;render();return}
   if(a==='gotoMembers'){S.tab='admin';S.atab='members';remember('tab','admin');remember('atab','members');render();window.scrollTo({top:0});return}
   if(a==='gotoWarn'){S.tab='admin';S.atab='warn';remember('tab','admin');remember('atab','warn');render();window.scrollTo({top:0});return}
@@ -1489,6 +1542,7 @@ document.addEventListener('input',e=>{
   if(a==='search'){S.search=t.value;render()}
   else if(a==='mSearch'){S.mSearch=t.value;render()}
   else if(a==='ssearch'){S.ssearch=t.value;render()}
+  else if(a==='rfQ'){S.rf.q=t.value;render()}
 });
 document.addEventListener('change',e=>{
   const t=e.target,a=t.dataset&&t.dataset.action;if(!a)return;
@@ -1497,6 +1551,8 @@ document.addEventListener('change',e=>{
   else if(a==='me'){S.me=t.value;remember('me',S.me);render()}
   else if(a==='month'){S.month=t.value;S.dist=null;S.pay=null;render()}
   else if(a==='wmonth'){S.wmonth=t.value;render()}
+  else if(a==='rfMon'){S.rf.mon=t.value;S.confirm=null;render()}
+  else if(a==='rfKind'){S.rf.kind=t.value;render()}
   else if(a==='ssort'){S.ssort=t.value;render()}
   else if(a==='nsort'){S.nsort=t.value;remember('nsort',S.nsort);render()}
   else if(a==='join'){guard(()=>S.db.doc('members/'+t.dataset.mid).update({joinedAt:t.value||''}),t.value?'가입일을 저장했어요':'가입일을 지웠어요')}
