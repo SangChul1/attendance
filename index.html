@@ -242,6 +242,12 @@ input[type=date].mini{padding:5px 8px;font-size:14px}
 @media (max-width:600px){.role-row{grid-template-columns:2em minmax(0,1fr)}.role-row .meta{grid-column:2}}
 div.f{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
 .ct-card input[type=text],.ct-card input[type=number]{background:var(--surface)}
+.sitem.sel{gap:8px}
+.sitem.sel.on{background:var(--seal-soft);border-color:var(--seal)}
+.sitem.sel:disabled{opacity:.5;cursor:not-allowed}
+.cbx{width:18px;height:18px;border:2px solid var(--line);border-radius:4px;flex:none;display:inline-grid;place-items:center;background:var(--surface)}
+.cbx.on{background:var(--seal);border-color:var(--seal)}
+.cbx.on::after{content:"";width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)}
 .readonly-note{font-size:14px;color:var(--muted);background:var(--sunken);border:1px dashed var(--line);border-radius:8px;padding:8px 12px}
 @media (prefers-reduced-motion:no-preference){.sitem,.btn,.seg button{transition:background-color .12s,border-color .12s,color .12s}}
 </style>
@@ -325,7 +331,7 @@ const roleIdx=r=>{const i=ROLES.indexOf(r);return i<0?ROLES.length:i};
 const DAYS=['일','월','화','수','목','금','토'];
 const CFG0={guild:'',weekStart:1,streak:3,points:{singi:1,mihok:1,rank:1,bonus:1}};
 
-const S={db:null,fs:null,auth:null,authUser:null,myNick:'',isOwner:false,admins:[],ready:false,err:false,setup:false,canWrite:false,older:[],olderRange:null,olderLoading:false,cutoff:'',me:'',month:'',imp:null,stab:'sum',ssort:'rate',ssearch:'',warnings:[],warnBlocked:false,logBlocked:false,wmonth:'',dist:null,hist:null,delLogs:null,atab:'warn',nsort:'role',notes:{},locks:{},rewards:[],leaveFor:null,noteFor:null,cdraft:null,
+const S={db:null,fs:null,auth:null,authUser:null,myNick:'',isOwner:false,admins:[],ready:false,err:false,setup:false,canWrite:false,older:[],olderRange:null,olderLoading:false,cutoff:'',me:'',month:'',imp:null,stab:'sum',ssort:'rate',ssearch:'',warnings:[],warnBlocked:false,logBlocked:false,wmonth:'',dist:null,hist:null,delLogs:null,atab:'warn',nsort:'role',notes:{},locks:{},rewards:[],leaveFor:null,noteFor:null,cdraft:null,selMode:false,sel:new Set(),
   members:[],sessions:[],config:{...CFG0},
   tab:'check',openSid:null,editSid:null,period:'4',cfilter:'all',demo:false,confirm:null,showOff:false,
   search:'',onlyUnchecked:false,mSearch:''};
@@ -399,7 +405,15 @@ const onLeave=(m,d)=>!!m&&Array.isArray(m.leaves)&&m.leaves.some(l=>l&&l.from&&d
 const eligible=(m,s)=>!m||((!m.joinedAt||s.date>=m.joinedAt)&&!onLeave(m,s.date));
 const isLocked=d=>!!S.locks[String(d).slice(0,7)];
 function pts(k){const p=S.config.points;const v=p&&p[k];return typeof v==='number'&&v>=0?v:1}
-function todayItems(){const d=dow(gameDay()),out=[];for(const c of activeContents()){if(c.days.includes(d))out.push({k:c.k,extra:false});else if(c.extraDays.includes(d))out.push({k:c.k,extra:true})}return out}
+function extraCfg(){
+  const e=S.demo?null:S.config.extra;const okDays=a=>[...new Set((Array.isArray(a)?a:[]).filter(d=>Number.isInteger(d)&&d>=0&&d<=6))].sort();
+  if(e&&CMAP[e.content])return {days:okDays(e.days),content:e.content};
+  const c=CONTENTS.find(x=>x.extraDays.length);if(c)return {days:c.extraDays,content:c.k};
+  return {days:[2],content:CMAP.rank?'rank':CONTENTS[0].k};
+}
+function extraText(){const e=extraCfg();return `${e.days.length?'매주 '+e.days.map(i=>DAYS[i]).join('·')+'요일':'요일 미정'} · ${esc(CMAP[e.content]?.name||'')} · 참여 1회당 ${pts('bonus')}점`}
+function lastExtraDate(){const e=extraCfg(),t=gameDay();if(!e.days.length)return t;for(let i=0;i<7;i++){const d=addDays(t,-i);if(e.days.includes(dow(d)))return d}return t}
+function todayItems(){const d=dow(gameDay()),out=[];for(const c of activeContents()){if(c.days.includes(d))out.push({k:c.k,extra:false})}return out}
 function weeklyDone(k){const c=CMAP[k];if(!c||!c.weekly)return null;const t=gameDay(),ws=weekStart(t);return S.sessions.find(s=>s.content===k&&!s.extra&&s.date>=ws&&s.date<t)||null}
 function findAny(date,k,extra){return allSessions().find(s=>s.date===date&&s.content===k&&!!s.extra===!!extra)}
 function countSession(s,mid){let o=0,e=0,x=0;for(const [id,m] of mid){if(!eligible(m,s))continue;const v=effOf(s,id);if(v==='O')o++;else if(v==='E')e++;else if(v==='X'||v==='XA')x++}return {o,e,x}}
@@ -461,23 +475,33 @@ function renderCheck(){
       ${items.length?`<div class="quick">${items.map(it=>{const c=CMAP[it.k];const ex=findSession(today,it.k,it.extra);const wd=!it.extra&&!ex&&weeklyDone(it.k);
         return `<button ${ck(it.k)} data-action="quick" data-k="${it.k}" data-extra="${it.extra?1:0}"><span class="qn">${esc(c.name)}${it.extra?' · 추가 진행':''}</span><span class="qs">${ex?'기록 열기':wd?`이번 주 ${mdd(wd.date)}에 진행함 · 열기`:'새 회차 만들기'} · ${it.extra?'정규 아님, 보너스 포인트':esc(schedText(c))}</span></button>`}).join('')}</div>`:'<p class="hint">오늘은 진행 일정이 없어요. 다른 날짜는 아래에서 직접 만들 수 있어요.</p>'}
       ${pend.length>1?`<button class="btn primary" data-action="quickAll">오늘 회차 ${pend.length}개 한 번에 만들기</button>`:''}
-      <details><summary class="hint" style="cursor:pointer">다른 날짜로 회차 만들기</summary>
+      <details><summary class="hint" style="cursor:pointer">다른 날짜로 정규 회차 만들기</summary>
         <div class="formgrid" style="margin-top:10px">
           <label class="f">날짜<input type="date" id="nDate" value="${today}"></label>
           <label class="f">콘텐츠<select id="nContent">${activeContents().map(c=>`<option value="${c.k}">${esc(c.name)}</option>`).join('')}</select></label>
-          <label class="full chk"><input type="checkbox" id="nExtra"> 추가 진행 회차 (순위 보강 등, 출석률에 안 들어가고 보너스 포인트만)</label>
           <button class="btn primary full" data-action="create">회차 만들기</button>
         </div>
       </details>
     </div>`:'';
+  const ex=extraCfg(),exDate=lastExtraDate(),exHas=findAny(exDate,ex.content,true);
+  const extraP=S.canWrite?`<div class="panel"><div class="spread"><h2>추가 진행</h2><span class="hint">${extraText()}</span></div>
+      <div class="row"><label class="f" style="flex:1 1 150px">날짜<input type="date" id="xDate" value="${exDate}"></label>
+        <label class="f" style="flex:1 1 150px">콘텐츠<select id="xContent">${activeContents().map(c=>`<option value="${c.k}"${c.k===ex.content?' selected':''}>${esc(c.name)}</option>`).join('')}</select></label></div>
+      <button class="btn primary" data-action="createExtra">${exHas&&exDate===gameDay()?'오늘 추가 진행 회차 열기':'추가 진행 회차 만들기'}</button>
+      ${notes(['순위 보강으로 더 진행한 회차예요. 날짜는 가장 최근 진행 요일로 미리 채워져요','출석률·개근·경고에는 들어가지 않고, 참여하면 <b>추가 진행 포인트</b>만 붙어요','같은 날짜·콘텐츠의 추가 진행 회차가 이미 있으면 새로 만들지 않고 그 회차를 열어요'])}</div>`:'';
   let list='';
   if(!sessions.length) list='<div class="empty"><h3>아직 기록된 회차가 없어요</h3><p class="hint">위에서 오늘 진행한 콘텐츠를 누르면 회차가 만들어지고 바로 체크할 수 있어요.</p></div>';
   else{let last='';const mid=new Map(members.map(m=>[m.id,m]));const dk={};S.sessions.forEach(x=>{const k=sessId(x.date,x.content,x.extra);dk[k]=(dk[k]||0)+1});for(const s of sessions.slice(0,80)){
     if(s.date!==last){last=s.date;list+=`<div class="sday num">${mdd(s.date)}</div>`}
     const c=countSession(s,mid);
-    list+=`<button class="sitem" data-action="open" data-sid="${s.id}" aria-current="${S.openSid===s.id}"><span class="chip" ${ck(s.content)}>${esc(CMAP[s.content]?.name||s.content)}</span>${s.extra?'<span class="tag extra">추가</span>':''}${s.rank?`<span class="tag rank">${esc(s.rank)}</span>`:''}${isLocked(s.date)?'<span class="tag">마감</span>':''}${dk[sessId(s.date,s.content,s.extra)]>1?'<span class="tag dup" title="같은 날짜·콘텐츠 회차가 여러 개예요. 하나를 지워 주세요">중복</span>':''}<span class="cnt num">참여 ${c.o}/${members.filter(m=>eligible(m,s)).length}</span></button>`}}
-  return `${roNote()}${blockNote()}<div class="check-grid"><div class="col">${quick}
-    <div class="panel"><h2>회차 기록</h2><div class="slist">${list}</div></div></div>
+    const lkS=isLocked(s.date),on=S.sel.has(s.id);
+    list+=S.selMode?`<button class="sitem sel${on?' on':''}" data-action="selToggle" data-sid="${s.id}" aria-pressed="${on}"${lkS?' disabled title="마감된 달의 회차는 지울 수 없어요"':''}><span class="cbx${on?' on':''}" aria-hidden="true"></span><span class="chip" ${ck(s.content)}>${esc(CMAP[s.content]?.name||s.content)}</span>${s.extra?'<span class="tag extra">추가</span>':''}${lkS?'<span class="tag">마감</span>':''}<span class="cnt num">참여 ${c.o}/${members.filter(m=>eligible(m,s)).length}</span></button>`:`<button class="sitem" data-action="open" data-sid="${s.id}" aria-current="${S.openSid===s.id}"><span class="chip" ${ck(s.content)}>${esc(CMAP[s.content]?.name||s.content)}</span>${s.extra?'<span class="tag extra">추가</span>':''}${s.rank?`<span class="tag rank">${esc(s.rank)}</span>`:''}${isLocked(s.date)?'<span class="tag">마감</span>':''}${dk[sessId(s.date,s.content,s.extra)]>1?'<span class="tag dup" title="같은 날짜·콘텐츠 회차가 여러 개예요. 하나를 지워 주세요">중복</span>':''}<span class="cnt num">참여 ${c.o}/${members.filter(m=>eligible(m,s)).length}</span></button>`}}
+  const selN=S.sel.size;
+  const selBar=S.selMode?`<p class="hint">지울 회차를 눌러 체크하세요. 마감된 달의 회차는 고를 수 없어요.</p><div class="lockbar"><b>${selN}개 선택</b><span class="grow"></span><button class="btn small" data-action="selAll">보이는 회차 모두 선택</button><button class="btn small" data-action="selNone"${selN?'':' disabled'}>선택 해제</button></div>
+    ${S.confirm==='bulkDel'?`<div class="confirm">선택한 ${selN}개 회차와 체크 기록을 지울까요? 지운 회차는 관리 → 운영진 · 백업의 '삭제된 회차'에서 되살릴 수 있어요. <button class="btn small danger" data-action="bulkDelYes">삭제</button><button class="btn small" data-action="cancel">취소</button></div>`
+      :`<div class="row"><button class="btn small danger" data-action="bulkDelAsk"${selN?'':' disabled'}>선택한 ${selN}개 삭제</button><button class="btn small" data-action="selExit">취소</button></div>`}`:'';
+  return `${roNote()}${blockNote()}<div class="check-grid"><div class="col">${quick}${extraP}
+    <div class="panel"><div class="spread"><h2>회차 기록</h2>${S.canWrite&&sessions.length&&!S.selMode?'<button class="btn small" data-action="selMode">삭제</button>':''}</div>${selBar}<div class="slist">${list}</div></div></div>
     <div class="col" id="sheetCol">${renderSheet(members)}</div></div>`;
 }
 function findSession(date,k,extra){return S.sessions.find(s=>s.date===date&&s.content===k&&!!s.extra===!!extra)}
@@ -603,7 +627,7 @@ function computeStats(opt){
     W.n++;W.o+=c.o;W.x+=c.x;const B=W.byC[s.content]??={n:0,o:0};B.n++;B.o+=c.o}
   const weeks=Object.values(wk).sort((a,b)=>a.w<b.w?-1:1);
   const dc={};
-  for(const s of sessions){const cc=CMAP[s.content];if(!cc||(cc.days.length<2&&!cc.extraDays.length))continue;const key=isBonus(s)?'추가':String(dow(s.date));const c=countSession(s,mid);
+  const exK=extraCfg().content;for(const s of sessions){const cc=CMAP[s.content];if(!cc||(cc.days.length<2&&s.content!==exK))continue;const key=isBonus(s)?'추가':String(dow(s.date));const c=countSession(s,mid);
     const D=dc[s.content]??={};const C=D[key]??={n:0,o:0,x:0};C.n++;C.o+=c.o;C.x+=c.x}
   return {members,rows,scoped,sessionsN:scoped.length,regN:scoped.filter(s=>!isBonus(s)).length,avg:rateOf(tO,tX),attn:rows.filter(r=>r.low||r.streakHit),weeks,dc,th,sk,mj};
 }
@@ -822,7 +846,7 @@ function renderSettings(){
 }
 function renderContentEditor(){
   const list=S.cdraft||CONTENTS.map(c=>({...c,pts:pts(c.k)}));
-  const bonus=S.cbonus??pts('bonus');
+  const bonus=S.cbonus??pts('bonus');const exc=S.cextra||extraCfg();
   const dayBoxes=(i,pre,sel)=>`<div class="daypick">${DAYS.map((d,di)=>`<label><input type="checkbox" id="ct-${i}-${pre}${di}"${sel.includes(di)?' checked':''}>${d}</label>`).join('')}</div>`;
   const cards=list.map((c,i)=>`<div class="ct-card${c.on?'':' off'}" style="--cc:var(--k${c.color%8})">
     <div class="ct-head"><span class="sw"></span><b>${esc(c.name||'새 콘텐츠')}</b>${c.on?'':'<span class="tag">숨김</span>'}<span class="grow"></span><label class="chk"><input type="checkbox" id="ct-${i}-on"${c.on?' checked':''}> 사용</label></div>
@@ -831,28 +855,29 @@ function renderContentEditor(){
       <label class="f">줄임말 (표 머리)<input type="text" id="ct-${i}-short" maxlength="8" value="${esc(c.short)}"></label>
       <label class="f">시간 · 메모<input type="text" id="ct-${i}-time" maxlength="24" value="${esc(c.time||'')}" placeholder="예: 20:00–21:00"></label>
       <label class="f">참여 1회당 포인트<input type="number" id="ct-${i}-pts" min="0" max="100" step="1" value="${c.pts??1}"></label></div>
-    <div class="ct-days">
-      <div class="f"><span class="hint">정규 진행 요일</span>${dayBoxes(i,'d',c.days)}</div>
-      <div class="f"><span class="hint">추가 진행 요일</span>${dayBoxes(i,'x',c.extraDays)}</div></div>
+    <div class="f"><span class="hint">정규 진행 요일</span>${dayBoxes(i,'d',c.days)}</div>
     <div class="ct-opts">
       <label class="chk"><input type="checkbox" id="ct-${i}-main"${c.main?' checked':''}> 메인 콘텐츠</label>
       <label class="chk"><input type="checkbox" id="ct-${i}-weekly"${c.weekly?' checked':''}> 정규 요일 중 주 1회만 진행</label></div>
     </div>`).join('');
   return `<div class="panel"><div class="spread"><h2>콘텐츠 · 포인트</h2><div class="row"><button class="btn small" data-action="ctAdd">콘텐츠 추가</button>${S.cdraft?'<button class="btn small" data-action="ctCancel">취소</button>':''}<button class="btn primary" data-action="ctSave">콘텐츠 저장</button></div></div>
     <div class="cfg-stack">
-      <div class="cfg-group"><h3>공통 포인트</h3><div class="fg2">
-        <label class="f">추가 진행 참여 1회당 포인트<input type="number" id="ctBonus" min="0" max="100" step="1" value="${bonus}"></label>
-        <div class="f"><span class="hint">현재 포인트</span><span style="font-size:15px">${activeContents().map(c=>esc(c.short)+' '+pts(c.k)).join(' · ')} · 추가 진행 ${pts('bonus')}</span></div></div></div>
+      <div class="cfg-group"><h3>추가 진행 포인트</h3><div class="fg2">
+        <label class="f">참여 1회당 포인트<input type="number" id="ctBonus" min="0" max="100" step="1" value="${bonus}"></label>
+        <label class="f">추가 진행 콘텐츠<select id="xcContent">${(S.cdraft||CONTENTS).filter(c=>c.on&&c.name).map(c=>`<option value="${c.k}"${c.k===exc.content?' selected':''}>${esc(c.name)}</option>`).join('')}</select></label>
+        <div class="f" style="grid-column:1/-1"><span class="hint">진행 요일</span><div class="daypick">${DAYS.map((d,di)=>`<label><input type="checkbox" id="xc-d${di}"${exc.days.includes(di)?' checked':''}>${d}</label>`).join('')}</div></div></div>
+        ${notes(['순위 보강처럼 정규 일정 밖에서 더 진행한 회차의 설정이에요. 출석 체크 탭의 <b>추가 진행</b> 칸에서 회차를 만들어요','추가 진행 회차는 출석률·개근·경고에 들어가지 않고, 참여하면 이 점수만 붙어요','진행 요일은 추가 진행 칸의 날짜를 미리 채우는 데 쓰여요'])}</div>
       ${cards}
-      ${notes(['<b>정규 진행 요일</b>에 그 콘텐츠의 ‘오늘 회차’ 버튼이 떠요','<b>추가 진행 요일</b>(예: 화요일 순위 보강)은 출석률에서 빠지고 공통 포인트의 추가 진행 점수만 붙어요','<b>메인 콘텐츠</b>는 메인 출석률에 들어가요. <b>주 1회만 진행</b>을 켜면 그 주에 이미 했을 때 다른 요일 버튼이 그 회차를 열어요','새 콘텐츠는 <b>콘텐츠 추가</b>로 넣고, 더 이상 안 하는 콘텐츠는 지우지 말고 <b>사용</b>을 꺼 주세요. 지난 기록은 통계에 그대로 남아요','바꾼 뒤에는 꼭 <b>콘텐츠 저장</b>을 눌러 주세요'])}
+      ${notes(['<b>정규 진행 요일</b>에 그 콘텐츠의 ‘오늘 회차’ 버튼이 떠요','<b>메인 콘텐츠</b>는 메인 출석률에 들어가요. <b>주 1회만 진행</b>을 켜면 그 주에 이미 했을 때 다른 요일 버튼이 그 회차를 열어요','새 콘텐츠는 <b>콘텐츠 추가</b>로 넣고, 더 이상 안 하는 콘텐츠는 지우지 말고 <b>사용</b>을 꺼 주세요. 지난 기록은 통계에 그대로 남아요','바꾼 뒤에는 꼭 <b>콘텐츠 저장</b>을 눌러 주세요'])}
     </div></div>`;
 }
+function readExtraForm(){const days=[];for(let d=0;d<7;d++){if($('#xc-d'+d)?.checked)days.push(d)}return {days,content:$('#xcContent')?.value||extraCfg().content}}
 function readContentForm(){
   const list=S.cdraft||CONTENTS.map(c=>({...c,pts:pts(c.k)}));
   return list.map((c,i)=>{const g=id=>document.getElementById(`ct-${i}-${id}`);if(!g('name'))return c;
-    const days=[],ex=[];for(let d=0;d<7;d++){if(g('d'+d)?.checked)days.push(d);if(g('x'+d)?.checked)ex.push(d)}
+    const days=[];for(let d=0;d<7;d++){if(g('d'+d)?.checked)days.push(d)}
     const p=Math.round(+g('pts').value);
-    return {...c,name:g('name').value.trim().slice(0,20),short:g('short').value.trim().slice(0,8),time:g('time').value.trim().slice(0,24),pts:p>=0&&p<=100?p:1,days,extraDays:ex.filter(d=>!days.includes(d)),main:g('main').checked,weekly:g('weekly').checked,on:g('on').checked}});
+    return {...c,name:g('name').value.trim().slice(0,20),short:g('short').value.trim().slice(0,8),time:g('time').value.trim().slice(0,24),pts:p>=0&&p<=100?p:1,days,extraDays:[],main:g('main').checked,weekly:g('weekly').checked,on:g('on').checked}});
 }
 function renderBackup(){
   return `<div class="panel"><h2>백업 내보내기</h2>${notes(['전체 기간의 출석 기록을 엑셀에서 열 수 있는 CSV 파일로 받아요','한 달에 한 번쯤 받아 두면 아래 <b>CSV 가져오기</b>로 복원할 수 있어요'])}
@@ -882,6 +907,16 @@ async function saveRoles(list,moves,msg){
     for(const mid in moves)await S.db.doc('members/'+mid).update({role:moves[mid]})},msg);
 }
 function cfgBase(){const c={...S.config};delete c.threshold;delete c.excuse;return c}
+async function deleteMany(ids){
+  const list=ids.map(id=>S.sessions.find(x=>x.id===id)).filter(x=>x&&!isLocked(x.date));
+  if(!list.length){toast('지울 수 있는 회차가 없어요');return}
+  let n=0;
+  const ok=await guard(async()=>{for(const s of list){const {id,...d}=s;
+    await writeLog({type:'delete',sid:id,date:s.date,content:s.content,extra:!!s.extra,data:{date:d.date,content:d.content,extra:!!d.extra,marks:d.marks||{},marksBy:d.marksBy||{},note:d.note||'',rank:d.rank||'',createdAt:d.createdAt||0,createdBy:d.createdBy||''}});
+    await S.db.doc('sessions/'+id).delete();n++;if(S.openSid===id)S.openSid=null;if(S.hist&&S.hist.sid===id)S.hist=null}});
+  S.selMode=false;S.sel=new Set();S.delLogs=null;render();
+  if(ok)toast(`${n}개 회차를 지웠어요`);else if(n)toast(`${n}개만 지웠어요. 나머지는 다시 시도해 주세요`);
+}
 /* ---------- 오늘 회차 한 번에 ---------- */
 async function createToday(){
   const t=gameDay();let first=null,made=0;
@@ -1239,12 +1274,20 @@ function exportCsv(){
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-action]');if(!b||b.disabled)return;const a=b.dataset.action;
   if(b.tagName==='SELECT'||b.tagName==='INPUT'||b.tagName==='TEXTAREA')return;
-  if(a==='tab'){S.tab=b.dataset.tab;remember('tab',S.tab);S.confirm=null;render();window.scrollTo({top:0});return}
+  if(a==='tab'){S.tab=b.dataset.tab;remember('tab',S.tab);S.confirm=null;S.selMode=false;S.sel=new Set();render();window.scrollTo({top:0});return}
   if(a==='open'){S.openSid=b.dataset.sid;S.confirm=null;S.editSid=null;S.search='';if(S.hist&&S.hist.sid!==S.openSid)S.hist=null;render();scrollSheet();return}
   if(a==='quick'){const extra=b.dataset.extra==='1',k=b.dataset.k;const wr=!extra&&weeklyDone(k);
     if(wr&&!findSession(gameDay(),k,false)){S.openSid=wr.id;S.editSid=null;render();scrollSheet();toast(`이번 주 ${mdd(wr.date)} 회차를 열었어요`);return}
     createSession(gameDay(),k,extra);return}
-  if(a==='create'){const d=$('#nDate').value;if(!d){toast('날짜를 골라 주세요');return}createSession(d,$('#nContent').value,$('#nExtra').checked);return}
+  if(a==='create'){const d=$('#nDate').value;if(!d){toast('날짜를 골라 주세요');return}createSession(d,$('#nContent').value,false);return}
+  if(a==='createExtra'){const d=$('#xDate').value;if(!d){toast('날짜를 골라 주세요');return}createSession(d,$('#xContent').value,true);return}
+  if(a==='selMode'){S.selMode=true;S.sel=new Set();S.confirm=null;render();return}
+  if(a==='selExit'){S.selMode=false;S.sel=new Set();S.confirm=null;render();return}
+  if(a==='selToggle'){const id=b.dataset.sid;if(S.sel.has(id))S.sel.delete(id);else S.sel.add(id);S.confirm=null;render();return}
+  if(a==='selAll'){[...S.sessions].sort(sessionSort).slice(0,80).forEach(x=>{if(!isLocked(x.date))S.sel.add(x.id)});render();return}
+  if(a==='selNone'){S.sel=new Set();S.confirm=null;render();return}
+  if(a==='bulkDelAsk'){if(S.sel.size){S.confirm='bulkDel';render()}return}
+  if(a==='bulkDelYes'){S.confirm=null;deleteMany([...S.sel]);return}
   if(a==='mark'){const s=S.sessions.find(x=>x.id===b.dataset.sid);if(!s||isLocked(s.date))return;const cur=marksOf(s)[b.dataset.mid]||null;queueMark(s.id,b.dataset.mid,cur===b.dataset.v?null:b.dataset.v);return}
   if(a==='bulk'){const s=S.sessions.find(x=>x.id===b.dataset.sid);if(!s||isLocked(s.date))return;const mk=marksOf(s);activeMembers(S.members).forEach(m=>{if(eligible(m,s)&&!validMark(mk[m.id]))(pending[s.id]??={})[m.id]=b.dataset.v});render();clearTimeout(flushTimer);flushTimer=setTimeout(flush,100);return}
   if(a==='bulkAll'||a==='bulkAllYes'){const s=S.sessions.find(x=>x.id===b.dataset.sid);if(!s||isLocked(s.date))return;const v=b.dataset.v;const mk=marksOf(s);
@@ -1330,16 +1373,17 @@ document.addEventListener('click',e=>{
   if(a==='delReward'){const id=b.dataset.id;S.confirm=null;guard(()=>S.db.doc('rewards/'+id).delete(),'지급 기록을 지웠어요');return}
   if(a==='notice'){const w=S.warnings.find(x=>x.id===b.dataset.id);if(w)copyText(noticeText(w),'안내문을 복사했어요. 개인 카톡에 붙여 넣으세요');return}
   if(a==='exportAll'){exportAll();return}
-  if(a==='ctAdd'){const list=readContentForm();{const v=Math.round(+$('#ctBonus').value);S.cbonus=v>=0&&v<=100?v:null}const used=new Set(list.map(c=>c.color));let col=0;while(used.has(col)&&col<7)col++;
+  if(a==='ctAdd'){const list=readContentForm();{const v=Math.round(+$('#ctBonus').value);S.cbonus=v>=0&&v<=100?v:null}S.cextra=readExtraForm();const used=new Set(list.map(c=>c.color));let col=0;while(used.has(col)&&col<7)col++;
     list.push({k:'c'+Date.now().toString(36),name:'',short:'',main:false,days:[],extraDays:[],weekly:false,time:'',color:col,on:true,pts:1});S.cdraft=list;render();return}
-  if(a==='ctCancel'){S.cdraft=null;S.cbonus=null;render();return}
+  if(a==='ctCancel'){S.cdraft=null;S.cbonus=null;S.cextra=null;render();return}
   if(a==='ctSave'){const list=readContentForm();
     for(const c of list){if(!c.name){toast('이름이 빈 콘텐츠가 있어요');S.cdraft=list;render();return}if(!c.short)c.short=c.name.slice(0,4)}
     const shorts=list.map(c=>c.short);if(new Set(shorts).size!==shorts.length){toast('줄임말이 겹치는 콘텐츠가 있어요');S.cdraft=list;render();return}
     if(!list.some(c=>c.on)){toast('사용 중인 콘텐츠가 하나는 있어야 해요');S.cdraft=list;render();return}
     const points={...(S.config.points||{})};list.forEach(c=>{points[c.k]=c.pts});{const v=Math.round(+$('#ctBonus').value);points.bonus=v>=0&&v<=100?v:1}
-    const contents=list.map(({pts,...c})=>c);
-    guard(async()=>{await S.db.doc('config/main').set({...cfgBase(),contents,points,updatedBy:myName(),updatedAt:Date.now()});S.cdraft=null;S.cbonus=null;render()},'콘텐츠를 저장했어요');return}
+    const contents=list.map(({pts,...c})=>c);const extra=readExtraForm();
+    if(!list.some(c=>c.k===extra.content&&c.on))extra.content=(list.find(c=>c.on)||list[0]).k;
+    guard(async()=>{await S.db.doc('config/main').set({...cfgBase(),contents,points,extra,updatedBy:myName(),updatedAt:Date.now()});S.cdraft=null;S.cbonus=null;S.cextra=null;render()},'콘텐츠를 저장했어요');return}
   if(a==='hist'){const sid=b.dataset.sid;if(S.hist&&S.hist.sid===sid){S.hist=null;render()}else loadHist(sid);return}
   if(a==='calcDist'){calcDist();return}
   if(a==='copyDist'){copyText(distText());return}
