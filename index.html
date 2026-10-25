@@ -6,7 +6,8 @@
 <title>도깨비 문파 출석부</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Song+Myung&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Song+Myung&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
 /* Layout: 상단 문파 헤더 + 탭 3개(출석 체크 / 통계 / 문파원·설정). 체크 탭은 회차 목록 | 체크리스트 2열, 모바일은 1열 */
 :root{
@@ -16,8 +17,9 @@
   --c-yosin:#2a776c; --c-gyeol:#3a5a9a; --c-singi:#9c6f22; --c-mihok:#874682;
   --k0:#9c6f22; --k1:#874682; --k2:#2a776c; --k3:#3a5a9a; --k4:#a2462f; --k5:#5b6b1f; --k6:#2f6f93; --k7:#6b5d4f;
   --scrim:rgba(10,20,22,.45);
-  --f-display:"Song Myung","Nanum Myeongjo","Batang",serif;
-  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --f-seal:"Song Myung","Nanum Myeongjo","Batang",serif;
+  --f-display:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --f-body:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
   --r:10px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
@@ -34,7 +36,7 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);letter-spacing:-.005em;font-size:16px;line-height:1.55;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
 .wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -45,8 +47,8 @@ button{cursor:pointer}
 header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 20px}
 .brand{display:flex;align-items:center;gap:14px}
 .seal{width:46px;height:46px;flex:none;border-radius:8px;background:var(--seal);color:#fff;display:grid;place-items:center;
-  font-family:var(--f-display);font-size:24px;line-height:1;transform:rotate(-4deg)}
-.brand h1{font-family:var(--f-display);font-weight:400;font-size:clamp(24px,4vw,32px);margin:0;line-height:1.15;text-wrap:balance}
+  font-family:var(--f-seal);font-size:24px;line-height:1;transform:rotate(-4deg)}
+.brand h1{font-family:var(--f-display);font-weight:700;letter-spacing:-.02em;font-size:clamp(24px,4vw,32px);margin:0;line-height:1.15;text-wrap:balance}
 .brand .sub{color:var(--muted);font-size:14px}
 .sync{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
@@ -59,7 +61,7 @@ nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(-
 
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
 .col{display:flex;flex-direction:column;gap:20px;min-width:0}
-h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0;line-height:1.3}
+h2{font-family:var(--f-display);font-weight:700;letter-spacing:-.015em;font-size:21px;margin:0;line-height:1.3}
 h3{font-size:15px;margin:0;font-weight:600}
 .hint{color:var(--muted);font-size:14px;margin:0}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
@@ -96,6 +98,8 @@ label.chk{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:va
 .wk-d b{font-size:16px;color:var(--ink)}
 .wkcol.today .wk-d b{color:var(--accent)}
 .wkcol .slot{flex:0 0 auto}
+.slot .qn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xb{display:inline-block;font-size:11px;font-weight:600;padding:0 5px;border-radius:4px;background:var(--warn-soft);color:var(--warn);vertical-align:1px}
 @media (max-width:900px){.wkcol{padding:6px}.wkcol .slot{padding:5px 7px}.wkcol .slot .qn{font-size:13px}}
 @media (max-width:600px){.wkgrid{grid-template-columns:minmax(0,1fr)}.wkcol.none{display:none}.wkcol{flex-direction:row;flex-wrap:wrap;align-items:center}.wkcol .wk-d{min-width:72px}.wkcol .slot{flex:1 1 130px}}
 .xform{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px;border-radius:8px;background:var(--accent-soft)}
@@ -129,12 +133,16 @@ label.chk{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:va
 .counts b{font-weight:600}
 .c-o{color:var(--good)} .c-a{color:var(--warn)} .c-x{color:var(--seal)} .c-n{color:var(--muted)}
 .notebox{background:var(--sunken);border-radius:8px;padding:8px 12px;font-size:15px;white-space:pre-wrap;overflow-wrap:anywhere}
-.mlist{display:flex;flex-direction:column;border-top:1px solid var(--line)}
-.mrow{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-.mrow .nm{flex:1 1 140px;min-width:0;display:flex;align-items:center;gap:6px 8px;flex-wrap:wrap;overflow-wrap:anywhere}
+.mlist{display:grid;grid-template-columns:minmax(0,1fr);column-gap:24px;border-top:1px solid var(--line)}
+@media (min-width:1000px){.mlist{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.mrow{display:flex;align-items:center;gap:8px;padding:5px 2px;border-bottom:1px solid var(--line);min-width:0}
+.mrow .nm{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:4px 6px;overflow:hidden}
+.mrow .nm>span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.mrow .nm .tag{flex:none}
+.mrow .by{display:none}
 .by{font-size:12px;color:var(--muted);white-space:nowrap}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:none}
-.seg button{border:0;background:var(--surface);padding:6px 12px;font-size:14px;font-weight:500;color:var(--muted);min-width:56px}
+.seg button{border:0;background:var(--surface);padding:5px 9px;font-size:14px;font-weight:500;color:var(--muted);min-width:44px}
 .seg button+button{border-left:1px solid var(--line)}
 .seg button[aria-pressed="true"][data-v="O"]{background:var(--good);color:#fff}
 .seg button[aria-pressed="true"][data-v="A"]{background:var(--warn);color:#fff}
@@ -518,10 +526,12 @@ function renderCheck(){
       <div class="row">${unc.slice(0,8).map(x=>`<button class="btn small" data-action="openUnc" data-sid="${x.s.id}">${mdd(x.s.date)} ${esc(cshort(x.s.content))}${x.s.extra?' (추가)':''} · 미체크 ${x.n}명</button>`).join('')}</div>
       ${unc.length>8?`<p class="hint">외 ${unc.length-8}개 더 있어요. 회차 기록에서 확인해 주세요.</p>`:''}
       ${notes(['지난달과 이번 달 회차 중 체크 안 된 문파원이 있는 회차예요. 오늘 회차와 마감된 달은 빠져요','누르면 그 회차가 <b>미체크만</b> 보기로 열려요'])}</div>`:'';
-  return `${roNote()}${blockNote()}<div class="col">${uncP}${weekP}<div class="check-below">
+  return `${roNote()}${blockNote()}<div class="col">${weekP}<div class="check-below"><div class="col">
     <div class="panel"><div class="spread"><h2>회차 기록</h2>${S.canWrite&&sessions.length&&!S.selMode?'<button class="btn small" data-action="selMode">삭제</button>':''}</div>${selBar}<div class="slist">${list}</div></div>
+    ${uncP}</div>
     <div class="col sheet-col" id="sheetCol">${renderSheet(members)}</div></div></div>`;
 }
+function xContents(){const ex=extraCfg().content;return activeContents().filter(c=>c.k===ex||(c.weekly&&c.days.length>1))}
 function weekMon(d){return addDays(d,-((dow(d)+6)%7))}
 function sameWeekReg(date,k,exceptId){const ws=weekMon(date),we=addDays(ws,6);return allSessions().find(x=>x.id!==exceptId&&x.content===k&&!x.extra&&x.date>=ws&&x.date<=we)||null}
 function weekSlots(ws){
@@ -539,7 +549,7 @@ function renderWeek(members){
   const t=gameDay(),ws=addDays(weekMon(t),-7*S.wkOff),we=addDays(ws,6);
   const mid=new Map(members.map(m=>[m.id,m]));
   const rows=weekSlots(ws).map(({dt,slots})=>{const lk=isLocked(dt),fut=dt>t;
-    const chips=slots.map(x=>{const c=CMAP[x.k],nm=esc(c?.name||x.k)+(x.extra?' · 추가':''),s=findSession(dt,x.k,x.extra);
+    const chips=slots.map(x=>{const c=CMAP[x.k],nm=x.extra?`${esc(c?.short||x.k)} <span class="xb">추가</span>`:esc(c?.name||x.k),s=findSession(dt,x.k,x.extra);
       if(s){const n=countSession(s,mid),el=members.filter(m=>eligible(m,s)),mk=marksOf(s),un=el.filter(m=>!validMark(mk[m.id])).length;
         return `<button class="slot done" ${ck(x.k)} data-action="open" data-sid="${s.id}" aria-current="${S.openSid===s.id}"><span class="qn">✓ ${nm}</span><span class="qs">${fut?'미리 만듦 · 진행 전':`참여 ${n.o}/${el.length}${un?` · 미체크 ${un}`:''}`}${s.rank?' · '+esc(s.rank):''}</span></button>`}
       if(lk)return `<button class="slot new" ${ck(x.k)} disabled><span class="qn">${nm}</span><span class="qs">마감된 달</span></button>`;
@@ -552,7 +562,7 @@ function renderWeek(members){
     <div class="spread"><div class="row"><h2>주간 일정</h2><button class="btn small" data-action="wk" data-d="1"${S.wkOff>=25?' disabled':''} aria-label="지난주">◀</button><span class="hint num">${md(ws)}(월) ~ ${md(we)}(일)</span><button class="btn small" data-action="wk" data-d="-1"${S.wkOff<=-8?' disabled':''} aria-label="다음 주">▶</button>${S.wkOff?'<button class="btn small" data-action="wk" data-d="0">이번 주</button>':''}</div>
       <div class="row">${pend.length>1&&!isLocked(t)?`<button class="btn small primary" data-action="quickAll">오늘 회차 ${pend.length}개 한 번에 만들기</button>`:''}${exC?`<button class="btn small${S.xOpen?' primary':''}" data-action="xOpen" aria-pressed="${!!S.xOpen}">＋ 다른 날 추가 진행</button>`:''}</div></div>
     ${t!==todayStr()&&!S.wkOff?'<p class="hint">새벽 5시 전이라 어제를 오늘로 보고 있어요.</p>':''}
-    ${S.xOpen&&exC?`<div class="xform"><b>${esc(exC.name)} 추가 진행</b><input type="date" id="xDate" value="${t}" aria-label="추가 진행 날짜"><button class="btn small primary" data-action="xCreate">만들기</button><button class="btn small" data-action="xOpen">닫기</button><span class="hint">추가 진행 요일이 아닌 날에 했을 때 써요. 보너스 포인트만 붙어요</span></div>`:''}
+    ${S.xOpen&&exC?`<div class="xform"><b>추가 진행</b><select id="xCont" aria-label="추가 진행 콘텐츠">${xContents().map(c=>`<option value="${c.k}"${c.k===extraCfg().content?' selected':''}>${esc(c.name)}</option>`).join('')}</select><input type="date" id="xDate" value="${t}" aria-label="추가 진행 날짜"><button class="btn small primary" data-action="xCreate">만들기</button><button class="btn small" data-action="xOpen">닫기</button><span class="hint">추가 진행 요일이 아닌 날에 했을 때 써요. 보너스 포인트만 붙어요</span></div>`:''}
     <div class="wkgrid">${rows}</div>
     <details><summary class="hint" style="cursor:pointer">주간 일정 도움말</summary>${notes(['점선 칸(＋)을 누르면 회차가 만들어지고 바로 체크 화면이 열려요. <b>✓</b> 칸은 이미 만든 회차예요','앞으로의 날짜도 <b>미리 만들 수 있어요</b>. 진행 전 회차는 출석률·개근·포인트에 들어가지 않고, 그날이 지나면 들어가요. 미리 사전공지를 체크해 둘 수도 있어요','<b>정규 회차는 콘텐츠마다 한 주(월~일)에 한 번</b>이에요. 요신·결계는 금·토 중 진행할 날 칸을 누르면 다른 칸이 사라져요','<b>추가</b> 칸은 추가 진행 회차예요. 출석률에 안 들어가고 보너스 포인트만 붙어요. 요일은 관리 → 설정 · 콘텐츠에서 바꿔요','◀ ▶로 주를 옮겨요. 누가 만들고 지웠는지는 관리 → 변경 기록에 남아요'])}</details></div>`;
 }
@@ -571,8 +581,8 @@ function renderSheet(members){
   const q=S.search.trim().toLowerCase();
   const shown=members.filter(m=>(!q||String(m.name).toLowerCase().includes(q))&&(!S.onlyUnchecked||!validMark(mk[m.id])));
   const rows=shown.map(m=>{const v=mk[m.id]||'';const b=by[m.id];
-    return `<div class="mrow"><div class="nm"><span>${esc(m.name)}</span>${m.role&&m.role!==baseRole()?`<span class="tag">${esc(m.role)}</span>`:''}${b&&b.at&&validMark(v)?`<span class="by num" title="마지막으로 체크한 운영진">${b.by?esc(nameOf(b.by))+' · ':''}${hm(b.at)}</span>`:''}</div>
-      <div class="seg" role="group" aria-label="${esc(m.name)} 출석">${[['O','참여'],['A','사전공지'],['X','불참']].map(([k,l])=>`<button data-action="mark" data-sid="${s.id}" data-mid="${m.id}" data-v="${k}" aria-pressed="${v===k}"${dis}>${l}</button>`).join('')}</div></div>`}).join('');
+    return `<div class="mrow"><div class="nm" title="${esc(m.name)}${b&&b.at&&validMark(v)?` · 마지막 체크: ${b.by?esc(nameOf(b.by))+' ':''}${hm(b.at)}`:''}"><span>${esc(m.name)}</span>${m.role&&m.role!==baseRole()?`<span class="tag">${esc(m.role)}</span>`:''}${b&&b.at&&validMark(v)?`<span class="by num" title="마지막으로 체크한 운영진">${b.by?esc(nameOf(b.by))+' · ':''}${hm(b.at)}</span>`:''}</div>
+      <div class="seg" role="group" aria-label="${esc(m.name)} 출석">${[['O','참여'],['A','공지'],['X','불참']].map(([k,l])=>`<button data-action="mark" data-sid="${s.id}" data-mid="${m.id}" data-v="${k}" aria-pressed="${v===k}"${k==='A'?' title="사전공지 (미리 알리고 빠짐)"':''}${dis}>${l}</button>`).join('')}</div></div>`}).join('');
   const allConf=S.confirm&&S.confirm.startsWith('all:'+s.id+':')?S.confirm.slice(-1):null;
   const allChanged=allConf?members.filter(m=>validMark(mk[m.id])&&mk[m.id]!==allConf).length:0;
   const conf2=allConf?`<div class="confirm">이미 체크된 ${allChanged}명도 모두 ${allConf==='O'?'참여로':'불참으로'} 바꿀까요? <button class="btn small danger" data-action="bulkAllYes" data-sid="${s.id}" data-v="${allConf}">모두 바꾸기</button><button class="btn small" data-action="cancel">취소</button></div>`:'';
@@ -1636,7 +1646,7 @@ document.addEventListener('click',e=>{
   if(a==='open'){S.openSid=b.dataset.sid;S.confirm=null;S.editSid=null;S.search='';if(S.hist&&S.hist.sid!==S.openSid)S.hist=null;render();scrollSheet();return}
   if(a==='slot'){createSession(b.dataset.date,b.dataset.k,b.dataset.extra==='1');return}
   if(a==='xOpen'){S.xOpen=!S.xOpen;render();return}
-  if(a==='xCreate'){const dt=$('#xDate')?.value;if(!/^\d{4}-\d{2}-\d{2}$/.test(dt)){toast('날짜를 골라 주세요');return}S.xOpen=false;createSession(dt,extraCfg().content,true);return}
+  if(a==='xCreate'){const dt=$('#xDate')?.value;if(!/^\d{4}-\d{2}-\d{2}$/.test(dt)){toast('날짜를 골라 주세요');return}const k=$('#xCont')?.value||extraCfg().content;if(!CMAP[k]){toast('콘텐츠를 골라 주세요');return}S.xOpen=false;createSession(dt,k,true);return}
   if(a==='wk'){const dd=+b.dataset.d;S.wkOff=dd===0?0:Math.min(25,Math.max(-8,S.wkOff+dd));render();return}
   if(a==='selMode'){S.selMode=true;S.sel=new Set();S.confirm=null;render();return}
   if(a==='selExit'){S.selMode=false;S.sel=new Set();S.confirm=null;render();return}
