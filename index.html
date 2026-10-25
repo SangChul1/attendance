@@ -210,7 +210,9 @@ textarea.preview{min-height:180px;font-size:14px;line-height:1.6}
 .members-grid{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:20px;align-items:start}
 @media (max-width:820px){.members-grid{grid-template-columns:minmax(0,1fr)}}
 .medit{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
-.medit input[type=text]{flex:1 1 140px}
+.medit input[type=text]{flex:1 1 110px;min-width:90px}
+.medit select{max-width:110px}
+.medit .acts .btn.small{padding:4px 8px}
 .medit.off{opacity:.55}
 
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);
@@ -228,7 +230,8 @@ textarea.preview{min-height:180px;font-size:14px;line-height:1.6}
 .pill-perfect{font-size:12px;font-weight:600;padding:1px 7px;border-radius:999px;background:var(--accent-soft);color:var(--accent);white-space:nowrap}
 .rec{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
 .rec .d{min-width:76px;font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px}
-input[type=date].mini{padding:5px 8px;font-size:14px}
+input[type=date].mini{padding:5px 6px;font-size:14px;width:128px}
+.medit .tag{flex:none}
 .subtabs{display:flex;gap:4px;padding:4px;background:var(--sunken);border:1px solid var(--line);border-radius:10px;overflow-x:auto}
 .subtabs button{flex:1 0 auto;border:0;background:none;padding:8px 14px;border-radius:7px;font-size:15px;font-weight:500;color:var(--muted);white-space:nowrap}
 .subtabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 12%,transparent)}
@@ -276,8 +279,8 @@ input[type=date].mini{padding:5px 8px;font-size:14px}
 .off td{color:var(--muted)}
 .manrow{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--line)}
 .lockbar.on{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
-.medit .acts{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
-@media (max-width:600px){.medit .acts{flex-basis:100%;margin-left:0}}
+.medit .acts{display:flex;flex-wrap:nowrap;gap:5px;margin-left:auto}
+@media (max-width:600px){.medit{gap:6px}.medit .acts{flex-basis:100%;margin-left:0;flex-wrap:wrap}.medit input[type=text]{flex:1 1 70px;min-width:64px}.medit select{max-width:88px;padding-left:6px;padding-right:4px}.medit input[type=date].mini{width:116px;padding:5px 4px}}
 .memo{font-size:13px;color:var(--muted);flex-basis:100%;white-space:pre-wrap;overflow-wrap:anywhere}
 .inline-form{flex-basis:100%;display:flex;flex-direction:column;gap:8px;padding:10px;border-radius:8px;background:var(--sunken);border:1px solid var(--line)}
 .ct-card{display:flex;flex-direction:column;gap:10px;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--sunken)}
@@ -944,10 +947,10 @@ function renderMemberAdmin(){
       <select data-action="role" data-mid="${m.id}" aria-label="직위"${dis}>${[...ROLES,...(m.role&&!ROLES.includes(m.role)?[m.role]:[])].map(r=>`<option value="${esc(r)}"${m.role===r?' selected':''}>${esc(r)}</option>`).join('')}</select>
       ${S.canWrite&&warnCount(m.id)?`<span class="tag" title="집계 기간 안의 경고">경고 ${warnCount(m.id)}</span>`:''}
       <input type="date" class="mini" data-action="join" data-mid="${m.id}" value="${esc(m.joinedAt||'')}" aria-label="가입일" title="가입일"${dis}>
-      ${(m.leaves||[]).some(l=>l&&(l.to||'9999')>=todayStr())?`<span class="tag" title="휴식 기간">휴식 ${(m.leaves||[]).filter(l=>l&&(l.to||'9999')>=todayStr()).map(l=>`${md(l.from)}~${l.to?md(l.to):''}`).join(', ')}</span>`:''}
+      ${(()=>{const ls=(m.leaves||[]).filter(l=>l&&(l.to||'9999')>=todayStr());if(!ls.length)return '';const full=ls.map(l=>`${md(l.from)}~${l.to?md(l.to):'미정'}`).join(', ');const l0=ls[0];return `<span class="tag" title="휴식 ${full}">휴식 ${l0.from>todayStr()?md(l0.from)+'~':'~'+(l0.to?md(l0.to):'미정')}${ls.length>1?' 외':''}</span>`})()}
       <span class="acts"><button class="btn small" data-action="detail" data-mid="${m.id}">상세</button><button class="btn small" data-action="leaveFor" data-mid="${m.id}" aria-pressed="${S.leaveFor===m.id}">휴식</button>
       <button class="btn small" data-action="noteFor" data-mid="${m.id}" aria-pressed="${S.noteFor===m.id}">메모</button>
-      ${off?`<button class="btn small" data-action="rejoin" data-mid="${m.id}">복귀</button>`:`<button class="btn small" data-action="leaveOut" data-mid="${m.id}">탈퇴 처리</button><button class="btn small" data-action="moveAsk" data-mid="${m.id}" aria-pressed="${S.confirm==='mv:'+m.id}">이동 처리</button>`}<button class="btn small danger" data-action="askDelM" data-mid="${m.id}">삭제</button></span>
+      ${off?`<button class="btn small" data-action="rejoin" data-mid="${m.id}">복귀</button>`:`<button class="btn small" data-action="leaveOut" data-mid="${m.id}" title="탈퇴 처리 (명단·통계에서 빠지고 기록은 남아요)">탈퇴</button><button class="btn small" data-action="moveAsk" data-mid="${m.id}" aria-pressed="${S.confirm==='mv:'+m.id}" title="다른 문파로 이동 처리">이동</button>`}<button class="btn small danger" data-action="askDelM" data-mid="${m.id}">삭제</button></span>
       ${st==='left'?`<span class="tag" style="flex-basis:auto">탈퇴${m.leftAt?' · '+md(m.leftAt):''}</span>`:st==='moved'?`<span class="tag extra">이동${m.movedTo?' → '+esc(m.movedTo):''}${m.movedAt?' · '+md(m.movedAt):''}</span>`:''}${conf}
       ${S.confirm==='mv:'+m.id?`<div class="inline-form" style="flex-basis:100%"><label class="f">이동한 곳 (선택)<input type="text" id="mvTo-${m.id}" maxlength="30" placeholder="예: 묘룡2 학살 문파"></label><div class="row"><button class="btn small primary" data-action="moveYes" data-mid="${m.id}">이동 처리</button><button class="btn small" data-action="cancel">취소</button><span class="hint">명단과 통계에서 빠지고, 기록은 남아요</span></div></div>`:''}
       ${S.notes[m.id]?.text&&S.noteFor!==m.id?`<span class="memo">메모: ${esc(S.notes[m.id].text)}</span>`:''}
