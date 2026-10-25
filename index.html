@@ -88,16 +88,24 @@ label.chk{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:va
 .pill-streak{font-size:12px;font-weight:600;padding:1px 7px;border-radius:999px;background:var(--warn-soft);color:var(--warn);white-space:nowrap}
 
 /* 출석 체크 */
-.check-grid{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:20px;align-items:start}
-@media (max-width:820px){.check-grid{grid-template-columns:minmax(0,1fr)}}
-.wk{display:flex;flex-direction:column}
-.wk-row{display:grid;grid-template-columns:58px minmax(0,1fr);gap:10px;align-items:start;padding:10px 0;border-bottom:1px solid var(--line)}
-.wk-row:last-child{border-bottom:0}
-.wk-d{display:flex;flex-direction:column;gap:2px;font-size:14px;color:var(--muted)}
+.wkgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.wkcol{display:flex;flex-direction:column;gap:6px;min-width:0;padding:8px;border-radius:10px;background:var(--sunken);border:1px solid transparent}
+.wkcol.today{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,var(--sunken))}
+.wkcol.none{opacity:.7}
+.wk-d{display:flex;align-items:baseline;gap:6px;font-size:13px;color:var(--muted)}
 .wk-d b{font-size:16px;color:var(--ink)}
-.wk-row.today .wk-d b{color:var(--accent)}
-.wk-slots{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
-.slot{text-align:left;border:1px solid var(--line);background:var(--sunken);border-radius:8px;padding:6px 10px;display:flex;flex-direction:column;gap:1px;flex:1 1 130px;min-width:0}
+.wkcol.today .wk-d b{color:var(--accent)}
+.wkcol .slot{flex:0 0 auto}
+@media (max-width:900px){.wkcol{padding:6px}.wkcol .slot{padding:5px 7px}.wkcol .slot .qn{font-size:13px}}
+@media (max-width:600px){.wkgrid{grid-template-columns:minmax(0,1fr)}.wkcol.none{display:none}.wkcol{flex-direction:row;flex-wrap:wrap;align-items:center}.wkcol .wk-d{min-width:72px}.wkcol .slot{flex:1 1 130px}}
+.xform{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px;border-radius:8px;background:var(--accent-soft)}
+.check-below{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.check-below{grid-template-columns:minmax(0,1fr)}.check-below .sheet-col{order:-1}}
+.seg2{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg2 button{border:0;background:var(--surface);padding:6px 12px;font-size:14px;color:var(--muted)}
+.seg2 button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.catbox{display:flex;flex-wrap:wrap;gap:6px 14px;padding:10px 12px;border-radius:8px;background:var(--sunken)}
+.slot{text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 10px;display:flex;flex-direction:column;gap:1px;flex:1 1 130px;min-width:0}
 .slot .qn{font-weight:600;font-size:14px;color:var(--cc)}
 .slot .qs{font-size:12px;color:var(--muted)}
 .slot.new{border-style:dashed;background:var(--surface)}
@@ -357,7 +365,7 @@ const roleIdx=r=>{const i=ROLES.indexOf(r);return i<0?ROLES.length:i};
 const DAYS=['일','월','화','수','목','금','토'];
 const CFG0={guild:'',weekStart:1,streak:3,points:{singi:1,mihok:1,rank:1,bonus:1}};
 
-const S={logs:[],logsOld:[],logsMoreDone:false,lf:{cat:'main',q:''},wkOff:0,purchases:[],buyBlocked:false,buyFor:'',olderFail:false,rf:{mon:'all',kind:'all',q:'',unpaid:false},payOpen:null,man:null,db:null,fs:null,auth:null,authUser:null,myNick:'',isOwner:false,admins:[],ready:false,err:false,setup:false,canWrite:false,older:[],olderRange:null,olderLoading:false,cutoff:'',me:'',month:'',imp:null,stab:'sum',ssort:'rate',ssearch:'',warnings:[],warnBlocked:false,logBlocked:false,wmonth:'',dist:null,hist:null,delLogs:null,atab:'warn',nsort:'role',notes:{},locks:{},rewards:[],leaveFor:null,noteFor:null,cdraft:null,tierDraft:null,pay:null,selMode:false,sel:new Set(),
+const S={lqDraft:null,xOpen:false,lp:{mode:'month',off:0},plogs:null,lcats:null,lq:'',logs:[],wkOff:0,purchases:[],buyBlocked:false,buyFor:'',olderFail:false,rf:{mon:'all',kind:'all',q:'',unpaid:false},payOpen:null,man:null,db:null,fs:null,auth:null,authUser:null,myNick:'',isOwner:false,admins:[],ready:false,err:false,setup:false,canWrite:false,older:[],olderRange:null,olderLoading:false,cutoff:'',me:'',month:'',imp:null,stab:'sum',ssort:'rate',ssearch:'',warnings:[],warnBlocked:false,logBlocked:false,wmonth:'',dist:null,hist:null,delLogs:null,atab:'warn',nsort:'role',notes:{},locks:{},rewards:[],leaveFor:null,noteFor:null,cdraft:null,tierDraft:null,pay:null,selMode:false,sel:new Set(),
   members:[],sessions:[],config:{...CFG0},
   tab:'check',openSid:null,editSid:null,period:'4',cfilter:'all',demo:false,confirm:null,showOff:false,
   search:'',onlyUnchecked:false,mSearch:''};
@@ -449,7 +457,7 @@ function myName(){return S.myNick||(S.isOwner?'문파장':'운영진')}
 /* ---------- render ---------- */
 let composing=false,needRender=false;
 document.addEventListener('compositionstart',()=>{composing=true});
-document.addEventListener('compositionend',e=>{composing=false;const a=e.target.dataset&&e.target.dataset.action;if(a==='search')S.search=e.target.value;else if(a==='mSearch')S.mSearch=e.target.value;else if(a==='ssearch')S.ssearch=e.target.value;else if(a==='rfQ')S.rf.q=e.target.value;else if(a==='lfQ')S.lf.q=e.target.value;if(needRender||a==='search'||a==='mSearch'||a==='ssearch'||a==='rfQ'||a==='lfQ'){needRender=false;render()}});
+document.addEventListener('compositionend',e=>{composing=false;const a=e.target.dataset&&e.target.dataset.action;if(a==='search')S.search=e.target.value;else if(a==='mSearch')S.mSearch=e.target.value;else if(a==='ssearch')S.ssearch=e.target.value;else if(a==='rfQ')S.rf.q=e.target.value;if(needRender||a==='search'||a==='mSearch'||a==='ssearch'||a==='rfQ'){needRender=false;render()}});
 function render(){
   if(S.demo&&(S.tab==='check'||S.tab==='admin'))S.demo=false;
   EFF=null;applyContents();applyRoles();
@@ -510,9 +518,9 @@ function renderCheck(){
       <div class="row">${unc.slice(0,8).map(x=>`<button class="btn small" data-action="openUnc" data-sid="${x.s.id}">${mdd(x.s.date)} ${esc(cshort(x.s.content))}${x.s.extra?' (추가)':''} · 미체크 ${x.n}명</button>`).join('')}</div>
       ${unc.length>8?`<p class="hint">외 ${unc.length-8}개 더 있어요. 회차 기록에서 확인해 주세요.</p>`:''}
       ${notes(['지난달과 이번 달 회차 중 체크 안 된 문파원이 있는 회차예요. 오늘 회차와 마감된 달은 빠져요','누르면 그 회차가 <b>미체크만</b> 보기로 열려요'])}</div>`:'';
-  return `${roNote()}${blockNote()}<div class="check-grid"><div class="col">${uncP}${weekP}
-    <div class="panel"><div class="spread"><h2>회차 기록</h2>${S.canWrite&&sessions.length&&!S.selMode?'<button class="btn small" data-action="selMode">삭제</button>':''}</div>${selBar}<div class="slist">${list}</div></div></div>
-    <div class="col" id="sheetCol">${renderSheet(members)}</div></div>`;
+  return `${roNote()}${blockNote()}<div class="col">${uncP}${weekP}<div class="check-below">
+    <div class="panel"><div class="spread"><h2>회차 기록</h2>${S.canWrite&&sessions.length&&!S.selMode?'<button class="btn small" data-action="selMode">삭제</button>':''}</div>${selBar}<div class="slist">${list}</div></div>
+    <div class="col sheet-col" id="sheetCol">${renderSheet(members)}</div></div></div>`;
 }
 function weekMon(d){return addDays(d,-((dow(d)+6)%7))}
 function sameWeekReg(date,k,exceptId){const ws=weekMon(date),we=addDays(ws,6);return allSessions().find(x=>x.id!==exceptId&&x.content===k&&!x.extra&&x.date>=ws&&x.date<=we)||null}
@@ -536,18 +544,17 @@ function renderWeek(members){
         return `<button class="slot done" ${ck(x.k)} data-action="open" data-sid="${s.id}" aria-current="${S.openSid===s.id}"><span class="qn">✓ ${nm}</span><span class="qs">${fut?'미리 만듦 · 진행 전':`참여 ${n.o}/${el.length}${un?` · 미체크 ${un}`:''}`}${s.rank?' · '+esc(s.rank):''}</span></button>`}
       if(lk)return `<button class="slot new" ${ck(x.k)} disabled><span class="qn">${nm}</span><span class="qs">마감된 달</span></button>`;
       return `<button class="slot new" ${ck(x.k)} data-action="slot" data-date="${dt}" data-k="${x.k}" data-extra="${x.extra?1:0}"><span class="qn">＋ ${nm}</span><span class="qs">${x.pick?`${x.pick} 중 하루 · `:''}${fut?'미리 만들기':'누르면 만들기'}</span></button>`}).join('');
-    return `<div class="wk-row${dt===t?' today':''}"><div class="wk-d"><b>${DAYS[dow(dt)]}</b><span class="num">${md(dt)}</span>${dt===t?'<span class="tag">오늘</span>':''}</div>
-      <div class="wk-slots">${chips||'<span class="hint" style="align-self:center">일정 없음</span>'}</div></div>`}).join('');
+    return `<div class="wkcol${dt===t?' today':''}${chips?'':' none'}"><div class="wk-d"><b>${DAYS[dow(dt)]}</b><span class="num">${md(dt)}</span>${dt===t?'<span class="tag">오늘</span>':''}</div>
+      ${chips||'<span class="hint">–</span>'}</div>`}).join('');
   const pend=S.wkOff?[]:todayItems().filter(it=>!findSession(t,it.k,it.extra)&&!(!it.extra&&(weeklyDone(it.k)||sameWeekReg(t,it.k))));
+  const exC=CMAP[extraCfg().content];
   return `<div class="panel">
-    <div class="spread"><h2>주간 일정</h2><div class="row"><button class="btn small" data-action="wk" data-d="1"${S.wkOff>=25?' disabled':''} aria-label="지난주">◀</button><span class="hint num">${md(ws)}(월) ~ ${md(we)}(일)</span><button class="btn small" data-action="wk" data-d="-1"${S.wkOff<=-8?' disabled':''} aria-label="다음 주">▶</button>${S.wkOff?'<button class="btn small" data-action="wk" data-d="0">이번 주</button>':''}</div></div>
+    <div class="spread"><div class="row"><h2>주간 일정</h2><button class="btn small" data-action="wk" data-d="1"${S.wkOff>=25?' disabled':''} aria-label="지난주">◀</button><span class="hint num">${md(ws)}(월) ~ ${md(we)}(일)</span><button class="btn small" data-action="wk" data-d="-1"${S.wkOff<=-8?' disabled':''} aria-label="다음 주">▶</button>${S.wkOff?'<button class="btn small" data-action="wk" data-d="0">이번 주</button>':''}</div>
+      <div class="row">${pend.length>1&&!isLocked(t)?`<button class="btn small primary" data-action="quickAll">오늘 회차 ${pend.length}개 한 번에 만들기</button>`:''}${exC?`<button class="btn small${S.xOpen?' primary':''}" data-action="xOpen" aria-pressed="${!!S.xOpen}">＋ 다른 날 추가 진행</button>`:''}</div></div>
     ${t!==todayStr()&&!S.wkOff?'<p class="hint">새벽 5시 전이라 어제를 오늘로 보고 있어요.</p>':''}
-    <div class="wk">${rows}</div>
-    ${pend.length>1&&!isLocked(t)?`<button class="btn primary" data-action="quickAll">오늘 회차 ${pend.length}개 한 번에 만들기</button>`:''}
-    ${CMAP[extraCfg().content]?`<details><summary class="hint" style="cursor:pointer">다른 날 추가 진행 만들기</summary>
-      <div class="row" style="margin-top:8px"><input type="date" id="xDate" value="${t}" aria-label="추가 진행 날짜"><button class="btn small primary" data-action="xCreate">${esc(CMAP[extraCfg().content].name)} 추가 만들기</button></div>
-      <p class="hint">추가 진행 요일이 아닌 날에 했을 때만 써요. 출석률에는 안 들어가고 보너스 포인트만 붙어요.</p></details>`:''}
-    ${notes(['점선 칸(＋)을 누르면 회차가 만들어지고 바로 체크 화면이 열려요. <b>✓</b> 칸은 이미 만든 회차예요','앞으로의 날짜도 <b>미리 만들 수 있어요</b>. 진행 전 회차는 출석률·개근·포인트에 들어가지 않고, 그날이 지나면 들어가요. 미리 사전공지를 체크해 둘 수도 있어요','<b>정규 회차는 콘텐츠마다 한 주(월~일)에 한 번</b>이에요. 신기쟁탈전은 금, 미혹의 정원은 토, 요신·결계는 금·토 중 진행할 날 칸을 누르면 다른 칸이 사라져요','<b>추가</b> 칸은 추가 진행 회차예요. 출석률에 안 들어가고 보너스 포인트만 붙어요. 요일은 관리 → 설정 · 콘텐츠에서 바꿔요','◀ ▶로 주를 옮겨요. 누가 만들고 지웠는지는 관리 → 변경 기록에 남아요'])}</div>`;
+    ${S.xOpen&&exC?`<div class="xform"><b>${esc(exC.name)} 추가 진행</b><input type="date" id="xDate" value="${t}" aria-label="추가 진행 날짜"><button class="btn small primary" data-action="xCreate">만들기</button><button class="btn small" data-action="xOpen">닫기</button><span class="hint">추가 진행 요일이 아닌 날에 했을 때 써요. 보너스 포인트만 붙어요</span></div>`:''}
+    <div class="wkgrid">${rows}</div>
+    <details><summary class="hint" style="cursor:pointer">주간 일정 도움말</summary>${notes(['점선 칸(＋)을 누르면 회차가 만들어지고 바로 체크 화면이 열려요. <b>✓</b> 칸은 이미 만든 회차예요','앞으로의 날짜도 <b>미리 만들 수 있어요</b>. 진행 전 회차는 출석률·개근·포인트에 들어가지 않고, 그날이 지나면 들어가요. 미리 사전공지를 체크해 둘 수도 있어요','<b>정규 회차는 콘텐츠마다 한 주(월~일)에 한 번</b>이에요. 요신·결계는 금·토 중 진행할 날 칸을 누르면 다른 칸이 사라져요','<b>추가</b> 칸은 추가 진행 회차예요. 출석률에 안 들어가고 보너스 포인트만 붙어요. 요일은 관리 → 설정 · 콘텐츠에서 바꿔요','◀ ▶로 주를 옮겨요. 누가 만들고 지웠는지는 관리 → 변경 기록에 남아요'])}</details></div>`;
 }
 function findSession(date,k,extra){return S.sessions.find(s=>s.date===date&&s.content===k&&!!s.extra===!!extra)}
 
@@ -818,7 +825,8 @@ function renderAdmin(){
   return `<div class="col">${blockNote()}${backupNote()}${sub}${lastNote(S.atab)}${body}</div>`;
 }
 const AREAS={warn:['경고'],members:['문파원'],pay:['지급'],buy:['구매'],cfg:['설정','콘텐츠','직위'],team:['운영진','백업']};
-const LOGCAT=[['main','전체 (출석 체크 제외)'],['all','전체 (출석 체크 포함)'],['sess','회차 만들기 · 삭제 · 수정'],['mark','출석 체크'],['문파원','문파원'],['cfg','설정 · 콘텐츠 · 직위'],['경고','경고 · 추방'],['마감','월 마감'],['지급','지급 기록'],['구매','구매 포인트'],['etc','운영진 · 백업']];
+const LOGCAT=[['sess','회차 만들기·삭제·수정'],['mark','출석 체크'],['문파원','문파원'],['cfg','설정·콘텐츠·직위'],['경고','경고·추방'],['마감','월 마감'],['지급','지급 기록'],['구매','구매 포인트'],['etc','운영진·백업']];
+const LOGDEF=['sess','문파원','cfg','경고','마감','지급','구매','etc'];
 function logArea(l){return l.type==='act'?(l.area||'기타'):l.type==='mark'?'출석 체크':'회차'}
 function sessLabel(l){const d=l.date||l.data?.date||(l.before&&l.before.date)||'',c=l.content||l.data?.content||(l.before&&l.before.content)||'';return `${d?mdd(d):''} ${CMAP[c]?.name||c}${(l.extra||l.data?.extra)?' (추가)':''}`.trim()}
 function editText(l){const b=l.before||{},a=l.after||{};const moved=b.date!==a.date||b.content!==a.content||!!b.extra!==!!a.extra;
@@ -833,26 +841,40 @@ function logText(l){const L={O:'참여',A:'사전공지',X:'불참'},lb=v=>v?L[v
   return esc(l.type||'')}
 function lastNote(tab){const ar=AREAS[tab];if(!ar||!S.canWrite)return '';const l=S.logs.find(x=>x.type==='act'&&ar.includes(x.area));
   return l?`<p class="hint" style="text-align:right">이 탭 마지막 수정: <b>${esc(l.by||'')}</b> · ${hm(l.at)} · ${esc(l.what||'')}</p>`:''}
-function allLogs(){const seen=new Set(),out=[];for(const l of [...S.logs,...S.logsOld]){if(seen.has(l.id))continue;seen.add(l.id);out.push(l)}return out.sort((a,b)=>(b.at||0)-(a.at||0))}
-function renderLogs(){
-  const F=S.lf,q=F.q.trim().toLowerCase();
-  const inCat=l=>{const ar=logArea(l);switch(F.cat){case 'all':return true;case 'main':return l.type!=='mark';case 'sess':return ar==='회차';case 'mark':return l.type==='mark';case 'cfg':return ['설정','콘텐츠','직위'].includes(ar);case 'etc':return ['운영진','백업'].includes(ar);default:return ar===F.cat}};
-  const list=allLogs().filter(l=>inCat(l)&&(!q||[l.by,l.what,l.detail,sessLabel(l),...Object.values(l.changes||{}).map(c=>c.n)].some(v=>String(v||'').toLowerCase().includes(q))));
-  const rows=list.slice(0,400).map(l=>`<div class="logrow"><span class="w num">${l.at?hm(l.at):''}</span><span><span class="tag">${esc(logArea(l))}</span></span><span class="d">${logText(l)} <span class="hint">· ${esc(l.by||'')}</span></span></div>`).join('');
-  return `<div class="panel"><div class="spread"><h2>변경 기록</h2><span class="hint">운영진만 볼 수 있어요 · 고치거나 지울 수 없어요</span></div>
-    <div class="row"><select data-action="lfCat" aria-label="종류">${LOGCAT.map(([k,l])=>`<option value="${k}"${F.cat===k?' selected':''}>${l}</option>`).join('')}</select>
-      <input type="search" id="lfQ" data-keep="0" data-action="lfQ" value="${esc(F.q)}" placeholder="사람 · 닉네임 · 내용 검색" style="flex:1 1 180px"></div>
-    ${S.logBlocked?'<div class="confirm">변경 기록을 불러올 수 없어요. Firestore 규칙이 최신인지 확인해 주세요.</div>':''}
-    <div>${rows||'<p class="hint">조건에 맞는 기록이 없어요.</p>'}</div>
-    <div class="row">${S.logsMoreDone?'<span class="hint">가장 오래된 기록까지 불러왔어요.</span>':'<button class="btn small" data-action="logsMore">이전 기록 더 불러오기</button>'}<span class="hint">${list.length}건${list.length>400?' 중 400건 표시':''}</span></div>
-    ${notes(['회차 만들기·삭제·수정, 출석 체크, 문파원·설정·콘텐츠·직위 변경, 경고, 마감, 지급·구매 기록, 운영진 등록, 백업이 누가 언제 했는지 남아요','기본은 최근 300건이에요. 더 오래된 기록은 <b>이전 기록 더 불러오기</b>로 봐요','이 기능을 넣기 전의 변경은 남아 있지 않아요'])}</div>`;
-}
-async function loadMoreLogs(){
-  const all=allLogs();const oldest=all.length?all[all.length-1].at:Date.now()+1;
-  try{const snap=await S.db.collection('logs').where('at','<',oldest).orderBy('at','desc').limit(300).get();
-    const got=snap.docs.map(d=>({id:d.id,...d.data()}));S.logsOld=S.logsOld.concat(got);if(got.length<300)S.logsMoreDone=true}
-  catch(e){console.warn(e);toast('이전 기록을 불러오지 못했어요')}
+function logCat(l){const ar=logArea(l);if(l.type==='mark')return 'mark';if(ar==='회차')return 'sess';if(['설정','콘텐츠','직위'].includes(ar))return 'cfg';if(['운영진','백업'].includes(ar))return 'etc';return ar}
+function logRange(){const P=S.lp,n=new Date();let a,b,label;
+  if(P.mode==='week'){const d=new Date(n.getFullYear(),n.getMonth(),n.getDate());d.setDate(d.getDate()-((d.getDay()+6)%7)-7*P.off);a=d.getTime();const e=new Date(d);e.setDate(e.getDate()+7);b=e.getTime();
+    const l=new Date(b-1);label=`${d.getMonth()+1}/${d.getDate()}(월) ~ ${l.getMonth()+1}/${l.getDate()}(일)`}
+  else{const d=new Date(n.getFullYear(),n.getMonth()-P.off,1);a=d.getTime();b=new Date(d.getFullYear(),d.getMonth()+1,1).getTime();label=`${d.getFullYear()}년 ${d.getMonth()+1}월`}
+  return {a,b,label,key:P.mode+':'+a}}
+async function loadPeriodLogs(){const r=logRange();if(S.plogs&&S.plogs.key===r.key&&!S.plogs.error)return;
+  S.plogs={key:r.key,loading:true,list:[]};render();
+  try{const snap=await S.db.collection('logs').where('at','>=',r.a).where('at','<',r.b).orderBy('at','desc').limit(3000).get();
+    if(S.plogs.key!==r.key)return;S.plogs={key:r.key,list:snap.docs.map(d=>({id:d.id,...d.data()}))}}
+  catch(e){console.warn(e);if(S.plogs.key===r.key)S.plogs={key:r.key,list:[],error:true}}
   render();
+}
+function renderLogs(){
+  const r=logRange();if(!S.plogs||S.plogs.key!==r.key)setTimeout(loadPeriodLogs,0);
+  const cats=S.lcats||new Set(LOGDEF),q=S.lq.trim().toLowerCase();
+  const seen=new Set(),src=[];for(const l of [...S.logs,...((S.plogs&&S.plogs.key===r.key&&S.plogs.list)||[])]){if(seen.has(l.id)||!(l.at>=r.a&&l.at<r.b))continue;seen.add(l.id);src.push(l)}
+  src.sort((x,y)=>(y.at||0)-(x.at||0));
+  const list=src.filter(l=>cats.has(logCat(l))&&(!q||[l.by,l.what,l.detail,sessLabel(l),...Object.values(l.changes||{}).map(c=>c.n)].some(v=>String(v||'').toLowerCase().includes(q))));
+  const cnt={};src.forEach(l=>{const k=logCat(l);cnt[k]=(cnt[k]||0)+1});
+  const rows=list.slice(0,1000).map(l=>`<div class="logrow"><span class="w num">${l.at?hm(l.at):''}</span><span><span class="tag">${esc(logArea(l))}</span></span><span class="d">${logText(l)} <span class="hint">· ${esc(l.by||'')}</span></span></div>`).join('');
+  const loading=S.plogs&&S.plogs.key===r.key&&S.plogs.loading;
+  return `<div class="panel"><div class="spread"><h2>변경 기록</h2><span class="hint">운영진만 볼 수 있어요 · 고치거나 지울 수 없어요</span></div>
+    <div class="row"><div class="seg2" role="group" aria-label="기간 단위"><button data-action="lpMode" data-m="month" aria-pressed="${S.lp.mode==='month'}">월별</button><button data-action="lpMode" data-m="week" aria-pressed="${S.lp.mode==='week'}">주별</button></div>
+      <button class="btn small" data-action="lpMove" data-d="1" aria-label="이전">◀</button><b class="num">${r.label}</b><button class="btn small" data-action="lpMove" data-d="-1"${S.lp.off<=0?' disabled':''} aria-label="다음">▶</button>${S.lp.off?`<button class="btn small" data-action="lpMove" data-d="0">${S.lp.mode==='week'?'이번 주':'이번 달'}</button>`:''}</div>
+    <div class="catbox">${LOGCAT.map(([k,l])=>`<label class="chk"><input type="checkbox" data-action="lcat" data-k="${k}" data-keep="0"${cats.has(k)?' checked':''}> ${l} <span class="hint">${cnt[k]||0}</span></label>`).join('')}
+      <span class="grow"></span><button class="btn small" data-action="lcatAll" data-v="1">전체 선택</button><button class="btn small" data-action="lcatAll" data-v="0">전체 해제</button></div>
+    <div class="row"><input type="search" id="lfQ" data-keep="0" value="${esc(S.lqDraft??S.lq)}" placeholder="사람 · 닉네임 · 내용" style="flex:1 1 180px" aria-label="기록 검색"><button class="btn small primary" data-action="lfGo">검색</button>${S.lq?'<button class="btn small" data-action="lfClear">검색 지우기</button>':''}</div>
+    ${S.lq?`<p class="hint">"<b>${esc(S.lq)}</b>" 검색 결과</p>`:''}
+    ${S.logBlocked||(S.plogs&&S.plogs.error)?'<div class="confirm">변경 기록을 불러올 수 없어요. Firestore 규칙이 최신인지 확인해 주세요.</div>':''}
+    ${loading?'<p class="hint">기록을 불러오는 중이에요…</p>':''}
+    <div>${rows||(loading?'':'<p class="hint">이 기간에 조건에 맞는 기록이 없어요.</p>')}</div>
+    <p class="hint">${list.length}건${list.length>1000?' 중 1000건 표시':''}</p>
+    ${notes(['<b>월별 / 주별</b>을 고르고 ◀ ▶로 기간을 옮겨요','보고 싶은 종류만 체크하세요. 기본은 출석 체크를 뺀 전부예요','검색칸에 사람·닉네임·내용을 넣고 <b>검색</b>을 누르거나 Enter를 눌러요','이 기능을 넣기 전의 변경은 남아 있지 않아요'])}</div>`;
 }
 function backupDays(){const lb=S.config.lastBackup;return lb&&lb.at?Math.floor((Date.now()-lb.at)/864e5):null}
 function backupNote(){if(!S.sessions.length)return '';const d=backupDays();if(d!=null&&d<30)return '';
@@ -1613,7 +1635,8 @@ document.addEventListener('click',e=>{
   if(a==='openUnc'){S.openSid=b.dataset.sid;S.onlyUnchecked=true;S.confirm=null;S.editSid=null;S.search='';S.hist=null;render();scrollSheet();return}
   if(a==='open'){S.openSid=b.dataset.sid;S.confirm=null;S.editSid=null;S.search='';if(S.hist&&S.hist.sid!==S.openSid)S.hist=null;render();scrollSheet();return}
   if(a==='slot'){createSession(b.dataset.date,b.dataset.k,b.dataset.extra==='1');return}
-  if(a==='xCreate'){const dt=$('#xDate')?.value;if(!/^\d{4}-\d{2}-\d{2}$/.test(dt)){toast('날짜를 골라 주세요');return}createSession(dt,extraCfg().content,true);return}
+  if(a==='xOpen'){S.xOpen=!S.xOpen;render();return}
+  if(a==='xCreate'){const dt=$('#xDate')?.value;if(!/^\d{4}-\d{2}-\d{2}$/.test(dt)){toast('날짜를 골라 주세요');return}S.xOpen=false;createSession(dt,extraCfg().content,true);return}
   if(a==='wk'){const dd=+b.dataset.d;S.wkOff=dd===0?0:Math.min(25,Math.max(-8,S.wkOff+dd));render();return}
   if(a==='selMode'){S.selMode=true;S.sel=new Set();S.confirm=null;render();return}
   if(a==='selExit'){S.selMode=false;S.sel=new Set();S.confirm=null;render();return}
@@ -1686,7 +1709,11 @@ document.addEventListener('click',e=>{
     const moves={};S.members.forEach(m=>{if(m.role===gone)moves[m.id]=to});saveRoles(list,moves,`${gone} 직위를 지웠어요`+(Object.keys(moves).length?` (${Object.keys(moves).length}명은 ${to}로 바뀜)`:''),{area:'직위',what:'직위 삭제',detail:gone});return}
   if(a==='gotoPayLog'){S.rf={mon:b.dataset.mon||'all',kind:'all',q:'',unpaid:false};S.tab='admin';S.atab='pay';remember('tab','admin');remember('atab','pay');S.confirm=null;S.selMode=false;S.sel=new Set();render();window.scrollTo({top:0});return}
   if(a==='payLogCsv'){payLogCsv();return}
-  if(a==='logsMore'){loadMoreLogs();return}
+  if(a==='lpMode'){S.lp={mode:b.dataset.m,off:0};render();return}
+  if(a==='lpMove'){const dd=+b.dataset.d;S.lp.off=dd===0?0:Math.max(0,S.lp.off+dd);render();return}
+  if(a==='lcatAll'){S.lcats=new Set(b.dataset.v==='1'?LOGCAT.map(x=>x[0]):[]);render();return}
+  if(a==='lfGo'){S.lq=($('#lfQ')?.value||'').trim();S.lqDraft=null;render();return}
+  if(a==='lfClear'){S.lq='';S.lqDraft=null;render();return}
   if(a==='buyFor'){S.buyFor=b.dataset.mid;S.confirm=null;render();$('#buyItem')?.focus();return}
   if(a==='copyBuy'){copyText(buyText(buyStats()));return}
   if(a==='buyCsv'){buyCsv();return}
@@ -1794,7 +1821,7 @@ document.addEventListener('input',e=>{
   else if(a==='mSearch'){S.mSearch=t.value;render()}
   else if(a==='ssearch'){S.ssearch=t.value;render()}
   else if(a==='rfQ'){S.rf.q=t.value;render()}
-  else if(a==='lfQ'){S.lf.q=t.value;render()}
+  else if(t.id==='lfQ'){S.lqDraft=t.value}
 });
 document.addEventListener('change',e=>{
   const t=e.target,a=t.dataset&&t.dataset.action;if(!a)return;
@@ -1806,7 +1833,7 @@ document.addEventListener('change',e=>{
   else if(a==='rfMon'){S.rf.mon=t.value;S.confirm=null;render()}
   else if(a==='rfKind'){S.rf.kind=t.value;render()}
   else if(a==='rfUnpaid'){S.rf.unpaid=t.checked;render()}
-  else if(a==='lfCat'){S.lf.cat=t.value;render()}
+  else if(a==='lcat'){const c=S.lcats||new Set(LOGDEF);if(t.checked)c.add(t.dataset.k);else c.delete(t.dataset.k);S.lcats=c;render()}
   else if(a==='buyWho'){S.buyFor=t.value;S.confirm=null;render()}
   else if(a==='ssort'){S.ssort=t.value;render()}
   else if(a==='nsort'){S.nsort=t.value;remember('nsort',S.nsort);render()}
@@ -1825,6 +1852,7 @@ document.addEventListener('change',e=>{
 });
 document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&e.target.dataset&&(e.target.dataset.action==='rename'||e.target.dataset.action==='roleRename'))e.target.blur();
+  if(e.key==='Enter'&&e.target.id==='lfQ'){e.preventDefault();$('[data-action="lfGo"]')?.click()}
   if(e.key==='Enter'&&e.target.id==='roleNew'){e.preventDefault();$('[data-action="roleAdd"]')?.click()}
   if(e.key==='Escape'&&!$('#copybox').hidden)$('#copybox').hidden=true;
 });
@@ -1895,7 +1923,7 @@ render();
   onAuthStateChanged(S.auth,async u=>{
     S.authKnown=false;
     S.authUser=u;S.canWrite=false;S.payOpen=null;S.man=null;S.leaveFor=null;S.noteFor=null;S.cdraft=null;S.isOwner=false;S.myNick='';S.admins=[];if(unAdmins){unAdmins();unAdmins=null}
-    if(unWarn){unWarn();unWarn=null}if(unNotes){unNotes();unNotes=null}if(unRw){unRw();unRw=null}if(unLogs){unLogs();unLogs=null}S.logs=[];S.logsOld=[];S.logsMoreDone=false;S.notes={};S.rewards=[];S.warnings=[];S.warnBlocked=false;S.logBlocked=false;S.hist=null;S.delLogs=null;S.dist=null;
+    if(unWarn){unWarn();unWarn=null}if(unNotes){unNotes();unNotes=null}if(unRw){unRw();unRw=null}if(unLogs){unLogs();unLogs=null}S.logs=[];S.plogs=null;S.notes={};S.rewards=[];S.warnings=[];S.warnBlocked=false;S.logBlocked=false;S.hist=null;S.delLogs=null;S.dist=null;
     if(u){
       const email=(u.email||'').toLowerCase();
       try{const x=await getDoc(fdoc(S.fs,'admins',email));if(x.exists()){S.canWrite=true;S.myNick=x.data().nick||''}}catch(_){}
