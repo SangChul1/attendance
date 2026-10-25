@@ -103,6 +103,23 @@ label.chk{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:va
 @media (max-width:900px){.wkcol{padding:6px}.wkcol .slot{padding:5px 7px}.wkcol .slot .qn{font-size:13px}}
 @media (max-width:600px){.wkgrid{grid-template-columns:minmax(0,1fr)}.wkcol.none{display:none}.wkcol{flex-direction:row;flex-wrap:wrap;align-items:center}.wkcol .wk-d{min-width:72px}.wkcol .slot{flex:1 1 130px}}
 .xform{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px;border-radius:8px;background:var(--accent-soft)}
+.settle-grid section{min-width:0}
+.settle-grid .col{gap:20px}
+@media (max-width:999px){
+  .settle-grid section{display:none}
+  .settle-grid.m-table [data-sec=table],.settle-grid.m-buy [data-sec=buy],.settle-grid.m-pay [data-sec=pay],.settle-grid.m-dist [data-sec=dist],.settle-grid.m-pay [data-sec=link],.settle-grid.m-dist [data-sec=link]{display:block}
+  .settle-grid.m-table .settle-right,.settle-grid.m-buy .settle-right,.settle-grid.m-pay .settle-left,.settle-grid.m-dist .settle-left{display:none}
+  .subtabs.calc-tabs{display:none}}
+@media (min-width:1000px){
+  .subtabs.settle-mtabs{display:none}
+  .settle-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(400px,.85fr);gap:20px;align-items:start}
+  .settle-right{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto;padding-right:2px}
+  .settle-right>*{flex-shrink:0}
+  .settle-grid.d-pay [data-sec=dist],.settle-grid.d-dist [data-sec=pay]{display:none}
+  .settle-right .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .settle-right .fg3{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .settle-right .fg3>.btn{grid-column:1/-1}}
+details#tierBox>summary{list-style:revert}
 .check-below{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:20px;align-items:start}
 @media (max-width:820px){.check-below{grid-template-columns:minmax(0,1fr)}.check-below .sheet-col{order:-1}}
 .seg2{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
@@ -373,7 +390,7 @@ const roleIdx=r=>{const i=ROLES.indexOf(r);return i<0?ROLES.length:i};
 const DAYS=['일','월','화','수','목','금','토'];
 const CFG0={guild:'',weekStart:1,streak:3,points:{singi:1,mihok:1,rank:1,bonus:1}};
 
-const S={lqDraft:null,xOpen:false,lp:{mode:'month',off:0},plogs:null,lcats:null,lq:'',logs:[],wkOff:0,purchases:[],buyBlocked:false,buyFor:'',olderFail:false,rf:{mon:'all',kind:'all',q:'',unpaid:false},payOpen:null,man:null,db:null,fs:null,auth:null,authUser:null,myNick:'',isOwner:false,admins:[],ready:false,err:false,setup:false,canWrite:false,older:[],olderRange:null,olderLoading:false,cutoff:'',me:'',month:'',imp:null,stab:'sum',ssort:'rate',ssearch:'',warnings:[],warnBlocked:false,logBlocked:false,wmonth:'',dist:null,hist:null,delLogs:null,atab:'warn',nsort:'role',notes:{},locks:{},rewards:[],leaveFor:null,noteFor:null,cdraft:null,tierDraft:null,pay:null,selMode:false,sel:new Set(),
+const S={setTab:'table',calcTab:'pay',tierOpen:false,lqDraft:null,xOpen:false,lp:{mode:'month',off:0},plogs:null,lcats:null,lq:'',logs:[],wkOff:0,purchases:[],buyBlocked:false,buyFor:'',olderFail:false,rf:{mon:'all',kind:'all',q:'',unpaid:false},payOpen:null,man:null,db:null,fs:null,auth:null,authUser:null,myNick:'',isOwner:false,admins:[],ready:false,err:false,setup:false,canWrite:false,older:[],olderRange:null,olderLoading:false,cutoff:'',me:'',month:'',imp:null,stab:'sum',ssort:'rate',ssearch:'',warnings:[],warnBlocked:false,logBlocked:false,wmonth:'',dist:null,hist:null,delLogs:null,atab:'warn',nsort:'role',notes:{},locks:{},rewards:[],leaveFor:null,noteFor:null,cdraft:null,tierDraft:null,pay:null,selMode:false,sel:new Set(),
   members:[],sessions:[],config:{...CFG0},
   tab:'check',openSid:null,editSid:null,period:'4',cfilter:'all',demo:false,confirm:null,showOff:false,
   search:'',onlyUnchecked:false,mSearch:''};
@@ -582,7 +599,7 @@ function renderSheet(members){
   const shown=members.filter(m=>(!q||String(m.name).toLowerCase().includes(q))&&(!S.onlyUnchecked||!validMark(mk[m.id])));
   const rows=shown.map(m=>{const v=mk[m.id]||'';const b=by[m.id];
     return `<div class="mrow"><div class="nm" title="${esc(m.name)}${b&&b.at&&validMark(v)?` · 마지막 체크: ${b.by?esc(nameOf(b.by))+' ':''}${hm(b.at)}`:''}"><span>${esc(m.name)}</span>${m.role&&m.role!==baseRole()?`<span class="tag">${esc(m.role)}</span>`:''}${b&&b.at&&validMark(v)?`<span class="by num" title="마지막으로 체크한 운영진">${b.by?esc(nameOf(b.by))+' · ':''}${hm(b.at)}</span>`:''}</div>
-      <div class="seg" role="group" aria-label="${esc(m.name)} 출석">${[['O','참여'],['A','공지'],['X','불참']].map(([k,l])=>`<button data-action="mark" data-sid="${s.id}" data-mid="${m.id}" data-v="${k}" aria-pressed="${v===k}"${k==='A'?' title="사전공지 (미리 알리고 빠짐)"':''}${dis}>${l}</button>`).join('')}</div></div>`}).join('');
+      <div class="seg" role="group" aria-label="${esc(m.name)} 출석">${[['O','참여'],['A','사유'],['X','불참']].map(([k,l])=>`<button data-action="mark" data-sid="${s.id}" data-mid="${m.id}" data-v="${k}" aria-pressed="${v===k}"${k==='A'?' title="사유 있는 불참 (사전공지) · 한 달 면제 횟수 안에서는 불참으로 안 쳐요"':''}${dis}>${l}</button>`).join('')}</div></div>`}).join('');
   const allConf=S.confirm&&S.confirm.startsWith('all:'+s.id+':')?S.confirm.slice(-1):null;
   const allChanged=allConf?members.filter(m=>validMark(mk[m.id])&&mk[m.id]!==allConf).length:0;
   const conf2=allConf?`<div class="confirm">이미 체크된 ${allChanged}명도 모두 ${allConf==='O'?'참여로':'불참으로'} 바꿀까요? <button class="btn small danger" data-action="bulkAllYes" data-sid="${s.id}" data-v="${allConf}">모두 바꾸기</button><button class="btn small" data-action="cancel">취소</button></div>`:'';
@@ -1095,9 +1112,20 @@ function renderSettle(){
     ${ms.done?'':'<p class="hint">진행 중인 달이라 지금까지 기준이에요.</p>'}${lockBar}</div>`;
   const table=`<div class="panel"><h2>포인트 · 개근</h2>
     ${perf.length?`<div class="attn">${perf.map(r=>`<span class="who">${esc(r.m.name)}<span class="pill-perfect">개근</span></span>`).join('')}</div>`:'<p class="hint">이 달 개근자는 아직 없어요.</p>'}
-    <div class="scroll"><table><thead><tr><th>순위 · 닉네임</th><th>포인트</th><th>출석률</th><th>참여 / 정규 회차</th><th>공지 면제</th><th>불참</th><th>추가 진행 참여</th></tr></thead><tbody>${rows||'<tr><td colspan="7" class="dash">기록 없음</td></tr>'}</tbody></table></div>
+    <div class="scroll"><table><thead><tr><th>순위 · 닉네임</th><th>포인트</th><th>출석률</th><th>참여/정규</th><th>공지 면제</th><th>불참</th><th>추가</th></tr></thead><tbody>${rows||'<tr><td colspan="7" class="dash">기록 없음</td></tr>'}</tbody></table></div>
     ${notes([`<b>▲▼</b>는 지난달(${monLabel(prev.mon)})과 비교한 변화예요. 출석률은 %p 단위예요`,`<b>포인트</b> = 참여 1회당 ${activeContents().map(c=>esc(c.short)+' '+pts(c.k)).join(' · ')} · 추가 진행 ${pts('bonus')}`,'<b>개근</b> = 그 달 정규 회차를 모두 참여. 면제된 사전공지는 괜찮고, 체크 안 된 회차가 있으면 개근이 아니에요',adm?`<b>경고 기준</b>: ${critText()} · 정규 ${minJudge()}회 미만은 판정 보류`:''])}</div>`;
-  return `<div class="col">${head}${table}${adm?`${renderPay(ms)}${renderDist(ms)}${rewardLink(ms)}`:''}</div>`;
+  if(!adm)return `<div class="col">${head}${table}${renderSettleBuy()}</div>`;
+  const mt=['table','pay','dist','buy'].includes(S.setTab)?S.setTab:'table',ct=S.calcTab==='dist'?'dist':'pay';
+  const mtabs=[['table','정산표'],['pay','금전 분배'],['dist','아이템 분배'],['buy','구매 포인트']];
+  return `<div class="col">${head}
+    <div class="subtabs settle-mtabs" role="tablist">${mtabs.map(([k,l])=>`<button role="tab" data-action="setTab" data-k="${k}" aria-selected="${mt===k}">${l}</button>`).join('')}</div>
+    <div class="settle-grid m-${mt} d-${ct}">
+      <div class="col settle-left"><section data-sec="table">${table}</section><section data-sec="buy">${renderSettleBuy()}</section></div>
+      <div class="col settle-right">
+        <div class="subtabs calc-tabs" role="tablist"><button role="tab" data-action="calcTab" data-k="pay" aria-selected="${ct==='pay'}">금전 분배</button><button role="tab" data-action="calcTab" data-k="dist" aria-selected="${ct==='dist'}">아이템 분배</button></div>
+        <section data-sec="pay">${renderPay(ms)}</section><section data-sec="dist">${renderDist(ms)}</section>
+        <section data-sec="link">${rewardLink(ms)}</section></div>
+    </div></div>`;
 }
 const rwItems=r=>(r.items||[]).map((x,i)=>({x,i,v:r.kind==='money'?(x.amt||0):(x.n||0)})).filter(o=>o.v>0);
 const isPaid=(r,i)=>!!(r.paid&&r.paid['i'+i]);
@@ -1247,14 +1275,15 @@ function renderPay(ms){
         <div class="fg3"><label class="f">판매한 아이템<input type="text" id="payName" maxlength="20" placeholder="예: 신기 강화석"></label>
           <label class="f">판매 금액 (금전)<input type="number" id="payAmt" min="1" max="1000000000" step="1" placeholder="예: 100000"></label>
           <button class="btn primary" data-action="calcPay">분배 계산하기</button></div></div>
-      <div class="cfg-group"><h3>분배 기준</h3>
+      ${res?`<div class="cfg-group"><h3>계산 결과</h3>${res}</div>`:''}
+      <details class="cfg-group" id="tierBox"${S.tierOpen||S.tierDraft?' open':''}><summary style="cursor:pointer"><h3 style="display:inline">분배 기준</h3> <span class="hint">${C.tiers.map(t=>`${t.min}점↑ ${t.pct}%`).join(' · ')}${C.minRate?` · 출석률 ${C.minRate}% 미만 제외`:''}${S.tierDraft?' · <b>저장 안 됨</b>':''}</span></summary>
         <div class="col" style="gap:8px">${tierRows}</div>
         <div class="row"><button class="btn small" data-action="tierAdd"${C.tiers.length>=8?' disabled':''}>등급 추가</button></div>
         <div class="fg2"><label class="f">출석률 이 값 미만은 제외 (%, 0 = 안 씀)<input type="number" id="payMinRate" data-keep="0" min="0" max="100" step="5" value="${C.minRate}"></label>
           <label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="payExHold" data-keep="0"${C.exHold?' checked':''}> 판정 보류자 제외</label></div>
         <div class="row">${S.tierDraft?'<button class="btn small" data-action="tierCancel">되돌리기</button>':''}<span class="grow"></span><button class="btn primary small" data-action="tierSave">기준 저장</button></div>
-        ${notes([`포인트가 가장 높은 등급부터 맞춰요. <b>${lowest}점 미만</b>은 분배에서 빠져요`,'<b>몫 방식</b>: 100%는 1몫, 80%는 0.8몫이에요. 판매 금액을 전체 몫으로 나눠 1몫 금액을 정해요','출석률 기준을 넣으면 포인트와 상관없이 그보다 낮은 사람은 빠져요','금액은 1금전 단위로 내리고, 남는 자투리는 문파 금고에 남겨요','기준을 고친 뒤 <b>기준 저장</b>을 누르면 다음에도 그대로 써요. 저장하지 않고 계산만 해 볼 수도 있어요'])}</div>
-    </div>${res}</div>`;
+        ${notes([`포인트가 가장 높은 등급부터 맞춰요. <b>${lowest}점 미만</b>은 분배에서 빠져요`,'<b>몫 방식</b>: 100%는 1몫, 80%는 0.8몫이에요. 판매 금액을 전체 몫으로 나눠 1몫 금액을 정해요','출석률 기준을 넣으면 포인트와 상관없이 그보다 낮은 사람은 빠져요','금액은 1금전 단위로 내리고, 남는 자투리는 문파 금고에 남겨요','기준을 고친 뒤 <b>기준 저장</b>을 누르면 다음에도 그대로 써요. 저장하지 않고 계산만 해 볼 수도 있어요'])}</details>
+    </div></div>`;
 }
 function payRecord(P){const R=P.res;return {kind:'money',month:P.mon,name:P.name,amount:P.amount,rest:R.rest,tiers:R.C.tiers,minRate:R.C.minRate,exHold:R.C.exHold,items:R.rows.map(x=>({mid:x.r.m.id,name:x.r.m.name,P:x.r.P,rate:x.r.rate,pct:x.pct,amt:x.amt})),excluded:R.out.map(o=>({mid:o.r.m.id,name:o.r.m.name,why:o.why}))}}
 function readTierForm(){
@@ -1444,6 +1473,18 @@ function buyCsv(){
   try{const blob=new Blob(['﻿'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');
     a.href=URL.createObjectURL(blob);a.download=`문파_구매내역_${todayStr()}.csv`;document.body.appendChild(a);a.click();
     setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}catch(e){console.error(e);toast('파일을 만들지 못했어요')}
+}
+function renderSettleBuy(){
+  const B=buyStats(),adm=S.canWrite&&!S.demo;if(!B.rows.length)return '';
+  const top=B.ok.slice(0,10);
+  const rows=top.map(r=>`<tr><td>${r.rank}</td><td style="text-align:left">${esc(r.m.name)}${r.tie?' <span class="tag no">동점</span>':''}</td><td><b>${r.P}</b></td><td>${r.R}</td><td>${r.lb?mdd(r.lb):'–'}</td></tr>`).join('');
+  const wait=B.no.filter(r=>adm||!r.why.endsWith('경고'));
+  return `<div class="panel"><div class="spread"><h2>구매 포인트 · 우선권 순번</h2><div class="row"><span class="hint">${mdd(B.t)} 기준 · 달과 상관없이 지금 점수</span>${adm?'<button class="btn small" data-action="gotoBuy">구매 포인트 관리</button>':''}</div></div>
+    ${B.partial?'<p class="hint">전체 기록을 불러오는 중이에요…</p>':''}
+    <div class="scroll"><table><thead><tr><th>순번</th><th style="text-align:left">닉네임</th><th>구매 포인트</th><th>최근 ${B.C.days}일</th><th>마지막 구매</th></tr></thead><tbody>${rows||'<tr><td colspan="5" class="dash">우선권 대상자가 없어요</td></tr>'}</tbody></table></div>
+    ${B.ok.length>10?`<p class="hint">외 ${B.ok.length-10}명은 ${adm?'관리 → 구매 포인트':'내 출석'}에서 볼 수 있어요.</p>`:''}
+    ${wait.length?`<details><summary class="hint" style="cursor:pointer">대기 · 제외 ${wait.length}명</summary><p class="hint">${wait.map(r=>`${esc(r.m.name)} (${esc(r.why)})`).join(', ')}</p></details>`:''}
+    ${notes([`<b>구매 포인트</b> = 마지막 구매 다음 날부터 쌓인 참여 포인트. 사면 0부터 다시 쌓여요`,`최근 ${B.C.days}일 ${B.C.min}점 이상이어야 우선권이 있어요${B.C.lock?` · 산 뒤 ${B.C.lock}일은 대기`:''}`,adm?'':'운영진 판단(경고 등)은 반영되지 않았어요. 정확한 순번은 운영진 공지를 확인해 주세요'])}</div>`;
 }
 function renderMyBuy(me){
   const B=buyStats(),r=B.rows.find(x=>x.m.id===me.id);if(!r)return '';
@@ -1759,6 +1800,9 @@ document.addEventListener('click',e=>{
     M.saving=true;guard(()=>S.db.collection('rewards').doc().set({...rec,by:myName(),email:(S.authUser&&S.authUser.email)||'',at:Date.now()}),'지급 기록을 저장했어요',{area:'지급',what:'직접 지급 기록',detail:`${name} · ${M.rows.length}명 · ${won(sum)}${money?'금전':'개'}`}).then(ok=>{M.saving=false;if(ok){S.man=null;const e=$('#manName');if(e)e.value='';render()}});return}
   if(a==='atab'){S.atab=b.dataset.k;remember('atab',S.atab);S.confirm=null;render();return}
   if(a==='gotoMembers'){S.tab='admin';S.atab='members';remember('tab','admin');remember('atab','members');render();window.scrollTo({top:0});return}
+  if(a==='setTab'){S.setTab=b.dataset.k;if(b.dataset.k==='pay'||b.dataset.k==='dist')S.calcTab=b.dataset.k;render();window.scrollTo({top:0});return}
+  if(a==='calcTab'){S.calcTab=b.dataset.k;S.setTab=b.dataset.k;render();return}
+  if(a==='gotoBuy'){S.tab='admin';S.atab='buy';remember('tab','admin');remember('atab','buy');render();window.scrollTo({top:0});return}
   if(a==='gotoWarn'){S.tab='admin';S.atab='warn';remember('tab','admin');remember('atab','warn');render();window.scrollTo({top:0});return}
   if(a==='leaveFor'){S.leaveFor=S.leaveFor===b.dataset.mid?null:b.dataset.mid;render();return}
   if(a==='noteFor'){S.noteFor=S.noteFor===b.dataset.mid?null:b.dataset.mid;render();return}
@@ -1860,6 +1904,7 @@ document.addEventListener('change',e=>{
     if(S.members.some(x=>x.id!==m.id&&x.name===name)){toast('같은 닉네임이 이미 있어요');t.value=m.name;return}
     guard(()=>S.db.doc('members/'+m.id).update({name}),'닉네임을 바꿨어요',{area:'문파원',what:'닉네임 변경',detail:`${m.name} → ${name}`})}
 });
+document.addEventListener('toggle',e=>{if(e.target&&e.target.id==='tierBox')S.tierOpen=e.target.open},true);
 document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&e.target.dataset&&(e.target.dataset.action==='rename'||e.target.dataset.action==='roleRename'))e.target.blur();
   if(e.key==='Enter'&&e.target.id==='lfQ'){e.preventDefault();$('[data-action="lfGo"]')?.click()}
