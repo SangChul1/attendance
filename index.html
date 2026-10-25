@@ -405,7 +405,7 @@ const roleIdx=r=>{const i=ROLES.indexOf(r);return i<0?ROLES.length:i};
 const DAYS=['일','월','화','수','목','금','토'];
 const CFG0={guild:'',weekStart:1,streak:3,points:{singi:1,mihok:1,rank:1,bonus:1}};
 
-const S={detail:null,jimp:null,sorts:{},leftTab:'table',setTab:'table',calcTab:'pay',tierOpen:false,lqDraft:null,xOpen:false,lp:{mode:'month',off:0},plogs:null,lcats:null,lq:'',logs:[],wkOff:0,purchases:[],buyBlocked:false,buyFor:'',olderFail:false,rf:{mon:'all',kind:'all',q:'',unpaid:false},payOpen:null,man:null,db:null,fs:null,auth:null,authUser:null,myNick:'',isOwner:false,admins:[],ready:false,err:false,setup:false,canWrite:false,older:[],olderRange:null,olderLoading:false,cutoff:'',me:'',month:'',imp:null,stab:'sum',ssort:'rate',ssearch:'',warnings:[],warnBlocked:false,logBlocked:false,wmonth:'',dist:null,hist:null,delLogs:null,atab:'warn',nsort:'role',notes:{},locks:{},rewards:[],leaveFor:null,noteFor:null,cdraft:null,tierDraft:null,pay:null,selMode:false,sel:new Set(),
+const S={mFilter:'active',detail:null,jimp:null,sorts:{},leftTab:'table',setTab:'table',calcTab:'pay',tierOpen:false,lqDraft:null,xOpen:false,lp:{mode:'month',off:0},plogs:null,lcats:null,lq:'',logs:[],wkOff:0,purchases:[],buyBlocked:false,buyFor:'',olderFail:false,rf:{mon:'all',kind:'all',q:'',unpaid:false},payOpen:null,man:null,db:null,fs:null,auth:null,authUser:null,myNick:'',isOwner:false,admins:[],ready:false,err:false,setup:false,canWrite:false,older:[],olderRange:null,olderLoading:false,cutoff:'',me:'',month:'',imp:null,stab:'sum',ssort:'rate',ssearch:'',warnings:[],warnBlocked:false,logBlocked:false,wmonth:'',dist:null,hist:null,delLogs:null,atab:'warn',nsort:'role',notes:{},locks:{},rewards:[],leaveFor:null,noteFor:null,cdraft:null,tierDraft:null,pay:null,selMode:false,sel:new Set(),
   members:[],sessions:[],config:{...CFG0},
   tab:'check',openSid:null,editSid:null,period:'4',cfilter:'all',demo:false,confirm:null,showOff:false,
   search:'',onlyUnchecked:false,mSearch:''};
@@ -861,7 +861,7 @@ function csvText(opt){
   const head=['닉네임','직위','상태','가입일','판정','출석률','메인출석률','참여','사전공지(면제)','불참','연속불참','포인트',...sess.map(s=>`${s.date}(${DAYS[dow(s.date)]}) ${CMAP[s.content]?.short||s.content}${s.extra?'(추가)':''}`)];
   const lab={O:'참여',A:'사전공지',X:'불참'};
   const lines=[head.map(cell).join(',')];
-  st.rows.forEach(r=>{lines.push([r.m.name,r.m.role||'',r.m.active===false?'탈퇴':'활동',r.m.joinedAt||'',r.hold?'판정 보류':'',pct(r.rate),pct(r.mainRate),r.O,r.E,r.absent,r.streak,r.P,...sess.map(s=>eligible(r.m,s)?(lab[marksOf(s)[r.m.id]]||''):'')].map(cell).join(','))});
+  st.rows.forEach(r=>{lines.push([r.m.name,r.m.role||'',r.m.active===false?(r.m.moved?'이동':'탈퇴'):'활동',r.m.joinedAt||'',r.hold?'판정 보류':'',pct(r.rate),pct(r.mainRate),r.O,r.E,r.absent,r.streak,r.P,...sess.map(s=>eligible(r.m,s)?(lab[marksOf(s)[r.m.id]]||''):'')].map(cell).join(','))});
   return '﻿'+lines.join('\r\n');
 }
 
@@ -931,12 +931,14 @@ function lockNote(){if(!S.canWrite||S.demo)return '';const cur=todayStr().slice(
 function backupDays(){const lb=S.config.lastBackup;return lb&&lb.at?Math.floor((Date.now()-lb.at)/864e5):null}
 function backupNote(){if(!S.sessions.length)return '';const d=backupDays();if(d!=null&&d<30)return '';
   return `<div class="lockbar"><span>${d==null?'아직 전체 기록을 백업한 적이 없어요':`마지막 백업이 <b>${d}일 전</b>이에요`}. 한 달에 한 번 받아 두면 안전해요.</span><span class="grow"></span><button class="btn small primary" data-action="exportJson">지금 완전 백업 받기</button></div>`}
+const mStatus=m=>m.active===false?(m.moved?'moved':'left'):'active';
 function renderMemberAdmin(){
-  const q=S.mSearch.trim().toLowerCase();
-  const list=[...S.members].sort(memberSort).filter(m=>(S.showOff||m.active!==false)&&(!q||String(m.name).toLowerCase().includes(q)));
-  const offN=S.members.filter(m=>m.active===false).length;
+  const q=S.mSearch.trim().toLowerCase();const F=['active','left','moved','all'].includes(S.mFilter)?S.mFilter:'active';
+  const cnt={active:0,left:0,moved:0};S.members.forEach(m=>cnt[mStatus(m)]++);
+  const list=[...S.members].sort(memberSort).filter(m=>(F==='all'||mStatus(m)===F)&&(!q||String(m.name).toLowerCase().includes(q)));
+  const offN=cnt.left+cnt.moved;
   const dis='';
-  const rows=list.map(m=>{const off=m.active===false;
+  const rows=list.map(m=>{const off=m.active===false,st=mStatus(m);
     const conf=S.confirm==='m:'+m.id?`<div class="confirm" style="flex-basis:100%">${esc(m.name)} 님을 명단에서 지울까요? 지금까지의 출석 기록도 통계에서 빠져요. 기록을 남기려면 '탈퇴 처리'를 쓰세요. <button class="btn small danger" data-action="delMember" data-mid="${m.id}">삭제</button><button class="btn small" data-action="cancel">취소</button></div>`:'';
     return `<div class="medit${off?' off':''}"><input type="text" id="mn-${m.id}" data-keep="0" value="${esc(m.name)}" data-action="rename" data-mid="${m.id}" aria-label="닉네임" maxlength="24"${dis}>
       <select data-action="role" data-mid="${m.id}" aria-label="직위"${dis}>${[...ROLES,...(m.role&&!ROLES.includes(m.role)?[m.role]:[])].map(r=>`<option value="${esc(r)}"${m.role===r?' selected':''}>${esc(r)}</option>`).join('')}</select>
@@ -945,7 +947,9 @@ function renderMemberAdmin(){
       ${(m.leaves||[]).some(l=>l&&(l.to||'9999')>=todayStr())?`<span class="tag" title="휴식 기간">휴식 ${(m.leaves||[]).filter(l=>l&&(l.to||'9999')>=todayStr()).map(l=>`${md(l.from)}~${l.to?md(l.to):''}`).join(', ')}</span>`:''}
       <span class="acts"><button class="btn small" data-action="detail" data-mid="${m.id}">상세</button><button class="btn small" data-action="leaveFor" data-mid="${m.id}" aria-pressed="${S.leaveFor===m.id}">휴식</button>
       <button class="btn small" data-action="noteFor" data-mid="${m.id}" aria-pressed="${S.noteFor===m.id}">메모</button>
-      <button class="btn small" data-action="toggleOff" data-mid="${m.id}">${off?'복귀':'탈퇴 처리'}</button><button class="btn small danger" data-action="askDelM" data-mid="${m.id}">삭제</button></span>${conf}
+      ${off?`<button class="btn small" data-action="rejoin" data-mid="${m.id}">복귀</button>`:`<button class="btn small" data-action="leaveOut" data-mid="${m.id}">탈퇴 처리</button><button class="btn small" data-action="moveAsk" data-mid="${m.id}" aria-pressed="${S.confirm==='mv:'+m.id}">이동 처리</button>`}<button class="btn small danger" data-action="askDelM" data-mid="${m.id}">삭제</button></span>
+      ${st==='left'?`<span class="tag" style="flex-basis:auto">탈퇴${m.leftAt?' · '+md(m.leftAt):''}</span>`:st==='moved'?`<span class="tag extra">이동${m.movedTo?' → '+esc(m.movedTo):''}${m.movedAt?' · '+md(m.movedAt):''}</span>`:''}${conf}
+      ${S.confirm==='mv:'+m.id?`<div class="inline-form" style="flex-basis:100%"><label class="f">이동한 곳 (선택)<input type="text" id="mvTo-${m.id}" maxlength="30" placeholder="예: 묘룡2 학살 문파"></label><div class="row"><button class="btn small primary" data-action="moveYes" data-mid="${m.id}">이동 처리</button><button class="btn small" data-action="cancel">취소</button><span class="hint">명단과 통계에서 빠지고, 기록은 남아요</span></div></div>`:''}
       ${S.notes[m.id]?.text&&S.noteFor!==m.id?`<span class="memo">메모: ${esc(S.notes[m.id].text)}</span>`:''}
       ${S.noteFor===m.id?`<div class="inline-form"><label class="f">운영진 메모 (운영진만 보여요)<textarea id="note-${m.id}" maxlength="300" placeholder="예: 평일 야간 근무, 주말만 가능">${esc(S.notes[m.id]?.text||'')}</textarea></label><div class="row"><button class="btn small primary" data-action="saveNote" data-mid="${m.id}">메모 저장</button><button class="btn small" data-action="noteFor" data-mid="${m.id}">닫기</button>${S.notes[m.id]?.at?`<span class="hint">${esc(S.notes[m.id].by||'')} · ${hm(S.notes[m.id].at)}</span>`:''}</div></div>`:''}
       ${S.leaveFor===m.id?renderLeave(m):''}</div>`}).join('');
@@ -955,10 +959,10 @@ function renderMemberAdmin(){
       <label class="f">가입일 (비워 두면 모든 회차가 대상)<input type="date" id="addJoin"></label>
       <div class="row"><label class="chk">직위 <select id="addRole">${ROLES.map(r=>`<option value="${esc(r)}"${r===baseRole()?' selected':''}>${esc(r)}</option>`).join('')}</select></label><span class="grow"></span><button class="btn primary" data-action="addMembers">추가</button></div>
       <p class="hint">이미 있는 닉네임은 건너뛰어요.</p></div>
-    <div class="panel"><h2>도움말</h2>${notes(['<b>가입일</b>: 이름 옆 날짜 칸이에요. 그날 이후 회차만 체크 명단과 출석률에 들어가요','<b>휴식</b>: 정한 기간의 회차는 출석률·개근·경고 판정에서 빠져요','<b>메모</b>: 운영진만 보는 메모예요','<b>탈퇴 처리</b>: 명단과 통계에서 숨기지만 기록은 남아요','<b>삭제</b>: 기록까지 통계에서 빠져요. 잘못 넣은 닉네임에만 쓰세요'])}</div>
+    <div class="panel"><h2>도움말</h2>${notes(['<b>가입일</b>: 이름 옆 날짜 칸이에요. 그날 이후 회차만 체크 명단과 출석률에 들어가요','<b>휴식</b>: 정한 기간의 회차는 출석률·개근·경고 판정에서 빠져요','<b>메모</b>: 운영진만 보는 메모예요','<b>탈퇴 처리 · 이동 처리</b>: 명단과 통계에서 숨기지만 기록은 남아요. 이동은 이동한 곳을 적어 둘 수 있어요. 위의 <b>활동 · 탈퇴 · 이동 · 전체</b>로 골라 보고 검색해요','<b>삭제</b>: 기록까지 통계에서 빠져요. 잘못 넣은 닉네임에만 쓰세요'])}</div>
     </div>
-    <div class="panel"><div class="spread"><h2>명단 <span class="hint num">${S.members.length-offN}명${offN?` · 탈퇴 ${offN}명`:''}</span></h2>
-      ${offN?`<label class="chk"><input type="checkbox" id="showOff" data-keep="0" data-action="showOff"${S.showOff?' checked':''}> 탈퇴자 보기</label>`:''}</div>
+    <div class="panel"><div class="spread"><h2>명단 <span class="hint num">활동 ${cnt.active}명${cnt.left?` · 탈퇴 ${cnt.left}명`:''}${cnt.moved?` · 이동 ${cnt.moved}명`:''}</span></h2>
+      <div class="seg2" role="group" aria-label="명단 보기">${[['active','활동'],['left','탈퇴'],['moved','이동'],['all','전체']].map(([k,l])=>`<button data-action="mFilter" data-k="${k}" aria-pressed="${F===k}">${l} ${k==='all'?S.members.length:cnt[k]}</button>`).join('')}</div></div>
       ${S.members.length?`<div class="row"><input type="search" id="memSearch" data-keep="0" data-action="mSearch" placeholder="닉네임 검색" value="${esc(S.mSearch)}" aria-label="닉네임 검색" class="grow">${nsortSel('nsortMem')}</div>`:''}
       <div>${rows||(S.members.length?'<p class="hint">조건에 맞는 문파원이 없어요.</p>':'<div class="empty"><h3>명단이 비어 있어요</h3><p class="hint">왼쪽에서 닉네임을 추가하면 출석 체크 명단에 바로 나타나요.</p></div>')}</div>
 </div></div>`;
@@ -1171,7 +1175,7 @@ function renderDetail(){
   const B=buyStats(),br=B.rows.find(x=>x.m.id===m.id),st=streakOf(m),note=S.notes[m.id];
   const leaves=(m.leaves||[]).filter(l=>l&&l.from);
   return `<div class="overlay" data-action="detailClose"><div class="panel wide" role="dialog" aria-label="${esc(m.name)} 상세">
-    <div class="spread"><h2>${esc(m.name)} <span class="hint">${esc(m.role||'')}${m.active===false?' · 탈퇴':''}</span></h2><button class="btn small" data-action="detailClose">닫기</button></div>
+    <div class="spread"><h2>${esc(m.name)} <span class="hint">${esc(m.role||'')}${m.active===false?(m.moved?` · 이동${m.movedTo?' → '+esc(m.movedTo):''}`:' · 탈퇴'):''}</span></h2><button class="btn small" data-action="detailClose">닫기</button></div>
     <div class="row">${m.joinedAt?`<span class="tag">가입 ${esc(m.joinedAt)}</span>`:''}${st?`<span class="pill-streak">현재 연속 불참 ${st}회</span>`:''}${warnCount(m.id)?`<span class="pill-low">집계 기간 경고 ${warnCount(m.id)}회</span>`:''}${leaves.map(l=>`<span class="tag">휴식 ${md(l.from)}~${l.to?md(l.to):'미정'}</span>`).join('')}</div>
     ${note?.text?`<div class="notebox">메모: ${esc(note.text)} <span class="hint">· ${esc(note.by||'')} ${note.at?hm(note.at):''}</span></div>`:''}
     <div class="tiles">
@@ -1673,7 +1677,7 @@ function buildImport(text){
   for(const r of rows.slice(1)){const name=(r[0]||'').trim().slice(0,24);if(!name)continue;
     const rr=ri>=0?(r[ri]||'').trim():'';const mk={};
     cols.forEach((c,ci)=>{const v=MK[(r[c.i]||'').trim()];if(v){mk[ci]=v;marks++}});
-    const jd=ji>=0?(r[ji]||'').trim():'';people.push({name,role:ROLES.includes(rr)?rr:baseRole(),mk,active:!(si>=0&&(r[si]||'').trim()==='탈퇴'),joinedAt:/^\d{4}-\d{2}-\d{2}$/.test(jd)?jd:''})}
+    const jd=ji>=0?(r[ji]||'').trim():'';people.push({name,role:ROLES.includes(rr)?rr:baseRole(),mk,active:!(si>=0&&['탈퇴','이동'].includes((r[si]||'').trim())),moved:si>=0&&(r[si]||'').trim()==='이동',joinedAt:/^\d{4}-\d{2}-\d{2}$/.test(jd)?jd:''})}
   const have=new Set(S.members.map(m=>m.name));
   const newSess=cols.filter(c=>!findAny(c.date,c.content,c.extra)).length;
   return {cols,people,marks,newPeople:people.filter(x=>!have.has(x.name)).length,newSess,oldSess:cols.length-newSess};
@@ -1688,7 +1692,7 @@ async function runImport(){
   const ok=await guard(async()=>{
     const byName=new Map(S.members.map(m=>[m.name,m.id]));
     for(const x of I.people){if(byName.has(x.name))continue;const ref=S.db.collection('members').doc();
-      await ref.set({name:x.name,role:x.role,active:x.active!==false,joinedAt:x.joinedAt||'',createdAt:Date.now(),createdBy:myName()+' (가져오기)'});byName.set(x.name,ref.id)}
+      await ref.set({name:x.name,role:x.role,active:x.active!==false,moved:!!x.moved,joinedAt:x.joinedAt||'',createdAt:Date.now(),createdBy:myName()+' (가져오기)'});byName.set(x.name,ref.id)}
     for(let ci=0;ci<I.cols.length;ci++){const c=I.cols[ci];if(isLocked(c.date)){I.skipped=(I.skipped||0)+1;continue}const s=findAny(c.date,c.content,c.extra);
       const cur=s?(s.marks||{}):{};const add={},by={};const now=Date.now();
       for(const x of I.people){const v=x.mk[ci];if(!v)continue;const id=byName.get(x.name);if(validMark(cur[id]))continue;add[id]=v;by[id]={by:myName()+' (가져오기)',at:now}}
@@ -1831,7 +1835,12 @@ document.addEventListener('click',e=>{
     guard(async()=>{if(s){const {id,...d}=s;await writeLog({type:'delete',sid,date:s.date,content:s.content,extra:!!s.extra,data:{date:d.date,content:d.content,extra:!!d.extra,marks:d.marks||{},marksBy:d.marksBy||{},note:d.note||'',rank:d.rank||'',createdAt:d.createdAt||0,createdBy:d.createdBy||''}})}
       await S.db.doc('sessions/'+sid).delete();if(S.openSid===sid)S.openSid=null;if(S.hist&&S.hist.sid===sid)S.hist=null;S.delLogs=null;render()},'회차를 지웠어요');return}
   if(a==='delMember'){const mid=b.dataset.mid;S.confirm=null;guard(()=>S.db.doc('members/'+mid).delete(),'명단에서 지웠어요',{area:'문파원',what:'문파원 삭제',detail:memberName(mid)});return}
-  if(a==='toggleOff'){const m=S.members.find(x=>x.id===b.dataset.mid);if(m)guard(()=>S.db.doc('members/'+m.id).update({active:m.active===false}),null,{area:'문파원',what:m.active===false?'복귀':'탈퇴 처리',detail:m.name});return}
+  if(a==='mFilter'){S.mFilter=b.dataset.k;S.confirm=null;render();return}
+  if(a==='leaveOut'){const m=S.members.find(x=>x.id===b.dataset.mid);if(m)guard(()=>S.db.doc('members/'+m.id).update({active:false,moved:false,movedTo:'',leftAt:todayStr()}),`${m.name} 님을 탈퇴 처리했어요`,{area:'문파원',what:'탈퇴 처리',detail:m.name});return}
+  if(a==='moveAsk'){S.confirm=S.confirm==='mv:'+b.dataset.mid?null:'mv:'+b.dataset.mid;render();$('#mvTo-'+b.dataset.mid)?.focus();return}
+  if(a==='moveYes'){const m=S.members.find(x=>x.id===b.dataset.mid);if(!m)return;const to=($('#mvTo-'+m.id)?.value||'').trim().slice(0,30);S.confirm=null;
+    guard(()=>S.db.doc('members/'+m.id).update({active:false,moved:true,movedTo:to,movedAt:todayStr()}),`${m.name} 님을 이동 처리했어요`,{area:'문파원',what:'이동 처리',detail:`${m.name}${to?' → '+to:''}`});return}
+  if(a==='rejoin'){const m=S.members.find(x=>x.id===b.dataset.mid);if(m)guard(()=>S.db.doc('members/'+m.id).update({active:true,moved:false}),`${m.name} 님이 복귀했어요`,{area:'문파원',what:'복귀',detail:`${m.name}${m.moved?' (이동에서)':' (탈퇴에서)'}`});return}
   if(a==='addMembers'){addMembers();return}
   if(a==='saveCfg'){
     const guild=$('#cfgGuild').value.trim().slice(0,30);
@@ -2008,7 +2017,6 @@ document.addEventListener('change',e=>{
   else if(a==='join'){guard(()=>S.db.doc('members/'+t.dataset.mid).update({joinedAt:t.value||''}),t.value?'가입일을 저장했어요':'가입일을 지웠어요',{area:'문파원',what:'가입일 변경',detail:`${memberName(t.dataset.mid)} ${t.value||'(지움)'}`})}
   else if(a==='impFile'){const f=t.files&&t.files[0];if(f)readImport(f)}
   else if(a==='jsonFile'){const f=t.files&&t.files[0];if(f)readJson(f)}
-  else if(a==='showOff'){S.showOff=t.checked;render()}
   else if(a==='onlyUnc'){S.onlyUnchecked=t.checked;render()}
   else if(a==='roleRename'){const i=+t.dataset.i,old=ROLES[i],nm=t.value.trim().slice(0,12);
     if(!nm||nm===old){t.value=old;return}if(ROLES.includes(nm)){toast('이미 있는 직위예요');t.value=old;return}
