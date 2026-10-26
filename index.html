@@ -861,8 +861,15 @@ header.top{border-radius:18px}.hero{border-radius:18px}
 .nform{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:14px;background:var(--sunken);border:1px solid var(--line)}
 .nform textarea{min-height:140px}
 /* 학살 문파 / 공지 줄 높이 */
-.home-r1{min-height:330px}
-.hero2{min-height:330px;justify-content:space-between}
+.home-r1{min-height:420px}
+.nrow.nph{visibility:hidden;border-color:transparent}
+.home-r1>.notice{display:flex;flex-direction:column}
+.npage{margin-top:auto;display:flex;justify-content:center;gap:6px;padding-top:6px}
+.npage .pg{min-width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-weight:600;cursor:pointer;color:var(--ink)}
+.npage .pg:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.npage .pg.on{background:linear-gradient(135deg,var(--g1a),var(--g1b));border-color:transparent;color:#fff}
+.npage .pg:disabled{opacity:.35;cursor:default}
+.hero2{min-height:400px;justify-content:space-between}
 .hero2 .hero-days{align-items:stretch}
 .hd{min-height:150px}
 
@@ -873,7 +880,8 @@ header.top{border-radius:18px}.hero{border-radius:18px}
 .nfoot{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .nbadge.gr{background:linear-gradient(135deg,var(--g1a),var(--g1b))}
 .nv-ov{z-index:40;padding:20px;backdrop-filter:blur(3px)}
-.nv{width:min(760px,100%);max-height:calc(88vh / var(--zoom,1));padding:0;gap:0;overflow:hidden;border:0;border-radius:20px;box-shadow:0 30px 70px -30px rgba(0,0,0,.7)}
+.overlay .panel.nv{width:min(1000px,100%)}
+.nv{width:min(1000px,100%);max-height:calc(88vh / var(--zoom,1));padding:0;gap:0;overflow:hidden;border:0;border-radius:20px;box-shadow:0 30px 70px -30px rgba(0,0,0,.7)}
 .nv-h{position:relative;padding:22px 64px 20px 26px;color:#fff;background:linear-gradient(120deg,var(--hero1,#134c48) 0%,var(--hero2,#1f6d68) 60%,var(--hero3,#5c4a36) 100%);overflow:hidden}
 .nv-h::after{content:'虐殺';position:absolute;right:56px;bottom:-26px;font-family:var(--f-han);font-weight:900;font-size:92px;line-height:1;color:#fff;opacity:.08;letter-spacing:-4px;pointer-events:none}
 .nv-tags{display:flex;gap:6px;align-items:center;margin-bottom:8px;position:relative}
@@ -1050,7 +1058,7 @@ const roleIdx=r=>{const i=ROLES.indexOf(r);return i<0?ROLES.length:i};
 const DAYS=['일','월','화','수','목','금','토'];
 const CFG0={guild:'',weekStart:1,streak:3,points:{singi:1,mihok:1,rank:1,bonus:1}};
 
-const S={nView:null,notices:[],noticeBlocked:false,nEdit:null,nAll:false,nDel:null,demoT:{},manOpen:(()=>{try{return localStorage.getItem('att.manOpen')==='1'}catch(_){return false}})(),msel:new Set(),mbulk:null,noticeEdit:false,rfSug:false,mt:(()=>{try{const v=JSON.parse(localStorage.getItem('att.mt')||'{}');return v&&typeof v==='object'?v:{}}catch(_){return {}}})(),mFilter:'active',detail:null,jimp:null,sorts:{},leftTab:'table',setTab:'table',calcTab:'pay',tierOpen:false,lqDraft:null,xOpen:false,lp:{mode:'month',off:0},plogs:null,lcats:null,lq:'',logs:[],wkOff:0,purchases:[],buyBlocked:false,buyFor:'',olderFail:false,rf:{mon:'all',kind:'all',q:'',unpaid:false},payOpen:null,man:null,db:null,fs:null,auth:null,authUser:null,myNick:'',isOwner:false,admins:[],ready:false,err:false,setup:false,canWrite:false,older:[],olderRange:null,olderLoading:false,cutoff:'',me:'',month:'',imp:null,stab:'sum',ssort:'rate',ssearch:'',warnings:[],warnBlocked:false,logBlocked:false,wmonth:'',dist:null,hist:null,delLogs:null,atab:'warn',nsort:'role',notes:{},locks:{},rewards:[],leaveFor:null,noteFor:null,cdraft:null,tierDraft:null,pay:null,selMode:false,sel:new Set(),
+const S={nView:null,notices:[],noticeBlocked:false,nEdit:null,nPage:0,nDel:null,demoT:{},manOpen:(()=>{try{return localStorage.getItem('att.manOpen')==='1'}catch(_){return false}})(),msel:new Set(),mbulk:null,noticeEdit:false,rfSug:false,mt:(()=>{try{const v=JSON.parse(localStorage.getItem('att.mt')||'{}');return v&&typeof v==='object'?v:{}}catch(_){return {}}})(),mFilter:'active',detail:null,jimp:null,sorts:{},leftTab:'table',setTab:'table',calcTab:'pay',tierOpen:false,lqDraft:null,xOpen:false,lp:{mode:'month',off:0},plogs:null,lcats:null,lq:'',logs:[],wkOff:0,purchases:[],buyBlocked:false,buyFor:'',olderFail:false,rf:{mon:'all',kind:'all',q:'',unpaid:false},payOpen:null,man:null,db:null,fs:null,auth:null,authUser:null,myNick:'',isOwner:false,admins:[],ready:false,err:false,setup:false,canWrite:false,older:[],olderRange:null,olderLoading:false,cutoff:'',me:'',month:'',imp:null,stab:'sum',ssort:'rate',ssearch:'',warnings:[],warnBlocked:false,logBlocked:false,wmonth:'',dist:null,hist:null,delLogs:null,atab:'warn',nsort:'role',notes:{},locks:{},rewards:[],leaveFor:null,noteFor:null,cdraft:null,tierDraft:null,pay:null,selMode:false,sel:new Set(),
   members:[],sessions:[],config:{...CFG0},
   tab:'home',openSid:null,editSid:null,period:'4',cfilter:'all',demo:false,confirm:null,showOff:false,
   search:'',onlyUnchecked:false,mSearch:''};
@@ -1228,7 +1236,7 @@ function renderNoticeView(){
 }
 function renderNotices(){
   const adm=S.canWrite,L=noticeList(),now=Date.now(),isNew=n=>n.at&&now-n.at<7*864e5;
-  const pin=L.find(n=>n.pinned),rest=L.filter(n=>n!==pin),shown=S.nAll?rest:rest.slice(0,5);
+  const pin=L.find(n=>n.pinned),rest=L.filter(n=>n!==pin),PER=4,pages=Math.max(1,Math.ceil(rest.length/PER));if(!(S.nPage>=0))S.nPage=0;if(S.nPage>pages-1)S.nPage=pages-1;const shown=rest.slice(S.nPage*PER,S.nPage*PER+PER);
   const acts=n=>adm?`<span class="nacts">${S.nDel===n.id?`<button class="btn small danger" data-action="nDelYes" data-id="${esc(n.id)}">정말 삭제</button><button class="btn small" data-action="nDel" data-id="">취소</button>`:`<button class="btn small" data-action="nEditOpen" data-id="${esc(n.id)}">수정</button>${n.legacy?'':`<button class="btn small" data-action="nPinT" data-id="${esc(n.id)}">${n.pinned?'고정 해제':'고정'}</button><button class="btn small" data-action="nDel" data-id="${esc(n.id)}">삭제</button>`}`}</span>`:'';
   const meta=n=>`<span class="hint">${n.by?esc(n.by)+' · ':''}${n.at?mdd(new Date(n.at+9*3600e3).toISOString().slice(0,10)):''}</span>`;
   const long=t=>String(t||'').split('\n').length>4||String(t||'').length>180;
@@ -1240,7 +1248,8 @@ function renderNotices(){
     ${S.noticeBlocked&&adm?'<div class="confirm">공지를 불러올 수 없어요. Firestore 규칙을 새 버전으로 게시해 주세요.</div>':''}
     ${S.nEdit==='new'&&adm?noticeForm(null):''}
     ${pinHtml}
-    ${rest.length?`<div class="nlist"><div class="nlh"><span class="l">최근 공지</span>${rest.length>5?`<button class="lnk" data-action="nAll">${S.nAll?'접기':`전체 ${rest.length}개 보기`}</button>`:''}</div>${rows}</div>`:''}
+    ${rest.length?`<div class="nlist"><div class="nlh"><span class="l">최근 공지</span><span class="hint">${rest.length}개</span></div>${rows}${pages>1?'<div class="nrow nph" aria-hidden="true"><span class="nline">&nbsp;</span></div>'.repeat(PER-shown.length):''}</div>`:''}
+    ${pages>1?`<div class="npage" role="navigation" aria-label="공지 페이지"><button class="pg" data-action="nPage" data-p="${S.nPage-1}"${S.nPage>0?'':' disabled'} aria-label="이전 페이지">‹</button>${(()=>{let a=Math.max(0,Math.min(S.nPage-2,pages-5)),z=Math.min(pages,a+5),o='';for(let i=a;i<z;i++)o+=`<button class="pg${i===S.nPage?' on':''}" data-action="nPage" data-p="${i}" aria-current="${i===S.nPage}">${i+1}</button>`;return o})()}<button class="pg" data-action="nPage" data-p="${S.nPage+1}"${S.nPage<pages-1?'':' disabled'} aria-label="다음 페이지">›</button></div>`:''}
     ${!L.length&&S.nEdit!=='new'?`<p class="hint">${adm?'아직 공지가 없어요. [＋ 새 공지]로 규칙이나 안내를 적어 두세요. 규칙은 📌 고정으로 올려 두면 맨 위에 보여요.':'아직 등록된 공지가 없어요.'}</p>`:''}</div>`;
 }
 /* ---------- 홈 ---------- */
@@ -2662,7 +2671,7 @@ document.addEventListener('click',e=>{
   if(a==='nViewClose'){if(b.classList.contains('overlay')&&e.target!==b)return;S.nView=null;S.nDel=null;render();return}
   if(a==='nEditOpen'){S.nEdit=b.dataset.id||'new';S.nDel=null;S.nView=null;if(S.tab!=='home'){S.tab='home';remember('tab','home')}render();$('#nTitle')?.focus();return}
   if(a==='nCancel'){S.nEdit=null;render();return}
-  if(a==='nAll'){S.nAll=!S.nAll;render();return}
+  if(a==='nPage'){S.nPage=Math.max(0,+b.dataset.p||0);render();return}
   if(a==='nDel'){S.nDel=b.dataset.id||null;render();return}
   if(a==='nSave'){const id=b.dataset.id,title=($('#nTitle')?.value||'').trim().slice(0,60),body=($('#nBody')?.value||'').replace(/\s+$/,'').slice(0,2000),pinned=!!$('#nPin')?.checked;
     if(!title&&!body){toast('제목이나 내용을 적어 주세요');return}
