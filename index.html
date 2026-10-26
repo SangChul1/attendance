@@ -608,6 +608,50 @@ details.rules:not([open]){gap:0}
 .me-more>summary h2{margin:0}
 .me-more:not([open]){gap:0}
 @media (min-width:1000px){.me-l .me-key{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.me-up{display:flex;flex-direction:column}
+.me-up .it{display:flex;align-items:center;gap:8px;padding:8px 4px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.me-up .it.today{background:color-mix(in srgb,var(--accent) 8%,transparent);border-radius:8px}
+.me-up .d{min-width:76px;font-size:14px;color:var(--muted)}.me-up .it.today .d{color:var(--accent);font-weight:700}
+.me-goal{margin:0;padding:10px 12px;border-radius:10px;background:var(--accent-soft);font-size:14px}
+.me-near{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media (max-width:600px){.me-near{grid-template-columns:minmax(0,1fr)}}
+.me-near>div{display:flex;flex-direction:column;min-width:0}
+.me-near .l{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px}
+.me-near .it{display:flex;align-items:center;gap:8px;padding:7px 6px;border-bottom:1px solid var(--line);min-width:0}
+.me-near .it.me{background:color-mix(in srgb,var(--accent) 9%,transparent);border-radius:8px}
+.me-near .it .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.me-near .it b{font-size:16px}.me-near .it small{font-size:12px;color:var(--muted);font-weight:500;margin-left:1px}
+.me-near .df{min-width:52px;text-align:right;font-size:12px}
+
+/* 홈 배치 v3 */
+.home-r1{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:20px;align-items:stretch}
+.home-r2{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:20px;align-items:stretch}
+@media (max-width:900px){.home-r1,.home-r2{grid-template-columns:minmax(0,1fr)}}
+.home-r1>.panel{height:100%}
+.hero2{flex-direction:column;align-items:stretch;justify-content:flex-start;flex-wrap:nowrap;gap:16px}
+.hero-days{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;position:relative}
+@media (max-width:520px){.hero-days{grid-template-columns:minmax(0,1fr)}}
+.hd{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);min-width:0}
+.hd.on{background:#fff;color:#1d2a29;border-color:#fff;box-shadow:0 10px 24px -14px rgba(0,0,0,.6)}
+.hd-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.hd-h b{font-size:17px}.hd-h span{font-size:13px;opacity:.85}
+.hd.on .hd-h b{color:#1f6d68}
+.hr-it{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:7px 10px;border-radius:10px;background:rgba(255,255,255,.14);border-left:4px solid rgba(255,255,255,.55)}
+.hd.on .hr-it{background:#f3f6f5;border-left-color:var(--cc,#1f6d68)}
+.hr-c{font-weight:700;font-size:16px}.hr-c small{font-size:11px;font-weight:600;padding:1px 6px;border-radius:999px;background:#f5ead2;color:#9c6a12;vertical-align:2px}
+.hr-t{font-size:14px;font-weight:600;opacity:.9}
+.hd.on .hr-t{color:#5d6b69}
+.hd-none{margin:0;font-size:14px;opacity:.85}
+.hd.on .hd-none{color:#5d6b69}
+.home-top5{gap:10px}
+.home-top5 .h5sep{margin-top:10px;padding-top:14px;border-top:1px dashed var(--line)}
+.home-tiles{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:1fr;align-content:stretch}
+.home-tiles .tile{justify-content:center;align-items:flex-start;gap:6px;padding:18px 20px}
+.home-tiles .tile .v{font-size:40px;line-height:1.1}
+.home-tiles .tile .v small{font-size:16px;color:var(--muted);font-weight:500;margin-left:3px}
+.hti{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;font-size:22px;background:var(--accent-soft);margin-bottom:4px}
+.home-tiles .tile:nth-child(2) .hti{background:var(--warn-soft)}.home-tiles .tile:nth-child(3) .hti{background:var(--good-soft)}.home-tiles .tile:nth-child(4) .hti{background:var(--seal-soft)}
 </style>
 </head>
 <body>
@@ -711,7 +755,7 @@ const roleIdx=r=>{const i=ROLES.indexOf(r);return i<0?ROLES.length:i};
 const DAYS=['일','월','화','수','목','금','토'];
 const CFG0={guild:'',weekStart:1,streak:3,points:{singi:1,mihok:1,rank:1,bonus:1}};
 
-const S={manOpen:(()=>{try{return localStorage.getItem('att.manOpen')==='1'}catch(_){return false}})(),msel:new Set(),mbulk:null,noticeEdit:false,rfSug:false,mt:(()=>{try{const v=JSON.parse(localStorage.getItem('att.mt')||'{}');return v&&typeof v==='object'?v:{}}catch(_){return {}}})(),mFilter:'active',detail:null,jimp:null,sorts:{},leftTab:'table',setTab:'table',calcTab:'pay',tierOpen:false,lqDraft:null,xOpen:false,lp:{mode:'month',off:0},plogs:null,lcats:null,lq:'',logs:[],wkOff:0,purchases:[],buyBlocked:false,buyFor:'',olderFail:false,rf:{mon:'all',kind:'all',q:'',unpaid:false},payOpen:null,man:null,db:null,fs:null,auth:null,authUser:null,myNick:'',isOwner:false,admins:[],ready:false,err:false,setup:false,canWrite:false,older:[],olderRange:null,olderLoading:false,cutoff:'',me:'',month:'',imp:null,stab:'sum',ssort:'rate',ssearch:'',warnings:[],warnBlocked:false,logBlocked:false,wmonth:'',dist:null,hist:null,delLogs:null,atab:'warn',nsort:'role',notes:{},locks:{},rewards:[],leaveFor:null,noteFor:null,cdraft:null,tierDraft:null,pay:null,selMode:false,sel:new Set(),
+const S={demoT:{},manOpen:(()=>{try{return localStorage.getItem('att.manOpen')==='1'}catch(_){return false}})(),msel:new Set(),mbulk:null,noticeEdit:false,rfSug:false,mt:(()=>{try{const v=JSON.parse(localStorage.getItem('att.mt')||'{}');return v&&typeof v==='object'?v:{}}catch(_){return {}}})(),mFilter:'active',detail:null,jimp:null,sorts:{},leftTab:'table',setTab:'table',calcTab:'pay',tierOpen:false,lqDraft:null,xOpen:false,lp:{mode:'month',off:0},plogs:null,lcats:null,lq:'',logs:[],wkOff:0,purchases:[],buyBlocked:false,buyFor:'',olderFail:false,rf:{mon:'all',kind:'all',q:'',unpaid:false},payOpen:null,man:null,db:null,fs:null,auth:null,authUser:null,myNick:'',isOwner:false,admins:[],ready:false,err:false,setup:false,canWrite:false,older:[],olderRange:null,olderLoading:false,cutoff:'',me:'',month:'',imp:null,stab:'sum',ssort:'rate',ssearch:'',warnings:[],warnBlocked:false,logBlocked:false,wmonth:'',dist:null,hist:null,delLogs:null,atab:'warn',nsort:'role',notes:{},locks:{},rewards:[],leaveFor:null,noteFor:null,cdraft:null,tierDraft:null,pay:null,selMode:false,sel:new Set(),
   members:[],sessions:[],config:{...CFG0},
   tab:'home',openSid:null,editSid:null,period:'4',cfilter:'all',demo:false,confirm:null,showOff:false,
   search:'',onlyUnchecked:false,mSearch:''};
@@ -813,7 +857,7 @@ function paint(el,html){
     return !f.isEqualNode(t)}});
 }
 function render(){
-  if(S.demo&&(S.tab==='check'||S.tab==='admin'||S.tab==='home'))S.demo=false;
+  S.demo=!!S.demoT[S.tab]&&['stats','settle','me'].includes(S.tab);
   EFF=null;applyContents();applyRoles();
   const app=$('#app');
   const ae=document.activeElement, aid=ae&&app.contains(ae)&&ae.id, sel=aid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
@@ -883,35 +927,37 @@ function renderHome(){
   const days=[...weekSlots(weekMon(t)),...weekSlots(addDays(weekMon(t),7))];
   const tod=days.find(d=>d.dt===t),nxt=days.find(d=>d.dt>t&&d.slots.length);
   const chipsOf=d=>d.slots.map(x=>{const c=CMAP[x.k];return `<span class="hrun"><span class="chip" ${ck(x.k)}>${esc(c?.name||x.k)}</span>${x.extra?'<span class="tag extra">추가</span>':''}${c?.time&&!x.extra?`<span class="hint num">${esc(c.time)}</span>`:''}</span>`}).join('');
-  const ms=monthStats(mon),top=ms.rows.filter(r=>r.P>0).slice(0,10),perf=ms.rows.filter(r=>r.perfect);
+  const ms=monthStats(mon),top=ms.rows.filter(r=>r.P>0).slice(0,5),perf=ms.rows.filter(r=>r.perfect);
   let sO=0,sX=0;ms.rows.forEach(r=>{sO+=r.O;sX+=r.absent});const avg=rateOf(sO,sX);
-  const B=buyStats(),btop=B.ok.slice(0,10);
+  const B=buyStats(),btop=B.ok.slice(0,5);
   const W=homeWeek();const wkDone=S.sessions.filter(s=>s.date>=W.ws&&s.date<=W.we&&s.date<=t).length;
   const N=S.config.notice&&typeof S.config.notice==='object'?S.config.notice:{};
-  const hero=`<div class="hero"><div class="hero-t"><span class="hero-k">도깨비의세계</span><h2>${g}</h2><p>${mdd(t)} · 오늘도 함께해요</p></div>
-    <div class="hero-run"><div><span class="l">오늘</span>${tod&&tod.slots.length?chipsOf(tod):'<span class="hint">오늘은 정규 일정이 없어요</span>'}</div>
-      ${nxt?`<div><span class="l">다음 · ${mdd(nxt.dt)}</span>${chipsOf(nxt)}</div>`:''}</div></div>`;
-  const tiles=`<div class="tiles">
-    <div class="tile"><span class="l">활동 문파원</span><span class="v">${act.length}</span><span class="l">명</span></div>
-    <div class="tile"><span class="l">${+mon.slice(5)}월 회차</span><span class="v">${ms.reg}</span><span class="l">정규${ms.n>ms.reg?' · 추가 '+(ms.n-ms.reg)+'회':''}</span></div>
-    <div class="tile"><span class="l">${+mon.slice(5)}월 평균 출석률</span><span class="v">${pct(avg)}</span><span class="l">이번 주 진행 ${wkDone}회</span></div>
-    <div class="tile"><span class="l">개근 후보</span><span class="v">${perf.length}</span><span class="l">명 · 지금까지 모두 참여</span></div></div>`;
+  const dLeft=d=>{const n=Math.round((parseD(d)-parseD(t))/864e5);return n===1?'내일':n+'일 후'};
+  const runOf=d=>d.slots.map(x=>{const c=CMAP[x.k];return `<div class="hr-it" style="--cc:var(--k${(c?.color??0)%8})"><span class="hr-c">${esc(c?.name||x.k)}${x.extra?' <small>추가</small>':''}</span>${c?.time&&!x.extra?`<span class="hr-t num">${esc(c.time)}</span>`:''}</div>`}).join('');
+  const hero=`<div class="hero hero2"><div class="hero-t"><span class="hero-k">도깨비의세계</span><h2>${g}</h2><p>${mdd(t)} · 오늘도 함께해요</p></div>
+    <div class="hero-days"><div class="hd${tod&&tod.slots.length?' on':''}"><div class="hd-h"><b>오늘</b><span>${mdd(t)}</span></div>${tod&&tod.slots.length?runOf(tod):'<p class="hd-none">오늘은 정규 일정이 없어요</p>'}</div>
+      <div class="hd${!(tod&&tod.slots.length)&&nxt?' on':''}"><div class="hd-h"><b>다음</b><span>${nxt?`${mdd(nxt.dt)} · ${dLeft(nxt.dt)}`:''}</span></div>${nxt?runOf(nxt):'<p class="hd-none">2주 안에 일정이 없어요</p>'}</div></div></div>`;
+  const tiles=`<div class="tiles home-tiles">
+    <div class="tile"><span class="hti" aria-hidden="true">👥</span><span class="l">활동 문파원</span><span class="v">${act.length}<small>명</small></span><span class="l">${S.members.length-act.length?'탈퇴·이동 '+(S.members.length-act.length)+'명 제외':'지금 함께하는 문파원'}</span></div>
+    <div class="tile"><span class="hti" aria-hidden="true">🗓️</span><span class="l">${+mon.slice(5)}월 회차</span><span class="v">${ms.reg}<small>회</small></span><span class="l">정규${ms.n>ms.reg?' · 추가 진행 '+(ms.n-ms.reg)+'회':''}</span></div>
+    <div class="tile"><span class="hti" aria-hidden="true">📈</span><span class="l">${+mon.slice(5)}월 평균 출석률</span><span class="v">${pct(avg)}</span><span class="l">이번 주 진행 ${wkDone}회</span></div>
+    <div class="tile"><span class="hti" aria-hidden="true">🏅</span><span class="l">개근 후보</span><span class="v">${perf.length}<small>명</small></span><span class="l">지금까지 정규 회차 모두 참여</span></div></div>`;
   const notice=`<div class="panel notice"><div class="spread"><h2>문파 공지</h2>${S.canWrite&&!S.noticeEdit?'<button class="btn small" data-action="noticeEdit">수정</button>':''}</div>
     ${S.noticeEdit&&S.canWrite?`<textarea id="noticeText" data-keep="0" maxlength="2000" rows="9" placeholder="예: 디스코드 필참, 투표는 미리 참여해 주세요">${esc(N.text||'')}</textarea>
       <div class="row"><button class="btn small primary" data-action="noticeSave">공지 저장</button><button class="btn small" data-action="noticeEdit">취소</button><span class="hint">링크를 가진 누구나 볼 수 있어요 · 2000자까지</span></div>`
     :N.text?`<div class="notice-body">${esc(N.text)}</div>${N.at?`<p class="hint" style="text-align:right">${esc(N.by||'')} · ${hm(N.at)} 수정</p>`:''}`
     :`<p class="hint">${S.canWrite?'아직 공지가 없어요. [수정]을 눌러 규칙이나 안내를 적어 두세요.':'아직 등록된 공지가 없어요.'}</p>`}</div>`;
   const week=`<div class="panel"><div class="spread"><h2>이번 주 일정 <span class="hint num">${md(W.ws)}(월) ~ ${md(W.we)}(일)</span></h2>${S.canWrite?'<button class="btn small" data-action="tab" data-tab="check">출석 체크로</button>':''}</div>${W.html}</div>`;
-  const topP=`<div class="panel"><div class="spread"><h2>${+mon.slice(5)}월 포인트 TOP 10</h2><button class="btn small" data-action="tab" data-tab="settle">월간 정산</button></div>
+  const topP=`<div class="panel home-top5"><div class="spread"><h2>${+mon.slice(5)}월 포인트 TOP 5</h2><button class="btn small" data-action="tab" data-tab="settle">월간 정산</button></div>
     ${top.length?`<div class="hrank">${top.map((r,i)=>`<div class="it">${rankMark(i+1)}<span class="n">${esc(r.m.name)}${r.perfect?' <span class="pill-perfect">개근</span>':''}</span><b class="num">${r.P}<small>점</small></b></div>`).join('')}</div>`:'<p class="hint">이번 달 포인트 기록이 아직 없어요.</p>'}
-    <div class="hperf"><span class="l">개근 후보 ${perf.length}명</span>${perf.length?perf.map(r=>`<span class="tag ok">${esc(r.m.name)}</span>`).join(''):'<span class="hint">아직 없어요</span>'}</div></div>`;
-  const buyP=`<div class="panel"><div class="spread"><h2>구매 우선권 TOP 10</h2><span class="hint">${mdd(B.t)} 기준</span></div>
+    <div class="hperf"><span class="l">개근 후보 ${perf.length}명</span>${perf.length?perf.map(r=>`<span class="tag ok">${esc(r.m.name)}</span>`).join(''):'<span class="hint">아직 없어요</span>'}</div>
+    <div class="spread h5sep"><h2>구매 우선권 TOP 5</h2><span class="hint">${mdd(B.t)} 기준</span></div>
     ${btop.length?`<div class="hrank">${btop.map(r=>`<div class="it">${rankMark(r.rank)}<span class="n">${esc(r.m.name)}${r.tie?' <span class="tag no">동점</span>':''}</span><b class="num">${r.P}<small>점</small></b></div>`).join('')}</div>`:'<p class="hint">우선권 대상자가 아직 없어요.</p>'}
     <p class="hint">최근 ${B.C.days}일 ${B.C.min}점 이상 · 구매 포인트 높은 순${S.canWrite?'':' · 정확한 순번은 운영진 공지를 확인해 주세요'}</p></div>`;
   let alerts='';
   if(S.canWrite){const from=monthAdd(mon,-1)+'-01';const unc=S.sessions.filter(s=>s.date>=from&&s.date<t&&!isLocked(s.date)&&act.some(m=>eligible(m,s)&&!validMark(marksOf(s)[m.id])));
     alerts=`${lockNote()}${backupNote()}${unc.length?`<div class="lockbar"><span>체크가 덜 끝난 회차가 <b>${unc.length}개</b> 있어요.</span><span class="grow"></span><button class="btn small primary" data-action="homeUnc">확인하러 가기</button></div>`:''}`}
-  return `<div class="col">${roNote()}${blockNote()}${alerts}<div class="home-grid"><div class="col home-c1">${hero}${notice}</div>${topP}${buyP}</div>${tiles}${week}</div>`;
+  return `<div class="col">${roNote()}${blockNote()}${alerts}<div class="home-r1">${hero}${notice}</div><div class="home-r2">${topP}${tiles}</div>${week}</div>`;
 }
 function renderCheck(){
   if(!S.ready) return loading;
@@ -2041,7 +2087,7 @@ function renderMe(){
   if(!S.ready&&!S.demo) return loading;
   const {members:allM,sessions:allS}=data();
   const members=activeMembers(allM).slice().sort((a,b)=>nameCmp(a.name,b.name,nameMode()));
-  if(!members.length) return '<div class="panel"><div class="empty"><h3>문파원 명단이 아직 없어요</h3><p class="hint">운영진이 명단을 등록하면 여기서 내 출석을 볼 수 있어요.</p></div></div>';
+  if(!members.length) return '<div class="panel"><div class="empty"><h3>문파원 명단이 아직 없어요</h3><p class="hint">운영진이 명단을 등록하면 여기서 내 출석을 볼 수 있어요.</p><button class="btn" data-action="demo">예시 데이터로 미리보기</button></div></div>';
   const me=members.find(m=>m.id===(S.demo?S.meDemo:S.me));
   const demoB=S.demo?'<div class="demo-banner"><span>예시 데이터로 보는 화면이에요. 실제 기록이 아니며 저장되지 않아요.</span><button class="btn small" data-action="demoOff">예시 닫기</button></div>':'';
   // ---- 닉네임 고르기
@@ -2064,8 +2110,7 @@ function renderMe(){
   const B=buyStats(),br=B.rows.find(x=>x.m.id===me.id);
   const leaveNow=onLeave(me,gdm),need=mrow?mrow.need:0,done=mrow?mrow.O+mrow.E+mrow.absent:0,unk=Math.max(0,need-done);
   // ---- 닉네임 바
-  const pill=leaveNow?['lv','휴식 중']:!mrow||!need?['nt','이번 달 회차 없음']:mrow.hold?['nt','판정 보류']:mrow.perfect?['ok','개근 진행 중']:adm&&mrow.fail?['bad','이번 달 기준 미달']:['nt','참여 중'];
-  const bar=`<div class="panel me-bar0"><div class="me-head">${avatar(me)}<div class="me-id"><h2>${esc(me.name)} 님</h2><span class="hint">${esc(me.role||baseRole())} · ${me.joinedAt?'가입 '+esc(me.joinedAt.replace(/-/g,'.')):'처음부터 함께'}</span></div><span class="me-pill ${pill[0]}">${pill[1]}</span><span class="grow"></span><button class="btn small" data-action="mePickOpen" aria-expanded="${!!S.mePick}">바꾸기 ▾</button></div></div>`;
+  const bar=`<div class="panel me-bar0"><div class="me-head">${avatar(me)}<div class="me-id"><h2>${esc(me.name)} 님</h2><span class="hint">${esc(me.role||baseRole())} · ${me.joinedAt?'가입 '+esc(me.joinedAt.replace(/-/g,'.')):'처음부터 함께'}</span></div><span class="grow"></span><button class="btn small" data-action="mePickOpen" aria-expanded="${!!S.mePick}">바꾸기 ▾</button></div></div>`;
   // ---- 핵심 숫자 4개
   const bt=!br?['–','']:br.why?['대기',esc(br.why)]:[br.rank+'위',`최근 ${B.C.days}일 ${br.R}점 · 조건 충족${br.tie?' · 동점':''}`];
   const tiles=`<div class="tiles me-key">
@@ -2076,13 +2121,31 @@ function renderMe(){
   // ---- 상태 한 줄 (문제 있을 때만 경고색)
   const st=[];const lim=excuseLimit(),usedE=mrow?mrow.E+mrow.XA:0;
   if(leaveNow){const l=(me.leaves||[]).find(l=>l&&gdm>=l.from&&gdm<=(l.to||'9999'));st.push(['lv',`휴식 중${l&&l.to?' · '+md(l.to)+'까지':''} · 판정에서 빠져요`])}
+  if(!mrow||!need)st.push(['nt','이번 달 정규 회차가 아직 없어요']);
   if(mrow&&need){if(mrow.hold)st.push(['nt',`판정 보류 · 정규 ${mrow.T}/${mj}회`]);
     if(mrow.perfect)st.push(['ok','🏅 개근 진행 중']);else if(unk&&!mrow.absent)st.push(['nt',`체크 안 된 회차 ${unk}개`]);
     if(lim>0&&lim<31)st.push(usedE>=lim?['warn',`📢 이번 달 사전공지 면제를 다 썼어요${mrow.XA?` (초과 ${mrow.XA}회는 불참)`:''}`]:['nt',`📢 사전공지 면제 ${lim-usedE}회 남음`]);
-    if(!mrow.hold&&(W.basis==='points'?mrow.P<mrow.ptsNeed:(mrow.val!=null&&mrow.val<W.rate/100)))st.push(['warn',W.basis==='points'?`⚖️ 경고 기준(${mrow.ptsNeed}점)보다 ${Math.round((mrow.ptsNeed-mrow.P)*10)/10}점 모자라요`:`⚖️ 이번 달 출석률이 경고 기준(${W.rate}%)보다 낮아요`])}
+    if(!mrow.hold&&(W.basis==='points'?mrow.P<mrow.ptsNeed:(mrow.val!=null&&mrow.val<W.rate/100)))st.push([adm?'bad':'warn',W.basis==='points'?`⚖️ 경고 기준(${mrow.ptsNeed}점)보다 ${Math.round((mrow.ptsNeed-mrow.P)*10)/10}점 모자라요`:`⚖️ 이번 달 출석률이 경고 기준(${W.rate}%)보다 낮아요`])}
   if(br&&br.why){if(br.why.startsWith('최근'))st.push(['warn',`🛒 우선권까지 최근 ${B.C.days}일 ${B.C.min-br.R}점 더 필요`]);else if(br.until&&B.t<br.until)st.push(['nt',`🛒 구매 후 대기 · ${md(br.until)}부터 가능`])}
   if(adm&&streak>=sk)st.push(['warn',`연속 불참 ${streak}회`]);if(adm&&warnCount(me.id))st.push(['warn',`경고 ${warnCount(me.id)}회 (집계 기간)`]);
   const strip=st.length?`<div class="me-strip">${st.map(([c,t])=>`<span class="ms ${c}">${t}</span>`).join('')}</div>`:'';
+  // ---- 다음 진행 일정
+  const upc=[];{const w0=weekMon(gdm);for(const d of [...weekSlots(w0),...weekSlots(addDays(w0,7))]){if(d.dt<gdm)continue;
+    for(const x of d.slots){const c=CMAP[x.k];if(x.pick&&upc.some(u=>u.x.k===x.k&&!u.x.extra&&u.x.pick&&weekMon(u.dt)===weekMon(d.dt)))continue;
+      const ss=allS.find(s=>s.date===d.dt&&s.content===x.k&&!!s.extra===!!x.extra);const v=ss?effOf(ss,me.id):null;upc.push({dt:d.dt,x,c,v,lv:onLeave(me,d.dt)})}
+    if(upc.length>=6)break}}
+  const nextP=`<div class="panel"><div class="spread"><h2>다음 진행</h2>${upc.length?`<span class="hint">${mdd(upc[0].dt)}부터</span>`:''}</div>
+    ${upc.length?`<div class="me-up">${upc.slice(0,6).map(u=>`<div class="it${u.dt===gdm?' today':''}"><span class="d num">${u.dt===gdm?'오늘':u.x.pick?u.x.pick+' 중':mdd(u.dt)}</span><span class="chip" ${ck(u.x.k)}>${esc(u.c?.name||u.x.k)}</span>${u.x.extra?'<span class="tag extra">추가</span>':''}<span class="hint num">${u.c?.time&&!u.x.extra?esc(u.c.time):''}</span><span class="grow"></span>${u.lv?'<span class="mk A">휴식</span>':u.v?`<span class="mk ${cls[u.v]}">${lab[u.v]}</span>`:''}</div>`).join('')}</div>
+      <p class="hint">못 오는 날은 미리 운영진에게 사전공지 해 주세요${lim>0&&lim<31&&mrow?` · 이번 달 면제 ${Math.max(0,lim-usedE)}회 남음`:''}</p>`:'<p class="hint">2주 안에 잡힌 정규 일정이 없어요.</p>'}</div>`;
+  // ---- 순위 근처
+  const near=(list,key,getRk,unit)=>{const i=list.findIndex(r=>r.m.id===me.id);if(i<0)return '';const a=Math.max(0,Math.min(i-1,list.length-3)),sl=list.slice(a,a+3);
+    return sl.map(r=>{const mine=r.m.id===me.id,dv=r[key]-list[i][key];return `<div class="it${mine?' me':''}">${rankMark(getRk(r))}<span class="n">${esc(r.m.name)}${mine?' <span class="tag ok">나</span>':''}</span><b class="num">${r[key]}<small>${unit}</small></b><span class="df hint">${mine?'':dv>0?`+${dv}점 앞`:dv<0?`${-dv}점 뒤`:'동점'}</span></div>`}).join('')};
+  const pRk=new Map();{let pv=null,rk=0;mrows.forEach((r,i)=>{if(r.P!==pv){pv=r.P;rk=i+1}pRk.set(r.m.id,rk)})}
+  const pN=near(mrows,'P',r=>pRk.get(r.m.id),'점'),bN=br&&!br.why?near(B.ok,'P',r=>r.rank,'점'):'';
+  const up=mrow&&rank>1?mrows.find(r=>pRk.get(r.m.id)===rank-1)||mrows.filter(r=>r.P>mrow.P).slice(-1)[0]:null;
+  const gap=up?up.P-mrow.P:0;
+  const nearP=pN||bN?`<div class="panel"><h2>순위 근처</h2>${rank>1&&gap>0?`<p class="me-goal">🔥 <b>${gap}점</b>만 더 모으면 ${M}월 포인트 <b>${pRk.get(up.m.id)}위</b>와 같아져요</p>`:rank===1?`<p class="me-goal">👑 지금 ${M}월 포인트 <b>1위</b>예요</p>`:''}
+    <div class="me-near">${pN?`<div><span class="l">${M}월 포인트</span>${pN}</div>`:''}${bN?`<div><span class="l">구매 우선권</span>${bN}</div>`:br?`<div><span class="l">구매 우선권</span><p class="hint">지금은 대기예요 · ${esc(br.why)}</p></div>`:''}</div></div>`:'';
   // ---- 출석 달력
   const months=[...new Set(recs.map(s=>s.date.slice(0,7)))];if(!months.includes(mon))months.unshift(mon);months.sort();
   const cm=months.includes(S.meMon)?S.meMon:mon,ci=months.indexOf(cm);
@@ -2114,7 +2177,7 @@ function renderMe(){
     <div class="panel"><h2>콘텐츠별 (최근 26주, 정규 회차)</h2><div class="scroll"><table><thead><tr><th>콘텐츠</th><th>참여/기록</th><th>출석률</th></tr></thead><tbody>
         ${byC.map(x=>`<tr><td><span class="chip" ${ck(x.c.k)}>${esc(x.c.name)}</span></td><td>${x.t?x.o+'/'+x.t:'–'}</td><td>${x.t?`<span class="heat" style="${heat(x.r)}">${pct(x.r)}</span>`:'<span class="dash">–</span>'}</td></tr>`).join('')}</tbody></table></div>
         ${notes(ruleItems())}</div></div></div></details>`;
-  return `<div class="col">${demoB}${S.mePick?picker:bar}<div class="me-grid"><div class="col me-l">${tiles}${strip}</div><div class="col me-r">${cal}</div></div>${more}</div>`;
+  return `<div class="col">${demoB}${S.mePick?picker:bar}<div class="me-grid"><div class="col me-l">${tiles}${strip}${nextP}</div><div class="col me-r">${cal}${nearP}</div></div>${more}</div>`;
 }
 
 /* ---------- CSV 가져오기 ---------- */
@@ -2484,8 +2547,8 @@ document.addEventListener('click',e=>{
   if(a==='copyMonth'){copyText(monthText(monthStats(curMonth())));return}
   if(a==='impRun'){runImport();return}
   if(a==='impClear'){S.imp=null;render();return}
-  if(a==='demo'){S.demo=true;render();return}
-  if(a==='demoOff'){S.demo=false;render();return}
+  if(a==='demo'){S.demoT[S.tab]=true;render();return}
+  if(a==='demoOff'){S.demoT[S.tab]=false;render();return}
 });
 document.addEventListener('focusin',e=>{if(e.target&&e.target.id==='rfQ'&&!S.rfSug){S.rfSug=true;render()}});
 document.addEventListener('focusout',e=>{if(e.target&&e.target.id==='rfQ')setTimeout(()=>{if(document.activeElement?.id!=='rfQ'&&S.rfSug){S.rfSug=false;render()}},200)});
