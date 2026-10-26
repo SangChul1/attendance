@@ -793,6 +793,52 @@ header.top .themebtn::before{content:'';width:10px;height:10px;border-radius:50%
   :root:not([data-theme="light"]) nav.tabs button[aria-selected="true"],:root:not([data-theme="light"]) .subtabs button[aria-selected="true"]{box-shadow:inset 0 -2px 0 var(--gold),0 0 18px -6px rgba(226,183,101,.45)}
   :root:not([data-theme="light"]) .panel h2::before{box-shadow:0 0 8px rgba(226,183,101,.5)}
   :root:not([data-theme="light"]) .seal{box-shadow:inset 0 0 0 2px rgba(255,255,255,.35),inset 0 0 0 4px var(--seal),0 0 18px -4px rgba(236,116,102,.6)}}
+
+/* ================= 테마 v6: 모던 (요약 칸만 진한 그라데이션) ================= */
+:root{--r:16px;
+  --page-bg:linear-gradient(180deg,#f4f1ea 0%,#eef1ee 100%);
+  --g1a:#1f6d68;--g1b:#123f3c;   /* 청록 */
+  --g2a:#3b4fa0;--g2b:#5a3a8e;   /* 남색→보라 */
+  --g3a:#c08325;--g3b:#8a4a22;   /* 호박→구리 */
+  --g4a:#b23a3a;--g4b:#5e1d38;   /* 진홍→포도주 */
+  --deep-shadow:0 14px 30px -18px rgba(20,30,40,.55);}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --page-bg:linear-gradient(180deg,#0b1514 0%,#0a1111 100%);
+  --g1a:#17544f;--g1b:#0b2a28;--g2a:#2c3a7a;--g2b:#3f2766;--g3a:#94631c;--g3b:#5e3216;--g4a:#8a2c2f;--g4b:#3f1426;
+  --deep-shadow:0 16px 34px -18px rgba(0,0,0,.95);}}
+:root[data-theme="dark"]{
+  --page-bg:linear-gradient(180deg,#0b1514 0%,#0a1111 100%);
+  --g1a:#17544f;--g1b:#0b2a28;--g2a:#2c3a7a;--g2b:#3f2766;--g3a:#94631c;--g3b:#5e3216;--g4a:#8a2c2f;--g4b:#3f1426;
+  --deep-shadow:0 16px 34px -18px rgba(0,0,0,.95);}
+body{background:var(--page-bg);background-color:var(--bg);background-attachment:fixed}
+/* 무늬 · 흰색으로 빠지는 그라데이션 제거 */
+.tint-a,.tint-w,.tint-s{background-image:none!important}
+.tint-a,.tint-w,.tint-s{border-color:var(--line)}
+/* 깔끔한 흰 카드 */
+.panel{border-radius:var(--r);border-color:color-mix(in srgb,var(--line) 85%,transparent)}
+.tile{border-radius:14px}
+.subtabs{border-radius:14px}.subtabs button{border-radius:10px}
+.btn{border-radius:10px}
+header.top{border-radius:18px}.hero{border-radius:18px}
+/* 진한 그라데이션 요약 칸 */
+.tiles.dk .tile,.deep{color:#fff;border:0;background-color:var(--g1b);box-shadow:var(--deep-shadow);position:relative;overflow:hidden}
+.tiles.dk .tile::before{display:none}
+.tiles.dk .tile::after,.deep::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 90% at 100% 0%,rgba(255,255,255,.16),transparent 55%)}
+.tiles.dk .tile:nth-child(4n+1),.deep{background-image:linear-gradient(135deg,var(--g1a),var(--g1b))}
+.tiles.dk .tile:nth-child(4n+2){background-image:linear-gradient(135deg,var(--g2a),var(--g2b))}
+.tiles.dk .tile:nth-child(4n+3){background-image:linear-gradient(135deg,var(--g3a),var(--g3b))}
+.tiles.dk .tile:nth-child(4n+4){background-image:linear-gradient(135deg,var(--g4a),var(--g4b))}
+.tiles.dk .tile .l{color:rgba(255,255,255,.82)}
+.tiles.dk .tile .v{color:#fff}
+.tiles.dk .tile .v small{color:rgba(255,255,255,.75)!important}
+.tiles.dk .tile.alert .v{color:#ffd2cc}
+.tiles.dk .hti{background:rgba(255,255,255,.16)!important}
+.deep .hint,.deep .me-id .hint{color:rgba(255,255,255,.78)}
+.deep h2{color:#fff}.deep h2::before{background:linear-gradient(180deg,#fff,var(--gold))!important}
+.deep .btn{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3);color:#fff}
+.deep .btn:hover{background:rgba(255,255,255,.24)}
+.deep .av{box-shadow:0 0 0 2px rgba(255,255,255,.35)}
+.me-bar0{border-left:0}
 </style>
 </head>
 <body>
@@ -1078,7 +1124,7 @@ function renderHome(){
   const hero=`<div class="hero hero2"><div class="hero-t"><span class="hero-k">도깨비의세계</span><h2>${g}</h2><p>${mdd(t)} · 오늘도 함께해요</p></div>
     <div class="hero-days"><div class="hd${tod&&tod.slots.length?' on':''}"><div class="hd-h"><b>오늘</b><span>${mdd(t)}</span></div>${tod&&tod.slots.length?runOf(tod):'<p class="hd-none">오늘은 정규 일정이 없어요</p>'}</div>
       <div class="hd${!(tod&&tod.slots.length)&&nxt?' on':''}"><div class="hd-h"><b>다음</b><span>${nxt?`${mdd(nxt.dt)} · ${dLeft(nxt.dt)}`:''}</span></div>${nxt?runOf(nxt):'<p class="hd-none">2주 안에 일정이 없어요</p>'}</div></div></div>`;
-  const tiles=`<div class="tiles home-tiles">
+  const tiles=`<div class="tiles home-tiles dk">
     <div class="tile"><span class="hti" aria-hidden="true">👥</span><span class="l">활동 문파원</span><span class="v">${act.length}<small>명</small></span><span class="l">${S.members.length-act.length?'탈퇴·이동 '+(S.members.length-act.length)+'명 제외':'지금 함께하는 문파원'}</span></div>
     <div class="tile"><span class="hti" aria-hidden="true">🗓️</span><span class="l">${+mon.slice(5)}월 회차</span><span class="v">${ms.reg}<small>회</small></span><span class="l">정규${ms.n>ms.reg?' · 추가 진행 '+(ms.n-ms.reg)+'회':''}</span></div>
     <div class="tile"><span class="hti" aria-hidden="true">📈</span><span class="l">${+mon.slice(5)}월 평균 출석률</span><span class="v">${pct(avg)}</span><span class="l">이번 주 진행 ${wkDone}회</span></div>
@@ -1345,7 +1391,7 @@ function warnCount(mid){const W=warnCfg(),from=W.expelM>0?monthAdd(todayStr().sl
 function statSummary(st){
   const adm=S.canWrite;
   const perfN=monthStats(todayStr().slice(0,7)).rows.filter(r=>r.perfect).length;
-  const tiles=`<div class="tiles">
+  const tiles=`<div class="tiles dk">
     <div class="tile"><span class="l">활동 문파원</span><span class="v">${st.members.length}</span></div>
     <div class="tile"><span class="l">정규 회차</span><span class="v">${st.regN}</span><span class="l">추가 진행 ${st.sessionsN-st.regN}회</span></div>
     <div class="tile"><span class="l">평균 출석률</span><span class="v">${pct(st.avg)}</span></div>
@@ -1799,7 +1845,7 @@ function renderSettle(){
       <select id="fMonth" data-keep="0" data-action="month" aria-label="정산할 달">${ml.map(m=>`<option value="${m}"${m===ms.mon?' selected':''}>${monLabel(m)}${S.locks[m]?' · 마감':''}</option>`).join('')}</select>
       <button class="btn small" data-action="copyMonth">카톡용 복사</button></div></div>
     ${S.demo?'<div class="demo-banner"><span>예시 데이터예요.</span><button class="btn small" data-action="demoOff">예시 닫기</button></div>':''}
-    <div class="tiles">
+    <div class="tiles dk">
       <div class="tile"><span class="l">정규 회차</span><span class="v">${ms.reg}</span><span class="l">추가 진행 ${ms.n-ms.reg}회</span></div>
       <div class="tile"><span class="l">개근</span><span class="v">${perf.length}</span><span class="l">명</span></div>
       <div class="tile"><span class="l">참여 문파원</span><span class="v">${ms.rows.filter(r=>r.O+r.B>0).length}</span><span class="l">명</span></div>
@@ -2252,10 +2298,10 @@ function renderMe(){
   const B=buyStats(),br=B.rows.find(x=>x.m.id===me.id);
   const leaveNow=onLeave(me,gdm),need=mrow?mrow.need:0,done=mrow?mrow.O+mrow.E+mrow.absent:0,unk=Math.max(0,need-done);
   // ---- 닉네임 바
-  const bar=`<div class="panel me-bar0 tint-a"><div class="me-head">${avatar(me)}<div class="me-id"><h2>${esc(me.name)} 님</h2><span class="hint">${esc(me.role||baseRole())} · ${me.joinedAt?'가입 '+esc(me.joinedAt.replace(/-/g,'.')):'처음부터 함께'}</span></div><span class="grow"></span><button class="btn small" data-action="mePickOpen" aria-expanded="${!!S.mePick}">바꾸기 ▾</button></div></div>`;
+  const bar=`<div class="panel me-bar0 deep"><div class="me-head">${avatar(me)}<div class="me-id"><h2>${esc(me.name)} 님</h2><span class="hint">${esc(me.role||baseRole())} · ${me.joinedAt?'가입 '+esc(me.joinedAt.replace(/-/g,'.')):'처음부터 함께'}</span></div><span class="grow"></span><button class="btn small" data-action="mePickOpen" aria-expanded="${!!S.mePick}">바꾸기 ▾</button></div></div>`;
   // ---- 핵심 숫자 4개
   const bt=!br?['–','']:br.why?['대기',esc(br.why)]:[br.rank+'위',`최근 ${B.C.days}일 ${br.R}점 · 조건 충족${br.tie?' · 동점':''}`];
-  const tiles=`<div class="tiles me-key">
+  const tiles=`<div class="tiles me-key dk">
     <div class="tile"><span class="l">${M}월 포인트</span><span class="v">${mrow?mrow.P:0}<small>점</small></span><span class="l">${rank?`${rank}위 · ${mrows.length}명 중`:'아직 기록 없음'}</span></div>
     <div class="tile"><span class="l">${M}월 정규 참여</span><span class="v">${mrow?mrow.O:0}<small>/${need}</small></span><span class="l">${mrow&&mrow.B?'추가 진행 '+mrow.B+'회':'정규 회차 기준'}</span></div>
     <div class="tile"><span class="l">최근 4주 출석률</span><span class="v">${pct(w4.r)}</span><span class="l">참여 ${w4.o} · 면제 ${w4.e} · 불참 ${w4.x}</span></div>
