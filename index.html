@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Song+Myung&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&text=%E8%99%90%E6%AE%BA&display=swap">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
 /* Layout: 상단 문파 헤더 + 탭 3개(출석 체크 / 통계 / 문파원·설정). 체크 탭은 회차 목록 | 체크리스트 2열, 모바일은 1열 */
@@ -343,7 +344,7 @@ header.top{position:relative;overflow:hidden;padding:18px 20px;border:1px solid 
   background-image:radial-gradient(120% 160% at 0% 0%,color-mix(in srgb,var(--seal) 11%,transparent) 0,transparent 42%),
     radial-gradient(90% 140% at 100% 100%,color-mix(in srgb,var(--accent) 12%,transparent) 0,transparent 55%),
     repeating-linear-gradient(115deg,color-mix(in srgb,var(--ink) 3%,transparent) 0 1px,transparent 1px 6px)}
-header.top::after{content:'鬼';position:absolute;right:-8px;bottom:-46px;font-family:var(--f-seal);font-size:170px;line-height:1;color:var(--seal);opacity:.06;pointer-events:none}
+header.top::after{content:'虐殺';position:absolute;right:-8px;bottom:-46px;font-family:var(--f-seal);font-size:170px;line-height:1;color:var(--seal);opacity:.06;pointer-events:none}
 header.top>*{position:relative;z-index:1}
 .seal{box-shadow:inset 0 0 0 2px color-mix(in srgb,#fff 35%,transparent),0 2px 6px color-mix(in srgb,var(--seal) 35%,transparent);
   background-image:radial-gradient(circle at 30% 25%,color-mix(in srgb,#fff 18%,transparent),transparent 55%)}
@@ -399,7 +400,7 @@ nav.tabs button[aria-selected="true"]{color:var(--accent);font-weight:700}
 .seg button[aria-pressed="true"]{box-shadow:inset 0 -2px 0 rgba(0,0,0,.15)}
 
 .toast{border-left:4px solid var(--seal);border-radius:10px;box-shadow:0 8px 24px -8px rgba(0,0,0,.45);padding-left:14px}
-.empty::before{content:'鬼';display:grid;place-items:center;width:52px;height:52px;border-radius:12px;font-family:var(--f-seal);font-size:27px;
+.empty::before{content:'殺';display:grid;place-items:center;width:52px;height:52px;border-radius:12px;font-family:var(--f-seal);font-size:27px;
   color:var(--seal);background:var(--seal-soft);transform:rotate(-4deg);margin-bottom:2px}
 @media (prefers-reduced-motion:reduce){.btn,.seg button,.slot{transition:none}}
 @media (pointer:coarse){.lnk{padding:5px 0}.th-sort{padding:6px 0}input[type=file]{padding:6px 4px}}
@@ -408,8 +409,8 @@ nav.tabs button[aria-selected="true"]{color:var(--accent);font-weight:700}
 @media (min-width:1100px){body{padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px))}}
 /* 홈 */
 .hero{position:relative;overflow:hidden;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px 28px;padding:22px 24px;border-radius:var(--r);
-  color:#fff;background:linear-gradient(120deg,#144f4b 0%,#1f6d68 55%,#5a4a3a 100%);box-shadow:0 10px 28px -16px rgba(10,40,38,.8)}
-.hero::after{content:'鬼';position:absolute;right:-8px;top:-34px;font-family:var(--f-seal);font-size:170px;line-height:1;color:#fff;opacity:.08;transform:rotate(-8deg);pointer-events:none}
+  color:#fff;background:linear-gradient(120deg,var(--hero1) 0%,var(--hero2) 55%,var(--hero3) 100%);box-shadow:var(--hero-shadow)}
+.hero::after{content:'虐殺';position:absolute;right:-8px;top:-34px;font-family:var(--f-seal);font-size:170px;line-height:1;color:#fff;opacity:.08;transform:rotate(-8deg);pointer-events:none}
 .hero-t{display:flex;flex-direction:column;gap:2px;position:relative}
 .hero-k{font-size:13px;opacity:.8;letter-spacing:.06em}
 .hero h2{margin:0;font-size:28px;color:#fff}
@@ -660,19 +661,151 @@ details.rules:not([open]){gap:0}
 .home-tiles .tile .v small{font-size:16px;color:var(--muted);font-weight:500;margin-left:3px}
 .hti{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;font-size:22px;background:var(--accent-soft);margin-bottom:4px}
 .home-tiles .tile:nth-child(2) .hti{background:var(--warn-soft)}.home-tiles .tile:nth-child(3) .hti{background:var(--good-soft)}.home-tiles .tile:nth-child(4) .hti{background:var(--seal-soft)}
+
+/* ================= 테마 v4 (학살 문파 칸 디자인 기반) ================= */
+:root{--gold:#b98a2a;--gold-soft:#f4e9cf;--hero1:#134c48;--hero2:#1f6d68;--hero3:#5c4a36;
+  --hero-shadow:0 12px 30px -18px rgba(12,50,46,.75);
+  --card-shadow:0 1px 2px rgba(22,52,50,.05),0 10px 26px -20px rgba(22,52,50,.45);
+  --glass:rgba(255,255,255,.13);--glass-b:rgba(255,255,255,.3);
+  --page-bg:radial-gradient(1100px 520px at 8% -12%,rgba(31,109,104,.13),transparent 62%),radial-gradient(900px 480px at 102% -6%,rgba(185,138,42,.11),transparent 60%),linear-gradient(180deg,#f4f2ec 0%,#ecf1ef 420px,#e9eeec 100%);
+  --thead:color-mix(in srgb,var(--accent) 7%,var(--surface));}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--gold:#e2b765;--gold-soft:#3a2f17;--hero1:#0b2b2a;--hero2:#14514c;--hero3:#3d3022;
+  --hero-shadow:0 14px 34px -18px rgba(0,0,0,.9),inset 0 0 0 1px rgba(83,181,170,.18);
+  --card-shadow:0 1px 0 rgba(255,255,255,.03) inset,0 14px 34px -22px rgba(0,0,0,.9);
+  --page-bg:radial-gradient(1100px 560px at 10% -14%,rgba(83,181,170,.16),transparent 62%),radial-gradient(900px 520px at 100% -8%,rgba(226,183,101,.08),transparent 60%),linear-gradient(180deg,#0b1619 0%,#0c171a 480px,#0b1417 100%);
+  --thead:color-mix(in srgb,var(--accent) 9%,var(--surface));}}
+:root[data-theme="dark"]{--gold:#e2b765;--gold-soft:#3a2f17;--hero1:#0b2b2a;--hero2:#14514c;--hero3:#3d3022;
+  --hero-shadow:0 14px 34px -18px rgba(0,0,0,.9),inset 0 0 0 1px rgba(83,181,170,.18);
+  --card-shadow:0 1px 0 rgba(255,255,255,.03) inset,0 14px 34px -22px rgba(0,0,0,.9);
+  --page-bg:radial-gradient(1100px 560px at 10% -14%,rgba(83,181,170,.16),transparent 62%),radial-gradient(900px 520px at 100% -8%,rgba(226,183,101,.08),transparent 60%),linear-gradient(180deg,#0b1619 0%,#0c171a 480px,#0b1417 100%);
+  --thead:color-mix(in srgb,var(--accent) 9%,var(--surface));}
+html{background:var(--bg)}
+body{background:var(--page-bg);background-color:var(--bg);min-height:100vh}
+
+/* 머리 칸 */
+header.top{border:0;color:#fff;background-color:var(--hero2);
+  background-image:radial-gradient(120% 160% at 0% 0%,rgba(255,255,255,.1) 0,transparent 45%),linear-gradient(120deg,var(--hero1) 0%,var(--hero2) 58%,var(--hero3) 100%);
+  box-shadow:var(--hero-shadow)}
+header.top::after{color:#fff;opacity:.08}
+header.top .brand h1{color:#fff}
+header.top .brand .sub{color:rgba(255,255,255,.74)}
+header.top .sync{color:rgba(255,255,255,.82)}
+header.top .authwho{color:rgba(255,255,255,.88)}
+header.top .themebtn,header.top .zoomctl,header.top #authbar .btn{background:var(--glass);border-color:var(--glass-b);color:#fff;backdrop-filter:blur(4px)}
+header.top .themebtn{width:auto;padding:0 12px;font-size:13px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+header.top .zoomctl button{color:#fff}
+header.top .zoomctl button+button{border-left-color:var(--glass-b)}
+header.top .themebtn:hover,header.top .zoomctl button:hover:not(:disabled),header.top #authbar .btn:hover{background:rgba(255,255,255,.24)}
+header.top #authbar .btn{box-shadow:none}
+
+/* 위 메뉴 · 소탭 */
+nav.tabs{border-bottom-color:color-mix(in srgb,var(--accent) 22%,var(--line));gap:6px;padding-bottom:0}
+nav.tabs button{border-radius:10px 10px 0 0;border-bottom:3px solid transparent}
+nav.tabs button[aria-selected="true"]{color:#fff;background:linear-gradient(135deg,var(--hero2),var(--hero1));border-bottom-color:var(--gold);box-shadow:0 6px 16px -12px rgba(0,0,0,.6)}
+nav.tabs button[aria-selected="true"]:hover{color:#fff;background:linear-gradient(135deg,var(--hero2),var(--hero1))}
+.subtabs{background:color-mix(in srgb,var(--accent) 6%,var(--sunken));border-color:color-mix(in srgb,var(--accent) 18%,var(--line))}
+.subtabs button[aria-selected="true"]{color:#fff;background:linear-gradient(135deg,var(--hero2),var(--hero1));box-shadow:inset 0 -2px 0 var(--gold),0 4px 12px -8px rgba(0,0,0,.55)}
+.subtabs button[aria-selected="true"] .xb{background:var(--gold);color:#1b1407}
+
+/* 영역 */
+.panel{box-shadow:var(--card-shadow)}
+.panel h2::before{background:linear-gradient(180deg,var(--accent),var(--gold));opacity:1;width:5px}
+.tile{border-top:1px solid var(--line);box-shadow:var(--card-shadow)}
+.tile::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--gold))}
+.tile.alert::before{background:linear-gradient(90deg,var(--seal),var(--gold))}
+.btn.primary{background:linear-gradient(135deg,var(--hero2),var(--hero1));border-color:var(--hero1);color:#fff}
+.btn.primary:hover:not(:disabled){filter:brightness(1.08)}
+:root[data-theme="dark"] .btn.primary{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 80%,#fff),var(--accent));border-color:var(--accent);color:var(--accent-ink)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn.primary{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 80%,#fff),var(--accent));border-color:var(--accent);color:var(--accent-ink)}}
+thead th{background:var(--thead)}
+thead th:first-child{border-top-left-radius:8px}thead th:last-child{border-top-right-radius:8px}
+.tint-a,.tint-w,.tint-s{box-shadow:var(--card-shadow)}
+.wkcol.today{box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 45%,transparent)}
+.wkcol.today .tag{background:linear-gradient(135deg,var(--hero2),var(--hero1));color:#fff}
+.me-bar0,.me-pick{border-left-color:var(--gold)}
+.demo-banner{border-left:4px solid var(--gold)}
+
+/* 다크 모드 전용 손질 */
+:root[data-theme="dark"] .panel{background:color-mix(in srgb,var(--surface) 92%,transparent);border-color:color-mix(in srgb,var(--accent) 16%,var(--line))}
+:root[data-theme="dark"] .tile{background:color-mix(in srgb,var(--surface) 94%,transparent)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .panel{background:color-mix(in srgb,var(--surface) 92%,transparent);border-color:color-mix(in srgb,var(--accent) 16%,var(--line))}
+  :root:not([data-theme="light"]) .tile{background:color-mix(in srgb,var(--surface) 94%,transparent)}}
+
+/* ================= 테마 v5: 화이트(한지) / 다크(먹·금) ================= */
+:root{--f-han:"Noto Serif KR","Song Myung","Nanum Myeongjo","Batang",serif;
+  --bg:#f2eee5;--surface:#fffdf8;--sunken:#f6f2ea;--line:#e3dbcc;--ink:#1c2523;--muted:#625f55;
+  --accent-soft:#dcebe7;--gold:#b0821f;--gold-soft:#f3e6c6;
+  --thead:#eef4f1;
+  --page-bg:radial-gradient(1200px 560px at 6% -14%,rgba(31,109,104,.12),transparent 62%),radial-gradient(900px 520px at 100% -8%,rgba(176,130,31,.12),transparent 60%),
+    repeating-linear-gradient(0deg,rgba(120,100,60,.018) 0 1px,transparent 1px 3px);
+  --card-shadow:0 1px 2px rgba(60,48,20,.05),0 12px 28px -22px rgba(60,48,20,.45);
+  --pat:rgba(31,109,104,.045);}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0a1312;--surface:#12201f;--sunken:#0e1a19;--line:#21403c;--ink:#e6ece8;--muted:#93a5a0;
+  --accent:#5cc0b3;--accent-soft:#163734;--gold:#e2b765;--gold-soft:#3a2f17;--thead:#152a28;
+  --page-bg:radial-gradient(1200px 600px at 8% -16%,rgba(92,192,179,.14),transparent 62%),radial-gradient(900px 520px at 100% -8%,rgba(226,183,101,.09),transparent 60%);
+  --card-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 16px 34px -24px rgba(0,0,0,.95);
+  --pat:rgba(226,183,101,.04);--tk:22%;--tks:16%;}}
+:root[data-theme="dark"]{
+  --bg:#0a1312;--surface:#12201f;--sunken:#0e1a19;--line:#21403c;--ink:#e6ece8;--muted:#93a5a0;
+  --accent:#5cc0b3;--accent-soft:#163734;--gold:#e2b765;--gold-soft:#3a2f17;--thead:#152a28;
+  --page-bg:radial-gradient(1200px 600px at 8% -16%,rgba(92,192,179,.14),transparent 62%),radial-gradient(900px 520px at 100% -8%,rgba(226,183,101,.09),transparent 60%);
+  --card-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 16px 34px -24px rgba(0,0,0,.95);
+  --pat:rgba(226,183,101,.04);--tk:22%;--tks:16%;}
+body{background:var(--page-bg);background-color:var(--bg);background-attachment:fixed}
+
+/* 도장: 虐殺 세로 두 글자 */
+.seal{flex-direction:column;gap:0;width:48px;height:54px;border-radius:7px;font-family:var(--f-han);font-weight:900;font-size:19px;line-height:1.05;
+  display:flex;align-items:center;justify-content:center;letter-spacing:0;
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.45),inset 0 0 0 4px var(--seal),inset 0 0 0 5px rgba(255,255,255,.25),0 4px 12px -4px rgba(120,20,10,.55)}
+.seal span{display:block}
+header.top::after,.hero::after{font-family:var(--f-han);font-weight:900}
+header.top::after{font-size:120px;bottom:-34px;right:4px;letter-spacing:-6px}
+.hero::after{font-size:120px;top:-22px;right:-4px;letter-spacing:-6px}
+.empty::before{font-family:var(--f-han);font-weight:900}
+
+/* 모드 버튼 */
+header.top .themebtn{height:30px;border-radius:999px;padding:0 14px 0 12px;gap:6px;display:inline-flex;align-items:center}
+header.top .themebtn::before{content:'';width:10px;height:10px;border-radius:50%;background:#ffe1a3;box-shadow:0 0 8px rgba(255,225,163,.8)}
+:root[data-theme="dark"] header.top .themebtn::before{background:#fff;box-shadow:0 0 8px rgba(255,255,255,.7)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) header.top .themebtn::before{background:#fff;box-shadow:0 0 8px rgba(255,255,255,.7)}}
+
+/* 카드 · 무늬 */
+.panel,.tile{background-color:var(--surface)}
+.tint-a,.tint-w,.tint-s,.home-tiles .tile{background-image:repeating-linear-gradient(135deg,var(--pat) 0 1px,transparent 1px 10px),var(--tint-g,none)}
+.tint-a{--tint-g:linear-gradient(135deg,color-mix(in srgb,var(--accent) var(--tk,14%),var(--surface)) 0%,var(--surface) 62%)}
+.tint-w{--tint-g:linear-gradient(135deg,color-mix(in srgb,var(--gold) var(--tk,16%),var(--surface)) 0%,var(--surface) 60%)}
+.tint-s{--tint-g:linear-gradient(135deg,color-mix(in srgb,var(--seal) var(--tks,11%),var(--surface)) 0%,var(--surface) 60%)}
+.home-tiles .tile{--tint-g:linear-gradient(160deg,color-mix(in srgb,var(--accent) 7%,var(--surface)) 0%,var(--surface) 70%)}
+.tint-w{border-color:color-mix(in srgb,var(--gold) 30%,var(--line))}
+.panel h2{letter-spacing:-.02em}
+.notice-body{border-left-color:var(--seal)}
+.me-chip.on,.bgroup .bk[aria-pressed="true"]{box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 45%,transparent)}
+.rules{background-color:var(--surface);box-shadow:var(--card-shadow)}
+
+/* 다크 모드 전용 손질 */
+:root[data-theme="dark"] .panel,:root[data-theme="dark"] .tile{border-color:color-mix(in srgb,var(--accent) 14%,var(--line))}
+:root[data-theme="dark"] nav.tabs button[aria-selected="true"],:root[data-theme="dark"] .subtabs button[aria-selected="true"]{box-shadow:inset 0 -2px 0 var(--gold),0 0 18px -6px rgba(226,183,101,.45)}
+:root[data-theme="dark"] .panel h2::before{box-shadow:0 0 8px rgba(226,183,101,.5)}
+:root[data-theme="dark"] .seal{box-shadow:inset 0 0 0 2px rgba(255,255,255,.35),inset 0 0 0 4px var(--seal),0 0 18px -4px rgba(236,116,102,.6)}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .panel,:root:not([data-theme="light"]) .tile{border-color:color-mix(in srgb,var(--accent) 14%,var(--line))}
+  :root:not([data-theme="light"]) nav.tabs button[aria-selected="true"],:root:not([data-theme="light"]) .subtabs button[aria-selected="true"]{box-shadow:inset 0 -2px 0 var(--gold),0 0 18px -6px rgba(226,183,101,.45)}
+  :root:not([data-theme="light"]) .panel h2::before{box-shadow:0 0 8px rgba(226,183,101,.5)}
+  :root:not([data-theme="light"]) .seal{box-shadow:inset 0 0 0 2px rgba(255,255,255,.35),inset 0 0 0 4px var(--seal),0 0 18px -4px rgba(236,116,102,.6)}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="top">
     <div class="brand">
-      <div class="seal" aria-hidden="true">鬼</div>
+      <div class="seal" aria-hidden="true"><span>虐</span><span>殺</span></div>
       <div>
         <h1 id="guildTitle">문파 출석부</h1>
         <div class="sub">도깨비의세계 · 신기쟁탈전 · 미혹의 정원 · 요신 토벌령 · 결계지 방어</div>
       </div>
     </div>
-    <div class="row"><button type="button" class="themebtn" id="themeBtn" title="어두운 화면 / 밝은 화면" aria-label="화면 밝기 바꾸기">☾</button><div class="zoomctl" role="group" aria-label="화면 크기"><button type="button" id="zOut" title="화면 작게" aria-label="화면 작게">－</button><button type="button" id="zReset" title="원래 크기로">100%</button><button type="button" id="zIn" title="화면 크게" aria-label="화면 크게">＋</button></div><div class="sync" id="sync"><span class="dot"></span><span>저장소 연결 중</span></div><div class="row" id="authbar"></div></div>
+    <div class="row"><button type="button" class="themebtn" id="themeBtn" title="어두운 다크 모드로 바꾸기" aria-label="화면 모드 바꾸기">다크 모드</button><div class="zoomctl" role="group" aria-label="화면 크기"><button type="button" id="zOut" title="화면 작게" aria-label="화면 작게">－</button><button type="button" id="zReset" title="원래 크기로">100%</button><button type="button" id="zIn" title="화면 크게" aria-label="화면 크게">＋</button></div><div class="sync" id="sync"><span class="dot"></span><span>저장소 연결 중</span></div><div class="row" id="authbar"></div></div>
   </header>
   <nav class="tabs" role="tablist" id="tabs">
     <button role="tab" data-action="tab" data-tab="check" aria-selected="true">출석 체크</button>
@@ -695,7 +828,7 @@ details.rules:not([open]){gap:0}
 <script>/* 밝은/어두운 화면 버튼: 처음엔 기기 설정을 따르고, 누르면 기기마다 기억 */
 (function(){var KEY='att.theme',r=document.documentElement,b=document.getElementById('themeBtn');
 function eff(){var t=r.getAttribute('data-theme');if(t==='dark'||t==='light')return t;return window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}
-function show(){if(b){var d=eff()==='dark';b.textContent=d?'☀':'☾';b.title=d?'밝은 화면으로':'어두운 화면으로'}}
+function show(){if(b){var d=eff()==='dark';b.textContent=d?'화이트 모드':'다크 모드';b.title=d?'밝은 화이트 모드로 바꾸기':'어두운 다크 모드로 바꾸기'}}
 try{var v=localStorage.getItem(KEY);if(v==='dark'||v==='light')r.setAttribute('data-theme',v)}catch(_){}
 if(b)b.addEventListener('click',function(){var n=eff()==='dark'?'light':'dark';r.setAttribute('data-theme',n);try{localStorage.setItem(KEY,n)}catch(_){}show()});
 show();})();
