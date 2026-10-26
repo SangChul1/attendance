@@ -1961,7 +1961,11 @@ function renderMe(){
   const me=members.find(m=>m.id===(S.demo?S.meDemo:S.me));
   const demoB=S.demo?'<div class="demo-banner"><span>예시 데이터로 보는 화면이에요. 실제 기록이 아니며 저장되지 않아요.</span><button class="btn small" data-action="demoOff">예시 닫기</button></div>':'';
   const sel=`<label class="f">내 닉네임<select id="meSel" data-keep="0" data-action="me"><option value="">닉네임을 고르세요</option>${members.map(m=>`<option value="${m.id}"${me&&m.id===me.id?' selected':''}>${esc(m.name)}</option>`).join('')}</select></label>`;
-  if(!me) return `${demoB}<div class="panel" style="max-width:520px"><h2>내 출석</h2><p class="hint">닉네임을 고르면 내 출석률, 포인트, 최근 기록을 볼 수 있어요. 이 기기에서는 다음에도 기억해요.</p>${sel}</div>`;
+  if(!me){const ph=(l,s)=>`<div class="tile"><span class="l">${l}</span><span class="v dash">–</span><span class="l">${s}</span></div>`;
+    return `<div class="col">${demoB}<div class="me-grid"><div class="col me-l">
+    <div class="panel"><h2>내 출석</h2><p class="hint">닉네임을 고르면 내 출석률, 포인트, 최근 기록을 볼 수 있어요. 이 기기에서는 다음에도 기억해요.</p>${sel}</div>
+    <div class="tiles me-ph">${ph('최근 4주 출석률','닉네임을 골라 주세요')}${ph('최근 26주 출석률','&nbsp;')}${ph(`${+todayStr().slice(5,7)}월 포인트`,'&nbsp;')}${ph('개근한 달','최근 6개월 기준')}</div></div>
+    <div class="me-r"><div class="panel"><h2>최근 기록</h2><div class="empty"><h3>아직 닉네임을 고르지 않았어요</h3><p class="hint">왼쪽에서 내 닉네임을 고르면 여기에 참여·사전공지·불참 기록이 달별로 나와요.</p></div></div></div></div></div>`}
   const gdm=gameDay();const recs=allS.filter(s=>s.date<=gdm&&eligible(me,s)&&effOf(s,me.id)).sort(sessionSort);
   const sum=(from,ck)=>{let o=0,e=0,x=0;for(const s of recs){if((from&&s.date<from)||isBonus(s)||(ck&&s.content!==ck))continue;const v=effOf(s,me.id);if(v==='O')o++;else if(v==='E')e++;else x++}return {o,e,x,t:o+e+x,r:rateOf(o,x)}};
   const ws=weekStart(todayStr()),w4=sum(addDays(ws,-21)),w26=sum(addDays(ws,-7*25)),from26=addDays(ws,-7*25);
