@@ -408,7 +408,7 @@ nav.tabs button[aria-selected="true"]{color:var(--accent);font-weight:700}
 @media (min-width:1100px){body{padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px))}}
 /* 홈 */
 .hero{position:relative;overflow:hidden;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px 28px;padding:22px 24px;border-radius:var(--r);
-  color:#fff;background:linear-gradient(120deg,color-mix(in srgb,var(--accent) 88%,#000) 0%,var(--accent) 55%,color-mix(in srgb,var(--accent) 60%,var(--seal)) 100%);box-shadow:0 10px 28px -16px color-mix(in srgb,var(--accent) 70%,#000)}
+  color:#fff;background:linear-gradient(120deg,#144f4b 0%,#1f6d68 55%,#5a4a3a 100%);box-shadow:0 10px 28px -16px rgba(10,40,38,.8)}
 .hero::after{content:'鬼';position:absolute;right:-8px;top:-34px;font-family:var(--f-seal);font-size:170px;line-height:1;color:#fff;opacity:.08;transform:rotate(-8deg);pointer-events:none}
 .hero-t{display:flex;flex-direction:column;gap:2px;position:relative}
 .hero-k{font-size:13px;opacity:.8;letter-spacing:.06em}
@@ -625,7 +625,7 @@ details.rules:not([open]){gap:0}
 .me-near .df{min-width:52px;text-align:right;font-size:12px}
 
 /* 홈 배치 v3 */
-.home-r1{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:20px;align-items:stretch}
+.home-r1{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,6fr);gap:20px;align-items:stretch}
 .home-r2{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:20px;align-items:stretch}
 @media (max-width:900px){.home-r1,.home-r2{grid-template-columns:minmax(0,1fr)}}
 .home-r1>.panel{height:100%}
@@ -633,19 +633,27 @@ details.rules:not([open]){gap:0}
 .hero-days{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;position:relative}
 @media (max-width:520px){.hero-days{grid-template-columns:minmax(0,1fr)}}
 .hd{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);min-width:0}
-.hd.on{background:#fff;color:#1d2a29;border-color:#fff;box-shadow:0 10px 24px -14px rgba(0,0,0,.6)}
+.hd.on{background:linear-gradient(135deg,rgba(255,255,255,.26),rgba(255,255,255,.1));border:1px solid rgba(255,221,150,.75);box-shadow:0 0 0 1px rgba(255,221,150,.25),0 10px 24px -14px rgba(0,0,0,.55)}
 .hd-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
 .hd-h b{font-size:17px}.hd-h span{font-size:13px;opacity:.85}
-.hd.on .hd-h b{color:#1f6d68}
+.hd.on .hd-h b{color:#ffe1a3}
 .hr-it{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:7px 10px;border-radius:10px;background:rgba(255,255,255,.14);border-left:4px solid rgba(255,255,255,.55)}
-.hd.on .hr-it{background:#f3f6f5;border-left-color:var(--cc,#1f6d68)}
+.hd.on .hr-it{background:rgba(255,255,255,.2);border-left-color:#ffd889}
 .hr-c{font-weight:700;font-size:16px}.hr-c small{font-size:11px;font-weight:600;padding:1px 6px;border-radius:999px;background:#f5ead2;color:#9c6a12;vertical-align:2px}
 .hr-t{font-size:14px;font-weight:600;opacity:.9}
-.hd.on .hr-t{color:#5d6b69}
+.hd.on .hr-t{color:#fff}
 .hd-none{margin:0;font-size:14px;opacity:.85}
-.hd.on .hd-none{color:#5d6b69}
-.home-top5{gap:10px}
-.home-top5 .h5sep{margin-top:10px;padding-top:14px;border-top:1px dashed var(--line)}
+
+.home-top5{display:grid;grid-template-rows:1fr 1fr;gap:0}
+.h5s{display:flex;flex-direction:column;gap:10px;min-height:0}
+.home-top5 .h5sep{margin-top:14px;padding-top:16px;border-top:1px dashed var(--line)}
+.hrank .it.ph .n{color:var(--muted);font-weight:400}
+.hrank .it.ph{opacity:.5}
+/* 영역 배경색 */
+.tint-a{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 13%,var(--surface)) 0%,var(--surface) 62%);border-color:color-mix(in srgb,var(--accent) 28%,var(--line))}
+.tint-w{background:linear-gradient(135deg,color-mix(in srgb,var(--warn) 14%,var(--surface)) 0%,var(--surface) 60%);border-color:color-mix(in srgb,var(--warn) 26%,var(--line))}
+.tint-s{background:linear-gradient(135deg,color-mix(in srgb,var(--seal) 10%,var(--surface)) 0%,var(--surface) 60%);border-color:color-mix(in srgb,var(--seal) 24%,var(--line))}
+.tint-s .notice-body{background:color-mix(in srgb,var(--surface) 80%,transparent)}
 .home-tiles{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:1fr;align-content:stretch}
 .home-tiles .tile{justify-content:center;align-items:flex-start;gap:6px;padding:18px 20px}
 .home-tiles .tile .v{font-size:40px;line-height:1.1}
@@ -942,18 +950,19 @@ function renderHome(){
     <div class="tile"><span class="hti" aria-hidden="true">🗓️</span><span class="l">${+mon.slice(5)}월 회차</span><span class="v">${ms.reg}<small>회</small></span><span class="l">정규${ms.n>ms.reg?' · 추가 진행 '+(ms.n-ms.reg)+'회':''}</span></div>
     <div class="tile"><span class="hti" aria-hidden="true">📈</span><span class="l">${+mon.slice(5)}월 평균 출석률</span><span class="v">${pct(avg)}</span><span class="l">이번 주 진행 ${wkDone}회</span></div>
     <div class="tile"><span class="hti" aria-hidden="true">🏅</span><span class="l">개근 후보</span><span class="v">${perf.length}<small>명</small></span><span class="l">지금까지 정규 회차 모두 참여</span></div></div>`;
-  const notice=`<div class="panel notice"><div class="spread"><h2>문파 공지</h2>${S.canWrite&&!S.noticeEdit?'<button class="btn small" data-action="noticeEdit">수정</button>':''}</div>
+  const notice=`<div class="panel notice tint-s"><div class="spread"><h2>문파 공지</h2>${S.canWrite&&!S.noticeEdit?'<button class="btn small" data-action="noticeEdit">수정</button>':''}</div>
     ${S.noticeEdit&&S.canWrite?`<textarea id="noticeText" data-keep="0" maxlength="2000" rows="9" placeholder="예: 디스코드 필참, 투표는 미리 참여해 주세요">${esc(N.text||'')}</textarea>
       <div class="row"><button class="btn small primary" data-action="noticeSave">공지 저장</button><button class="btn small" data-action="noticeEdit">취소</button><span class="hint">링크를 가진 누구나 볼 수 있어요 · 2000자까지</span></div>`
     :N.text?`<div class="notice-body">${esc(N.text)}</div>${N.at?`<p class="hint" style="text-align:right">${esc(N.by||'')} · ${hm(N.at)} 수정</p>`:''}`
     :`<p class="hint">${S.canWrite?'아직 공지가 없어요. [수정]을 눌러 규칙이나 안내를 적어 두세요.':'아직 등록된 공지가 없어요.'}</p>`}</div>`;
-  const week=`<div class="panel"><div class="spread"><h2>이번 주 일정 <span class="hint num">${md(W.ws)}(월) ~ ${md(W.we)}(일)</span></h2>${S.canWrite?'<button class="btn small" data-action="tab" data-tab="check">출석 체크로</button>':''}</div>${W.html}</div>`;
-  const topP=`<div class="panel home-top5"><div class="spread"><h2>${+mon.slice(5)}월 포인트 TOP 5</h2><button class="btn small" data-action="tab" data-tab="settle">월간 정산</button></div>
-    ${top.length?`<div class="hrank">${top.map((r,i)=>`<div class="it">${rankMark(i+1)}<span class="n">${esc(r.m.name)}${r.perfect?' <span class="pill-perfect">개근</span>':''}</span><b class="num">${r.P}<small>점</small></b></div>`).join('')}</div>`:'<p class="hint">이번 달 포인트 기록이 아직 없어요.</p>'}
-    <div class="hperf"><span class="l">개근 후보 ${perf.length}명</span>${perf.length?perf.map(r=>`<span class="tag ok">${esc(r.m.name)}</span>`).join(''):'<span class="hint">아직 없어요</span>'}</div>
-    <div class="spread h5sep"><h2>구매 우선권 TOP 5</h2><span class="hint">${mdd(B.t)} 기준</span></div>
-    ${btop.length?`<div class="hrank">${btop.map(r=>`<div class="it">${rankMark(r.rank)}<span class="n">${esc(r.m.name)}${r.tie?' <span class="tag no">동점</span>':''}</span><b class="num">${r.P}<small>점</small></b></div>`).join('')}</div>`:'<p class="hint">우선권 대상자가 아직 없어요.</p>'}
-    <p class="hint">최근 ${B.C.days}일 ${B.C.min}점 이상 · 구매 포인트 높은 순${S.canWrite?'':' · 정확한 순번은 운영진 공지를 확인해 주세요'}</p></div>`;
+  const week=`<div class="panel tint-a"><div class="spread"><h2>이번 주 일정 <span class="hint num">${md(W.ws)}(월) ~ ${md(W.we)}(일)</span></h2>${S.canWrite?'<button class="btn small" data-action="tab" data-tab="check">출석 체크로</button>':''}</div>${W.html}</div>`;
+  const pad=n=>Array.from({length:Math.max(0,5-n)},(_,i)=>`<div class="it ph">${rankMark(n+i+1)}<span class="n">–</span><b class="num"></b></div>`).join('');
+  const topP=`<div class="panel home-top5 tint-w"><div class="h5s"><div class="spread"><h2>${+mon.slice(5)}월 포인트 TOP 5</h2><button class="btn small" data-action="tab" data-tab="settle">월간 정산</button></div>
+    <div class="hrank">${top.map((r,i)=>`<div class="it">${rankMark(i+1)}<span class="n">${esc(r.m.name)}${r.perfect?' <span class="pill-perfect">개근</span>':''}</span><b class="num">${r.P}<small>점</small></b></div>`).join('')}${pad(top.length)}</div>
+    <div class="hperf"><span class="l">개근 후보 ${perf.length}명</span>${perf.length?perf.map(r=>`<span class="tag ok">${esc(r.m.name)}</span>`).join(''):'<span class="hint">아직 없어요</span>'}</div></div>
+    <div class="h5s h5sep"><div class="spread"><h2>구매 우선권 TOP 5</h2><span class="hint">${mdd(B.t)} 기준</span></div>
+    <div class="hrank">${btop.map(r=>`<div class="it">${rankMark(r.rank)}<span class="n">${esc(r.m.name)}${r.tie?' <span class="tag no">동점</span>':''}</span><b class="num">${r.P}<small>점</small></b></div>`).join('')}${pad(btop.length)}</div>
+    <p class="hint">최근 ${B.C.days}일 ${B.C.min}점 이상 · 구매 포인트 높은 순${S.canWrite?'':' · 정확한 순번은 운영진 공지를 확인해 주세요'}</p></div></div>`;
   let alerts='';
   if(S.canWrite){const from=monthAdd(mon,-1)+'-01';const unc=S.sessions.filter(s=>s.date>=from&&s.date<t&&!isLocked(s.date)&&act.some(m=>eligible(m,s)&&!validMark(marksOf(s)[m.id])));
     alerts=`${lockNote()}${backupNote()}${unc.length?`<div class="lockbar"><span>체크가 덜 끝난 회차가 <b>${unc.length}개</b> 있어요.</span><span class="grow"></span><button class="btn small primary" data-action="homeUnc">확인하러 가기</button></div>`:''}`}
@@ -1018,7 +1027,7 @@ function renderWeek(members){
       ${chips||'<span class="hint">–</span>'}</div>`}).join('');
   const pend=S.wkOff?[]:todayItems().filter(it=>!findSession(t,it.k,it.extra)&&!(!it.extra&&(weeklyDone(it.k)||sameWeekReg(t,it.k))));
   const exC=CMAP[extraCfg().content];
-  return `<div class="panel">
+  return `<div class="panel tint-a">
     <div class="spread"><div class="row" style="gap:8px 10px"><h2>주간 일정</h2><span class="row" style="gap:6px;flex-wrap:nowrap"><button class="btn small" data-action="wk" data-d="1"${S.wkOff>=25?' disabled':''} aria-label="지난주">◀</button><span class="hint num">${md(ws)}(월) ~ ${md(we)}(일)</span><button class="btn small" data-action="wk" data-d="-1"${S.wkOff<=-8?' disabled':''} aria-label="다음 주">▶</button></span>${S.wkOff?'<button class="btn small" data-action="wk" data-d="0">이번 주</button>':''}</div>
       <div class="row">${pend.length>1&&!isLocked(t)?`<button class="btn small primary" data-action="quickAll">오늘 회차 ${pend.length}개 한 번에 만들기</button>`:''}${exC?`<button class="btn small${S.xOpen?' primary':''}" data-action="xOpen" aria-pressed="${!!S.xOpen}">＋ 다른 날 추가 진행</button>`:''}</div></div>
     ${t!==todayStr()&&!S.wkOff?'<p class="hint">새벽 5시 전이라 어제를 오늘로 보고 있어요.</p>':''}
@@ -1653,7 +1662,7 @@ function renderSettle(){
   const lk=S.locks[ms.mon];
   const lockBar=lk?`<div class="lockbar on"><b>마감됨</b><span>${esc(lk.by||'')} · ${lk.at?hm(lk.at):''}</span><span class="grow"></span>${S.isOwner?(S.confirm==='unlock:'+ms.mon?`<button class="btn small danger" data-action="unlock" data-mon="${ms.mon}">정말 마감 풀기</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small" data-action="askUnlock" data-mon="${ms.mon}">마감 풀기</button>`):''}</div>`
     :adm&&ms.done?`<div class="lockbar"><span>이 달 정산이 끝났으면 마감하세요. 마감하면 이 달 출석 체크를 고칠 수 없어요.</span><span class="grow"></span>${S.confirm==='lock:'+ms.mon?`<button class="btn small primary" data-action="lock" data-mon="${ms.mon}">정말 마감</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small" data-action="askLock" data-mon="${ms.mon}">이 달 마감하기</button>`}</div>`:'';
-  const head=`<div class="panel"><div class="spread"><h2>${monLabel(ms.mon)} 정산</h2><div class="row">
+  const head=`<div class="panel tint-w"><div class="spread"><h2>${monLabel(ms.mon)} 정산</h2><div class="row">
       <select id="fMonth" data-keep="0" data-action="month" aria-label="정산할 달">${ml.map(m=>`<option value="${m}"${m===ms.mon?' selected':''}>${monLabel(m)}${S.locks[m]?' · 마감':''}</option>`).join('')}</select>
       <button class="btn small" data-action="copyMonth">카톡용 복사</button></div></div>
     ${S.demo?'<div class="demo-banner"><span>예시 데이터예요.</span><button class="btn small" data-action="demoOff">예시 닫기</button></div>':''}
@@ -2092,7 +2101,7 @@ function renderMe(){
   const demoB=S.demo?'<div class="demo-banner"><span>예시 데이터로 보는 화면이에요. 실제 기록이 아니며 저장되지 않아요.</span><button class="btn small" data-action="demoOff">예시 닫기</button></div>':'';
   // ---- 닉네임 고르기
   const q=(S.meQ||'').trim().toLowerCase(),hits=members.filter(m=>!q||String(m.name).toLowerCase().includes(q));
-  const picker=`<div class="panel me-pick"><div class="spread"><h2>${me?'닉네임 바꾸기':'내 닉네임을 골라 주세요'}</h2>${me?'<button class="btn small" data-action="mePickOpen">닫기</button>':''}</div>
+  const picker=`<div class="panel me-pick tint-a"><div class="spread"><h2>${me?'닉네임 바꾸기':'내 닉네임을 골라 주세요'}</h2>${me?'<button class="btn small" data-action="mePickOpen">닫기</button>':''}</div>
     <input type="search" id="meQ" data-keep="0" data-action="meQ" class="me-q" placeholder="🔍 닉네임 검색" value="${esc(S.meQ||'')}" autocomplete="off" aria-label="닉네임 검색">
     <div class="me-chips">${hits.map(m=>`<button class="me-chip${me&&me.id===m.id?' on':''}" data-action="mePickBtn" data-mid="${m.id}">${esc(m.name)}</button>`).join('')||'<p class="hint">검색한 닉네임이 없어요.</p>'}</div>
     <p class="hint">한 번 고르면 이 기기에서 다음에도 기억해요.${hits.length===1&&q?' Enter를 누르면 바로 골라져요.':''}</p></div>`;
@@ -2110,7 +2119,7 @@ function renderMe(){
   const B=buyStats(),br=B.rows.find(x=>x.m.id===me.id);
   const leaveNow=onLeave(me,gdm),need=mrow?mrow.need:0,done=mrow?mrow.O+mrow.E+mrow.absent:0,unk=Math.max(0,need-done);
   // ---- 닉네임 바
-  const bar=`<div class="panel me-bar0"><div class="me-head">${avatar(me)}<div class="me-id"><h2>${esc(me.name)} 님</h2><span class="hint">${esc(me.role||baseRole())} · ${me.joinedAt?'가입 '+esc(me.joinedAt.replace(/-/g,'.')):'처음부터 함께'}</span></div><span class="grow"></span><button class="btn small" data-action="mePickOpen" aria-expanded="${!!S.mePick}">바꾸기 ▾</button></div></div>`;
+  const bar=`<div class="panel me-bar0 tint-a"><div class="me-head">${avatar(me)}<div class="me-id"><h2>${esc(me.name)} 님</h2><span class="hint">${esc(me.role||baseRole())} · ${me.joinedAt?'가입 '+esc(me.joinedAt.replace(/-/g,'.')):'처음부터 함께'}</span></div><span class="grow"></span><button class="btn small" data-action="mePickOpen" aria-expanded="${!!S.mePick}">바꾸기 ▾</button></div></div>`;
   // ---- 핵심 숫자 4개
   const bt=!br?['–','']:br.why?['대기',esc(br.why)]:[br.rank+'위',`최근 ${B.C.days}일 ${br.R}점 · 조건 충족${br.tie?' · 동점':''}`];
   const tiles=`<div class="tiles me-key">
