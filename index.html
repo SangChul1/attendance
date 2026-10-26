@@ -839,6 +839,32 @@ header.top{border-radius:18px}.hero{border-radius:18px}
 .deep .btn:hover{background:rgba(255,255,255,.24)}
 .deep .av{box-shadow:0 0 0 2px rgba(255,255,255,.35)}
 .me-bar0{border-left:0}
+
+/* 공지 게시판 */
+.npin{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-radius:14px;background:color-mix(in srgb,var(--seal) 7%,var(--surface));border:1px solid color-mix(in srgb,var(--seal) 22%,var(--line))}
+.npin .notice-body{background:transparent;padding:4px 0 0;border-left:0}
+.nh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.nh b{font-size:16px}
+.nbadge{font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--seal);color:#fff}
+.nbadge.sm{padding:1px 6px;background:transparent;color:inherit}
+.nnew{font-size:11px;font-weight:800;padding:2px 7px;border-radius:999px;background:linear-gradient(135deg,var(--g3a),var(--g4a));color:#fff;letter-spacing:.03em}
+.nacts{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.nlist{display:flex;flex-direction:column}
+.nlh{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+.nlh .l{font-size:12px;font-weight:700;color:var(--muted)}
+.nrow{border-bottom:1px solid var(--line)}
+.nline{display:flex;align-items:center;gap:8px;width:100%;padding:10px 4px;border:0;background:none;text-align:left;cursor:pointer;color:inherit;font:inherit}
+.nline:hover .nt{color:var(--accent)}
+.nline .nt{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nchev{color:var(--muted);transition:transform .15s}.nrow.open .nchev{transform:rotate(180deg)}
+.nbody{display:flex;flex-direction:column;gap:8px;padding:0 4px 12px}
+.nform{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:14px;background:var(--sunken);border:1px solid var(--line)}
+.nform textarea{min-height:140px}
+/* 학살 문파 / 공지 줄 높이 */
+.home-r1{min-height:330px}
+.hero2{min-height:330px;justify-content:space-between}
+.hero2 .hero-days{align-items:stretch}
+.hd{min-height:150px}
 </style>
 </head>
 <body>
@@ -942,7 +968,7 @@ const roleIdx=r=>{const i=ROLES.indexOf(r);return i<0?ROLES.length:i};
 const DAYS=['일','월','화','수','목','금','토'];
 const CFG0={guild:'',weekStart:1,streak:3,points:{singi:1,mihok:1,rank:1,bonus:1}};
 
-const S={demoT:{},manOpen:(()=>{try{return localStorage.getItem('att.manOpen')==='1'}catch(_){return false}})(),msel:new Set(),mbulk:null,noticeEdit:false,rfSug:false,mt:(()=>{try{const v=JSON.parse(localStorage.getItem('att.mt')||'{}');return v&&typeof v==='object'?v:{}}catch(_){return {}}})(),mFilter:'active',detail:null,jimp:null,sorts:{},leftTab:'table',setTab:'table',calcTab:'pay',tierOpen:false,lqDraft:null,xOpen:false,lp:{mode:'month',off:0},plogs:null,lcats:null,lq:'',logs:[],wkOff:0,purchases:[],buyBlocked:false,buyFor:'',olderFail:false,rf:{mon:'all',kind:'all',q:'',unpaid:false},payOpen:null,man:null,db:null,fs:null,auth:null,authUser:null,myNick:'',isOwner:false,admins:[],ready:false,err:false,setup:false,canWrite:false,older:[],olderRange:null,olderLoading:false,cutoff:'',me:'',month:'',imp:null,stab:'sum',ssort:'rate',ssearch:'',warnings:[],warnBlocked:false,logBlocked:false,wmonth:'',dist:null,hist:null,delLogs:null,atab:'warn',nsort:'role',notes:{},locks:{},rewards:[],leaveFor:null,noteFor:null,cdraft:null,tierDraft:null,pay:null,selMode:false,sel:new Set(),
+const S={notices:[],noticeBlocked:false,nEdit:null,nOpen:null,nAll:false,nDel:null,demoT:{},manOpen:(()=>{try{return localStorage.getItem('att.manOpen')==='1'}catch(_){return false}})(),msel:new Set(),mbulk:null,noticeEdit:false,rfSug:false,mt:(()=>{try{const v=JSON.parse(localStorage.getItem('att.mt')||'{}');return v&&typeof v==='object'?v:{}}catch(_){return {}}})(),mFilter:'active',detail:null,jimp:null,sorts:{},leftTab:'table',setTab:'table',calcTab:'pay',tierOpen:false,lqDraft:null,xOpen:false,lp:{mode:'month',off:0},plogs:null,lcats:null,lq:'',logs:[],wkOff:0,purchases:[],buyBlocked:false,buyFor:'',olderFail:false,rf:{mon:'all',kind:'all',q:'',unpaid:false},payOpen:null,man:null,db:null,fs:null,auth:null,authUser:null,myNick:'',isOwner:false,admins:[],ready:false,err:false,setup:false,canWrite:false,older:[],olderRange:null,olderLoading:false,cutoff:'',me:'',month:'',imp:null,stab:'sum',ssort:'rate',ssearch:'',warnings:[],warnBlocked:false,logBlocked:false,wmonth:'',dist:null,hist:null,delLogs:null,atab:'warn',nsort:'role',notes:{},locks:{},rewards:[],leaveFor:null,noteFor:null,cdraft:null,tierDraft:null,pay:null,selMode:false,sel:new Set(),
   members:[],sessions:[],config:{...CFG0},
   tab:'home',openSid:null,editSid:null,period:'4',cfilter:'all',demo:false,confirm:null,showOff:false,
   search:'',onlyUnchecked:false,mSearch:''};
@@ -1094,6 +1120,33 @@ function renderAuth(){const el=$('#authbar');if(!el)return;
   el.innerHTML=S.authUser?`<span class="authwho">${esc(S.myNick||S.authUser.email||'')}${S.isOwner?' · 문파장':S.canWrite?' · 운영진':''}</span><button class="btn small" data-action="logout">로그아웃</button>`
     :`<button class="btn small" data-action="login">운영진 로그인</button>`}
 
+/* ---------- 문파 공지 (고정 1개 + 최근 목록) ---------- */
+function noticeList(){const N=S.config.notice&&typeof S.config.notice==='object'?S.config.notice:{};
+  const L=S.notices.slice();if(!L.length&&N.text)L.push({id:'legacy',title:'문파 공지',body:N.text,pinned:true,at:N.at||0,by:N.by||'',legacy:true});
+  L.sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0)||(b.at||0)-(a.at||0));return L}
+function noticeForm(n){
+  return `<div class="nform"><input type="text" id="nTitle" data-keep="0" maxlength="60" placeholder="제목 (예: 이번 주 요신 토요일 진행)" value="${esc(n&&n.title||'')}">
+    <textarea id="nBody" data-keep="0" maxlength="2000" rows="7" placeholder="내용">${esc(n&&n.body||'')}</textarea>
+    <div class="row"><label class="chk"><input type="checkbox" id="nPin" data-keep="0"${n&&n.pinned?' checked':''}> 📌 고정 공지 (맨 위에 펼쳐서 보여요)</label><span class="grow"></span>
+      <button class="btn small primary" data-action="nSave" data-id="${esc(n&&n.id||'')}">저장</button><button class="btn small" data-action="nCancel">취소</button></div>
+    <p class="hint">링크를 가진 누구나 볼 수 있어요 · 내용 2000자까지</p></div>`}
+function renderNotices(){
+  const adm=S.canWrite,L=noticeList(),now=Date.now(),isNew=n=>n.at&&now-n.at<7*864e5;
+  const pin=L.find(n=>n.pinned),rest=L.filter(n=>n!==pin),shown=S.nAll?rest:rest.slice(0,5);
+  const acts=n=>adm?`<span class="nacts">${S.nDel===n.id?`<button class="btn small danger" data-action="nDelYes" data-id="${esc(n.id)}">정말 삭제</button><button class="btn small" data-action="nDel" data-id="">취소</button>`:`<button class="btn small" data-action="nEditOpen" data-id="${esc(n.id)}">수정</button>${n.legacy?'':`<button class="btn small" data-action="nPinT" data-id="${esc(n.id)}">${n.pinned?'고정 해제':'고정'}</button><button class="btn small" data-action="nDel" data-id="${esc(n.id)}">삭제</button>`}`}</span>`:'';
+  const meta=n=>`<span class="hint">${n.by?esc(n.by)+' · ':''}${n.at?mdd(new Date(n.at+9*3600e3).toISOString().slice(0,10)):''}</span>`;
+  const pinHtml=pin?(S.nEdit===pin.id?noticeForm(pin):`<div class="npin"><div class="nh"><span class="nbadge">📌 고정</span><b>${esc(pin.title||'문파 공지')}</b>${isNew(pin)?'<span class="nnew">NEW</span>':''}<span class="grow"></span>${meta(pin)}</div>
+      <div class="notice-body">${esc(pin.body||'')}</div>${acts(pin)}</div>`):'';
+  const rows=shown.map(n=>{const op=S.nOpen===n.id;if(S.nEdit===n.id)return noticeForm(n);
+    return `<div class="nrow${op?' open':''}"><button class="nline" data-action="nOpen" data-id="${esc(n.id)}" aria-expanded="${op}">${n.pinned?'<span class="nbadge sm">📌</span>':''}<span class="nt">${esc(n.title||'(제목 없음)')}</span>${isNew(n)?'<span class="nnew">NEW</span>':''}<span class="grow"></span>${meta(n)}<span class="nchev" aria-hidden="true">▾</span></button>
+      ${op?`<div class="nbody"><div class="notice-body">${esc(n.body||'')}</div>${acts(n)}</div>`:''}</div>`}).join('');
+  return `<div class="panel notice"><div class="spread"><h2>문파 공지</h2>${adm&&S.nEdit!=='new'?'<button class="btn small primary" data-action="nEditOpen" data-id="new">＋ 새 공지</button>':''}</div>
+    ${S.noticeBlocked&&adm?'<div class="confirm">공지를 불러올 수 없어요. Firestore 규칙을 새 버전으로 게시해 주세요.</div>':''}
+    ${S.nEdit==='new'&&adm?noticeForm(null):''}
+    ${pinHtml}
+    ${rest.length?`<div class="nlist"><div class="nlh"><span class="l">최근 공지</span>${rest.length>5?`<button class="lnk" data-action="nAll">${S.nAll?'접기':`전체 ${rest.length}개 보기`}</button>`:''}</div>${rows}</div>`:''}
+    ${!L.length&&S.nEdit!=='new'?`<p class="hint">${adm?'아직 공지가 없어요. [＋ 새 공지]로 규칙이나 안내를 적어 두세요. 규칙은 📌 고정으로 올려 두면 맨 위에 보여요.':'아직 등록된 공지가 없어요.'}</p>`:''}</div>`;
+}
 /* ---------- 홈 ---------- */
 function homeWeek(){
   const t=gameDay(),ws=weekMon(t),we=addDays(ws,6),mid=new Map(activeMembers(S.members).map(m=>[m.id,m]));
@@ -1129,11 +1182,7 @@ function renderHome(){
     <div class="tile"><span class="hti" aria-hidden="true">🗓️</span><span class="l">${+mon.slice(5)}월 회차</span><span class="v">${ms.reg}<small>회</small></span><span class="l">정규${ms.n>ms.reg?' · 추가 진행 '+(ms.n-ms.reg)+'회':''}</span></div>
     <div class="tile"><span class="hti" aria-hidden="true">📈</span><span class="l">${+mon.slice(5)}월 평균 출석률</span><span class="v">${pct(avg)}</span><span class="l">이번 주 진행 ${wkDone}회</span></div>
     <div class="tile"><span class="hti" aria-hidden="true">🏅</span><span class="l">개근 후보</span><span class="v">${perf.length}<small>명</small></span><span class="l">지금까지 정규 회차 모두 참여</span></div></div>`;
-  const notice=`<div class="panel notice tint-s"><div class="spread"><h2>문파 공지</h2>${S.canWrite&&!S.noticeEdit?'<button class="btn small" data-action="noticeEdit">수정</button>':''}</div>
-    ${S.noticeEdit&&S.canWrite?`<textarea id="noticeText" data-keep="0" maxlength="2000" rows="9" placeholder="예: 디스코드 필참, 투표는 미리 참여해 주세요">${esc(N.text||'')}</textarea>
-      <div class="row"><button class="btn small primary" data-action="noticeSave">공지 저장</button><button class="btn small" data-action="noticeEdit">취소</button><span class="hint">링크를 가진 누구나 볼 수 있어요 · 2000자까지</span></div>`
-    :N.text?`<div class="notice-body">${esc(N.text)}</div>${N.at?`<p class="hint" style="text-align:right">${esc(N.by||'')} · ${hm(N.at)} 수정</p>`:''}`
-    :`<p class="hint">${S.canWrite?'아직 공지가 없어요. [수정]을 눌러 규칙이나 안내를 적어 두세요.':'아직 등록된 공지가 없어요.'}</p>`}</div>`;
+  const notice=renderNotices(N);
   const week=`<div class="panel tint-a"><div class="spread"><h2>이번 주 일정 <span class="hint num">${md(W.ws)}(월) ~ ${md(W.we)}(일)</span></h2>${S.canWrite?'<button class="btn small" data-action="tab" data-tab="check">출석 체크로</button>':''}</div>${W.html}</div>`;
   const pad=n=>Array.from({length:Math.max(0,5-n)},(_,i)=>`<div class="it ph">${rankMark(n+i+1)}<span class="n">–</span><b class="num"></b></div>`).join('');
   const topP=`<div class="panel home-top5 tint-w"><div class="h5s"><div class="spread"><h2>${+mon.slice(5)}월 포인트 TOP 5</h2><button class="btn small" data-action="tab" data-tab="settle">월간 정산</button></div>
@@ -1670,12 +1719,12 @@ function readContentForm(){
     const p=Math.round(+g('pts').value);
     return {...c,name:g('name').value.trim().slice(0,20),short:g('short').value.trim().slice(0,8),time:g('time').value.trim().slice(0,24),pts:p>=0&&p<=100?p:1,days,extraDays:[],main:g('main').checked,weekly:g('weekly').checked,on:g('on').checked}});
 }
-const JCOLS=['members','sessions','warnings','notes','rewards','purchases','locks'];
+const JCOLS=['members','sessions','warnings','notes','rewards','purchases','locks','notices'];
 async function exportJson(){
   try{toast('전체 데이터를 모으는 중이에요…');await loadOlderAll();
     const strip=o=>{const {id,...d}=o;return d};
     const data={members:S.members.map(x=>({id:x.id,d:strip(x)})),sessions:allSessions().map(x=>({id:x.id,d:strip(x)})),warnings:S.warnings.map(x=>({id:x.id,d:strip(x)})),
-      notes:Object.entries(S.notes).map(([id,d])=>({id,d})),rewards:S.rewards.map(x=>({id:x.id,d:strip(x)})),purchases:S.purchases.map(x=>({id:x.id,d:strip(x)})),
+      notes:Object.entries(S.notes).map(([id,d])=>({id,d})),rewards:S.rewards.map(x=>({id:x.id,d:strip(x)})),purchases:S.purchases.map(x=>({id:x.id,d:strip(x)})),notices:S.notices.map(x=>({id:x.id,d:strip(x)})),
       locks:Object.entries(S.locks).map(([id,d])=>({id,d})),config:S.config,...(S.isOwner?{admins:S.admins.map(x=>({id:x.id,d:strip(x)}))}:{})};
     const body=JSON.stringify({app:'guild-attendance',version:1,exportedAt:Date.now(),by:myName(),guild:S.config.guild||'',data});
     const blob=new Blob([body],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`문파출석_완전백업_${todayStr()}.json`;document.body.appendChild(a);a.click();
@@ -1687,7 +1736,7 @@ async function readJson(f){
   S.jimp={loading:true};render();
   try{const j=JSON.parse(await f.text());if(!j||j.app!=='guild-attendance'||!j.data)throw new Error('format');
     S.olderRange=null;await loadOlderAll();
-    const have={members:new Set(S.members.map(x=>x.id)),sessions:new Set(allSessions().map(x=>x.id)),warnings:new Set(S.warnings.map(x=>x.id)),notes:new Set(Object.keys(S.notes)),rewards:new Set(S.rewards.map(x=>x.id)),purchases:new Set(S.purchases.map(x=>x.id)),locks:new Set(Object.keys(S.locks)),admins:new Set(S.admins.map(x=>x.id))};
+    const have={members:new Set(S.members.map(x=>x.id)),sessions:new Set(allSessions().map(x=>x.id)),warnings:new Set(S.warnings.map(x=>x.id)),notes:new Set(Object.keys(S.notes)),rewards:new Set(S.rewards.map(x=>x.id)),purchases:new Set(S.purchases.map(x=>x.id)),notices:new Set(S.notices.map(x=>x.id)),locks:new Set(Object.keys(S.locks)),admins:new Set(S.admins.map(x=>x.id))};
     const cols=[...JCOLS,...(S.isOwner&&j.data.admins?['admins']:[])];const plan={};let total=0;
     for(const c of cols){const list=(Array.isArray(j.data[c])?j.data[c]:[]).filter(x=>x&&typeof x.id==='string'&&x.id&&!x.id.includes('/')&&x.d&&typeof x.d==='object');plan[c]={all:list.length,add:list.filter(x=>!have[c].has(x.id))};total+=plan[c].add.length}
     S.jimp={plan,total,cols,config:j.data.config||null,exportedAt:j.exportedAt,guild:j.guild||''}}
@@ -1701,7 +1750,7 @@ async function runJson(){
   S.jimp=ok?{finished:true,count:J.done}:null;S.olderRange=null;S.older=[];render();if(ok)toast('복원을 마쳤어요');
 }
 function renderJson(){
-  const J=S.jimp,L={members:'문파원',sessions:'회차',warnings:'경고',notes:'메모',rewards:'지급 기록',purchases:'구매 기록',locks:'월 마감',admins:'운영진'};let body='';
+  const J=S.jimp,L={members:'문파원',sessions:'회차',warnings:'경고',notes:'메모',rewards:'지급 기록',purchases:'구매 기록',notices:'공지',locks:'월 마감',admins:'운영진'};let body='';
   if(J){if(J.loading)body='<p class="hint">파일을 확인하는 중이에요…</p>';else if(J.error)body=`<div class="confirm">${esc(J.error)}</div>`;
     else if(J.finished)body=`<p class="hint">${J.count}건을 복원했어요.</p><div class="row"><button class="btn small" data-action="jClear">닫기</button></div>`;
     else body=`<div class="notebox">${J.exportedAt?`${hm(J.exportedAt)}에 받은 백업${J.guild?` · ${esc(J.guild)}`:''}\n`:''}${J.cols.map(c=>`${L[c]} ${J.plan[c].all}건 중 새로 추가 ${J.plan[c].add.length}건`).join('\n')}</div>
@@ -1712,7 +1761,7 @@ function renderJson(){
 }
 function renderBackup(){
   const lb=S.config.lastBackup&&S.config.lastBackup.at?`마지막 백업: ${hm(S.config.lastBackup.at)} · ${esc(S.config.lastBackup.by||'')} (${backupDays()}일 전)`:'아직 백업한 적이 없어요';
-  return `<div class="three bk3"><div class="panel"><h2>백업</h2>${notes(['<b>완전 백업 (JSON)</b>: 출석·문파원·경고·메모·지급 기록·구매 기록·월 마감·설정을 파일 하나로 받아요. 복원에 써요','<b>엑셀 백업 (CSV)</b>: 전체 출석 기록을 엑셀에서 여는 파일로 받아요. 가져오기에 써요','한 달에 한 번쯤 받아 안전한 곳에 보관하세요 (문파원 정보가 들어 있어요). 변경 기록(로그)은 들어가지 않아요'])}
+  return `<div class="three bk3"><div class="panel"><h2>백업</h2>${notes(['<b>완전 백업 (JSON)</b>: 출석·문파원·경고·메모·지급 기록·구매 기록·공지·월 마감·설정을 파일 하나로 받아요. 복원에 써요','<b>엑셀 백업 (CSV)</b>: 전체 출석 기록을 엑셀에서 여는 파일로 받아요. 가져오기에 써요','한 달에 한 번쯤 받아 안전한 곳에 보관하세요 (문파원 정보가 들어 있어요). 변경 기록(로그)은 들어가지 않아요'])}
     <div class="col bk-btns"><button class="btn primary" data-action="exportJson">완전 백업 받기 (JSON)</button><button class="btn" data-action="exportAll">전체 기록 CSV 받기</button></div>
     <p class="hint">${lb}</p></div>${renderJson()}${renderImport()}</div>`;
 }
@@ -2513,8 +2562,23 @@ document.addEventListener('click',e=>{
   if(a==='openUnc'){S.mt.check='sheet';S.openSid=b.dataset.sid;S.onlyUnchecked=true;S.confirm=null;S.editSid=null;S.search='';S.hist=null;render();scrollSheet();return}
   if(a==='homeOpen'){S.tab='check';remember('tab','check');S.mt.check='sheet';S.openSid=b.dataset.sid;S.confirm=null;S.editSid=null;S.search='';S.hist=null;render();window.scrollTo({top:0});scrollSheet();return}
   if(a==='homeUnc'){S.tab='check';remember('tab','check');S.mt.check='list';render();window.scrollTo({top:0});return}
-  if(a==='noticeEdit'){S.noticeEdit=!S.noticeEdit;render();if(S.noticeEdit)$('#noticeText')?.focus();return}
-  if(a==='noticeSave'){const tx=($('#noticeText')?.value||'').replace(/\s+$/,'').slice(0,2000);guard(()=>saveConfig({notice:{text:tx,by:myName(),at:Date.now()}}),'공지를 저장했어요',{area:'설정',what:'공지 수정',detail:tx.slice(0,60)}).then(ok=>{if(ok){S.noticeEdit=false;render()}});return}
+  if(a==='nEditOpen'){S.nEdit=b.dataset.id||'new';S.nDel=null;render();$('#nTitle')?.focus();return}
+  if(a==='nCancel'){S.nEdit=null;render();return}
+  if(a==='nOpen'){S.nOpen=S.nOpen===b.dataset.id?null:b.dataset.id;S.nDel=null;render();return}
+  if(a==='nAll'){S.nAll=!S.nAll;render();return}
+  if(a==='nDel'){S.nDel=b.dataset.id||null;render();return}
+  if(a==='nSave'){const id=b.dataset.id,title=($('#nTitle')?.value||'').trim().slice(0,60),body=($('#nBody')?.value||'').replace(/\s+$/,'').slice(0,2000),pinned=!!$('#nPin')?.checked;
+    if(!title&&!body){toast('제목이나 내용을 적어 주세요');return}
+    const old=id&&id!=='legacy'?S.notices.find(n=>n.id===id):null;
+    guard(async()=>{
+      if(pinned)for(const n of S.notices)if(n.pinned&&n.id!==id)await S.db.doc('notices/'+n.id).update({pinned:false});
+      if(old)await S.db.doc('notices/'+id).update({title,body,pinned,editedBy:myName(),editedAt:Date.now()});
+      else{await S.db.collection('notices').doc().set({title,body,pinned,by:myName(),at:Date.now()});if(id==='legacy')await saveConfig({notice:{text:'',by:myName(),at:Date.now()}})}
+    },old?'공지를 고쳤어요':'공지를 올렸어요',{area:'설정',what:old?'공지 수정':'공지 등록',detail:(title||body).slice(0,60)}).then(ok=>{if(ok){S.nEdit=null;render()}});return}
+  if(a==='nPinT'){const n=S.notices.find(x=>x.id===b.dataset.id);if(!n)return;
+    guard(async()=>{if(!n.pinned)for(const x of S.notices)if(x.pinned&&x.id!==n.id)await S.db.doc('notices/'+x.id).update({pinned:false});await S.db.doc('notices/'+n.id).update({pinned:!n.pinned})},n.pinned?'고정을 풀었어요':'고정 공지로 올렸어요',{area:'설정',what:n.pinned?'공지 고정 해제':'공지 고정',detail:(n.title||'').slice(0,60)});return}
+  if(a==='nDelYes'){const n=S.notices.find(x=>x.id===b.dataset.id);if(!n)return;S.nDel=null;
+    guard(()=>S.db.doc('notices/'+n.id).delete(),'공지를 지웠어요',{area:'설정',what:'공지 삭제',detail:(n.title||'').slice(0,60)});return}
   if(a==='manToggle'){S.manOpen=!S.manOpen;try{localStorage.setItem('att.manOpen',S.manOpen?'1':'')}catch(_){}render();return}
   if(a==='rfPick'){S.rf.q=b.dataset.n||'';S.rfSug=false;const i=$('#rfQ');if(i){i.value=S.rf.q;i.blur()}render();return}
   if(a==='mePickOpen'){S.mePick=!S.mePick;S.meQ='';render();if(S.mePick)$('#meQ')?.focus();return}
@@ -2848,6 +2912,7 @@ render();
   db.collection('sessions').where('date','>=',S.cutoff).orderBy('date','desc').limit(1000).onSnapshot(snap=>{
     S.sessions=snap.docs.map(d=>normS({id:d.id,...d.data()})).filter(s=>s.date&&s.content);got.s=true;done()},onErr);
   db.collection('purchases').onSnapshot(snap=>{S.purchases=snap.docs.map(d=>({id:d.id,...d.data()})).filter(p=>p.mid&&p.date);S.buyBlocked=false;render()},e=>{console.warn(e);S.buyBlocked=true;render()});
+  db.collection('notices').onSnapshot(snap=>{S.notices=snap.docs.map(d=>({id:d.id,...d.data()})).filter(n=>n&&(n.title||n.body));S.noticeBlocked=false;render()},e=>{console.warn(e);S.noticeBlocked=true;render()});
   db.collection('locks').onSnapshot(snap=>{S.locks=Object.fromEntries(snap.docs.map(d=>[d.id,d.data()]));render()},()=>{});
   db.doc('config/main').onSnapshot(snap=>{if(snap.exists)S.config=Object.assign({...CFG0},snap.data());render()},()=>{});
   let unAdmins=null,unWarn=null,unNotes=null,unRw=null,unLogs=null;
