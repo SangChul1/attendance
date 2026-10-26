@@ -112,10 +112,14 @@ label.chk{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:va
   .subtabs.calc-tabs{display:none}.subtabs.left-tabs{display:none}}
 @media (min-width:1000px){
   .subtabs.settle-mtabs{display:none}
-  .settle-grid{display:grid;grid-template-columns:minmax(0,668px) minmax(380px,1fr);gap:20px;align-items:start}
+  .settle-grid{display:grid;grid-template-columns:auto minmax(340px,1fr);gap:20px;align-items:start}
+  .settle-left{min-width:0;max-width:calc(100vw / var(--zoom,1) - 400px)}
+  .settle-left>.subtabs,.settle-left section .panel>:not(.scroll){contain:inline-size}
+  .settle-left section .scroll{max-width:100%}
   .settle-right{position:sticky;top:12px;max-height:calc(100vh / var(--zoom,1) - 24px);overflow:auto;padding-right:2px}
   .settle-right>*{flex-shrink:0}
-  .settle-grid.d-pay [data-sec=dist],.settle-grid.d-dist [data-sec=pay],.settle-grid.l-table [data-sec=buy],.settle-grid.l-buy [data-sec=table]{display:none}
+  .settle-grid.d-pay [data-sec=dist],.settle-grid.d-dist [data-sec=pay]{display:none}
+  .settle-grid.l-table [data-sec=buy],.settle-grid.l-buy [data-sec=table]{height:0;overflow:hidden;visibility:hidden;margin-top:-20px}
   .settle-right .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
   .settle-right .fg3{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   .settle-right .fg3>.btn{grid-column:1/-1}}
@@ -421,8 +425,12 @@ nav.tabs button[aria-selected="true"]{color:var(--accent);font-weight:700}
 .home-top .hero{flex-direction:column;align-items:stretch;justify-content:space-between;flex-wrap:nowrap}
 .home-top .hero-run>div{flex-direction:column;align-items:flex-start}
 @media (max-width:1100px){.home-top{grid-template-columns:minmax(0,1fr)}.home-top .hero{flex-direction:row;flex-wrap:wrap;align-items:flex-end}.home-top .hero-run>div{flex-direction:row;align-items:center}}
-.home-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
-@media (max-width:1200px){.home-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.home-grid .notice{grid-column:1/-1}}
+.home-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;align-items:stretch}
+.home-grid>.panel{height:100%}
+.home-c1 .hero{flex-direction:column;align-items:stretch;justify-content:space-between;flex-wrap:nowrap;flex:none}
+.home-c1 .hero-run>div{flex-direction:column;align-items:flex-start}
+.home-c1 .notice{flex:1}
+@media (max-width:1200px){.home-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.home-grid .home-c1{grid-column:1/-1}.home-c1 .hero{flex-direction:row;flex-wrap:wrap;align-items:flex-end}.home-c1 .hero-run>div{flex-direction:row;align-items:center}}
 @media (max-width:720px){.home-grid{grid-template-columns:minmax(0,1fr)}}
 .notice-body{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.75;font-size:15px;padding:12px 14px;border-radius:10px;background:var(--sunken);border-left:4px solid var(--seal)}
 .notice textarea{min-height:180px}
@@ -527,7 +535,7 @@ details.rules:not([open]){gap:0}
 .paytbl tr.open td{background:color-mix(in srgb,var(--accent) 6%,transparent)}
 .paytbl tr.paysub .paygrid{margin:4px 0 8px}
 .mb-only{display:none}
-@media (min-width:1000px) and (max-width:1199px){.settle-grid{grid-template-columns:minmax(0,1fr) minmax(330px,.6fr)}.settle-grid [data-sec=table] th,.settle-grid [data-sec=table] td{padding-left:6px;padding-right:6px}}
+@media (min-width:1000px) and (max-width:1199px){.settle-grid{grid-template-columns:auto minmax(300px,1fr)}.settle-left{max-width:calc(100vw / var(--zoom,1) - 360px)}.settle-grid .settle-left th,.settle-grid .settle-left td{padding-left:6px;padding-right:6px}}
 .man-body{gap:14px}
 @media (min-width:821px){.manp.shut .man-body{display:none}}
 @media (max-width:820px){.dt-only{display:none}.mb-only{display:block}}
@@ -573,7 +581,7 @@ show();})();
 </script>
 <script>/* 화면 크기 버튼: 80%~160%, 10%씩. 기기마다 기억 */
 (function(){var MIN=0.8,MAX=1.6,KEY='att.zoom',z=1;try{var v=parseFloat(localStorage.getItem(KEY));if(v>=MIN&&v<=MAX)z=v}catch(_){}
-function apply(){z=Math.round(Math.min(MAX,Math.max(MIN,z))*10)/10;var r=document.documentElement;r.style.setProperty('--zoom',z);r.style.zoom=z===1?'':String(z);
+function apply(){z=Math.round(Math.min(MAX,Math.max(MIN,z))*10)/10;var r=document.documentElement;r.style.setProperty('--zoom',z);r.style.zoom=z===1?'':String(z);try{window.dispatchEvent(new Event('resize'))}catch(_){}
   var o=document.getElementById('zOut'),i=document.getElementById('zIn'),t=document.getElementById('zReset');if(t)t.textContent=Math.round(z*100)+'%';if(o)o.disabled=z<=MIN;if(i)i.disabled=z>=MAX;
   try{if(z===1)localStorage.removeItem(KEY);else localStorage.setItem(KEY,String(z))}catch(_){}}
 document.getElementById('zOut').addEventListener('click',function(){z-=0.1;apply()});
@@ -752,7 +760,14 @@ function render(){
   const live=document.activeElement;
   for(const id in vals){const e=document.getElementById(id);if(!e||e===live||e.dataset.keep==='0')continue;if(e.type==='checkbox')e.checked=vals[id];else if(e.value!==vals[id])e.value=vals[id]}
   if(aid){const e=document.getElementById(aid);if(e&&e!==live){e.focus();if(sel&&e.setSelectionRange)try{e.setSelectionRange(sel[0],sel[1])}catch(_){}}}
+  if(S.tab==='settle')fitSettle();
 }
+/* 월간 정산: 왼쪽 표가 반올림 때문에 1~몇 px 넘치면 그만큼만 칸을 넓힘 */
+function fitSettle(){const g=document.querySelector('.settle-grid');if(!g)return;g.style.gridTemplateColumns='';if(innerWidth<1000)return;
+  const L=g.querySelector('.settle-left');if(!L)return;let d=0;
+  L.querySelectorAll('section .scroll').forEach(e=>{const x=e.scrollWidth-e.clientWidth;if(x>0&&x<=12)d=Math.max(d,x)});
+  if(d)g.style.gridTemplateColumns=`minmax(0,${L.offsetWidth+d+1}px) minmax(300px,1fr)`}
+window.addEventListener('resize',()=>{if(S.tab==='settle')fitSettle()});
 const loading='<div class="panel"><div class="empty"><h3>출석부를 불러오는 중</h3></div></div>';
 const notes=items=>`<ol class="notes">${items.filter(Boolean).map(t=>`<li>${t}</li>`).join('')}</ol>`;
 function ruleItems(){return [`<b>출석률</b> = 참여 ÷ (참여 + 불참)`,excuseText(),'<b>추가 진행</b> 회차는 출석률에서 빠지고 보너스 포인트만 붙어요',`정규 회차가 <b>${minJudge()}회 미만</b>이면 판정 보류`]}
@@ -827,7 +842,7 @@ function renderHome(){
   let alerts='';
   if(S.canWrite){const from=monthAdd(mon,-1)+'-01';const unc=S.sessions.filter(s=>s.date>=from&&s.date<t&&!isLocked(s.date)&&act.some(m=>eligible(m,s)&&!validMark(marksOf(s)[m.id])));
     alerts=`${lockNote()}${backupNote()}${unc.length?`<div class="lockbar"><span>체크가 덜 끝난 회차가 <b>${unc.length}개</b> 있어요.</span><span class="grow"></span><button class="btn small primary" data-action="homeUnc">확인하러 가기</button></div>`:''}`}
-  return `<div class="col">${roNote()}${blockNote()}<div class="home-top">${hero}${week}</div>${alerts}${tiles}<div class="home-grid">${notice}${topP}${buyP}</div></div>`;
+  return `<div class="col">${roNote()}${blockNote()}${alerts}<div class="home-grid"><div class="col home-c1">${hero}${notice}</div>${topP}${buyP}</div>${tiles}${week}</div>`;
 }
 function renderCheck(){
   if(!S.ready) return loading;
