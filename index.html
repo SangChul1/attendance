@@ -941,6 +941,18 @@ body{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 .hero-cd.live .cd-l::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:#ff7a6b;margin-right:6px;vertical-align:1px;box-shadow:0 0 0 3px rgba(255,122,107,.3);animation:cdpulse 1.4s infinite}
 @keyframes cdpulse{50%{box-shadow:0 0 0 6px rgba(255,122,107,0)}}
 @media (prefers-reduced-motion:reduce){.hero-cd.live .cd-l::before{animation:none}}
+
+/* 공지 7개 페이징: 현재 높이에 맞게 줄 간격 압축 */
+.home-r1 .nlist .nline{padding:7px 4px;font-size:14.5px}
+.home-r1 .nlist .nline .hint{font-size:12.5px}
+.home-r1 .npin{padding:10px 14px;gap:6px}
+.home-r1 .npin .notice-body.clamp{-webkit-line-clamp:3;font-size:14.5px;line-height:1.65}
+.home-r1>.notice{gap:10px}
+
+.pager{flex-wrap:wrap;align-items:center;padding-top:10px}
+.pager .pg{min-width:32px;height:32px}
+.pager .pg-info{font-size:12.5px;color:var(--muted);margin-left:6px}
+@media (max-width:420px){.pager .pg{min-width:30px;height:32px;padding:0 4px}.pager .pg-info{width:100%;text-align:center;margin:2px 0 0}}
 </style>
 </head>
 <body>
@@ -1227,6 +1239,12 @@ function renderAuth(){const el=$('#authbar');if(!el)return;
   el.innerHTML=S.authUser?`<span class="authwho">${esc(S.myNick||S.authUser.email||'')}${S.isOwner?' · 문파장':S.canWrite?' · 운영진':''}</span><button class="btn small" data-action="logout">로그아웃</button>`
     :`<button class="btn small" data-action="login">운영진 로그인</button>`}
 
+/* ---------- 공용 페이징 ---------- */
+function pager(k,total,per,sig){S.pg??={};S.pgs??={};if(sig!==undefined&&S.pgs[k]!==sig){if(S.pgs[k]!==undefined)S.pg[k]=0;S.pgs[k]=sig}
+  const pages=Math.max(1,Math.ceil(total/per));let p=S.pg[k]|0;if(p>pages-1)p=pages-1;if(p<0)p=0;S.pg[k]=p;const a=p*per,b=Math.min(total,a+per);
+  let nums='';if(pages>1){const st=Math.max(0,Math.min(p-2,pages-5)),en=Math.min(pages,st+5);for(let i=st;i<en;i++)nums+=`<button class="pg${i===p?' on':''}" data-action="pgGo" data-k="${k}" data-p="${i}" aria-current="${i===p}">${i+1}</button>`}
+  const html=pages>1?`<div class="npage pager" role="navigation" aria-label="페이지"><button class="pg" data-action="pgGo" data-k="${k}" data-p="0"${p>0?'':' disabled'} aria-label="처음">«</button><button class="pg" data-action="pgGo" data-k="${k}" data-p="${p-1}"${p>0?'':' disabled'} aria-label="이전 페이지">‹</button>${nums}<button class="pg" data-action="pgGo" data-k="${k}" data-p="${p+1}"${p<pages-1?'':' disabled'} aria-label="다음 페이지">›</button><button class="pg" data-action="pgGo" data-k="${k}" data-p="${pages-1}"${p<pages-1?'':' disabled'} aria-label="마지막">»</button><span class="pg-info num">${a+1}–${b} / ${total}</span></div>`:'';
+  return {a,b,p,pages,html}}
 /* ---------- 문파 공지 (고정 1개 + 최근 목록) ---------- */
 function noticeList(){const N=S.config.notice&&typeof S.config.notice==='object'?S.config.notice:{};
   const L=S.notices.slice();if(!L.length&&N.text)L.push({id:'legacy',title:'문파 공지',body:N.text,pinned:true,at:N.at||0,by:N.by||'',legacy:true});
@@ -1254,7 +1272,7 @@ function renderNoticeView(){
 }
 function renderNotices(){
   const adm=S.canWrite,L=noticeList(),now=Date.now(),isNew=n=>n.at&&now-n.at<7*864e5;
-  const pin=L.find(n=>n.pinned),rest=L.filter(n=>n!==pin),PER=5,pages=Math.max(1,Math.ceil(rest.length/PER));if(!(S.nPage>=0))S.nPage=0;if(S.nPage>pages-1)S.nPage=pages-1;const shown=rest.slice(S.nPage*PER,S.nPage*PER+PER);
+  const pin=L.find(n=>n.pinned),rest=L.filter(n=>n!==pin),PER=7,pages=Math.max(1,Math.ceil(rest.length/PER));if(!(S.nPage>=0))S.nPage=0;if(S.nPage>pages-1)S.nPage=pages-1;const shown=rest.slice(S.nPage*PER,S.nPage*PER+PER);
   const acts=n=>adm?`<span class="nacts">${S.nDel===n.id?`<button class="btn small danger" data-action="nDelYes" data-id="${esc(n.id)}">정말 삭제</button><button class="btn small" data-action="nDel" data-id="">취소</button>`:`<button class="btn small" data-action="nEditOpen" data-id="${esc(n.id)}">수정</button>${n.legacy?'':`<button class="btn small" data-action="nPinT" data-id="${esc(n.id)}">${n.pinned?'고정 해제':'고정'}</button><button class="btn small" data-action="nDel" data-id="${esc(n.id)}">삭제</button>`}`}</span>`:'';
   const meta=n=>`<span class="hint num">${n.by?esc(n.by)+' · ':''}${n.at?ntime(n.at):''}</span>`;
   const long=t=>String(t||'').split('\n').length>4||String(t||'').length>180;
@@ -1337,9 +1355,10 @@ function renderCheck(){
   const members=activeMembers(S.members);
   const sessions=[...S.sessions].sort(sessionSort);
   const weekP=S.canWrite?renderWeek(members):'';
+  let sessPg='';S.pgVisSess=null;
   let list='';
   if(!sessions.length) list='<div class="empty"><h3>아직 기록된 회차가 없어요</h3><p class="hint">위에서 오늘 진행한 콘텐츠를 누르면 회차가 만들어지고 바로 체크할 수 있어요.</p></div>';
-  else{let last='';const mid=new Map(members.map(m=>[m.id,m]));const dk={};S.sessions.forEach(x=>{const k=sessId(x.date,x.content,x.extra);dk[k]=(dk[k]||0)+1});for(const s of sessions.slice(0,80)){
+  else{let last='';const mid=new Map(members.map(m=>[m.id,m]));const dk={};S.sessions.forEach(x=>{const k=sessId(x.date,x.content,x.extra);dk[k]=(dk[k]||0)+1});const SP=pager('sess',sessions.length,20);sessPg=SP.html;const pageS=sessions.slice(SP.a,SP.b);S.pgVisSess=pageS.map(x=>x.id);for(const s of pageS){
     if(s.date!==last){last=s.date;list+=`<div class="sday num">${mdd(s.date)}</div>`}
     const c=countSession(s,mid);
     const lkS=isLocked(s.date),on=S.sel.has(s.id);
@@ -1359,7 +1378,7 @@ function renderCheck(){
   const openUn=openS?(()=>{const mk=marksOf(openS);return members.filter(m=>eligible(m,openS)&&!validMark(mk[m.id])).length})():0;
   const ckBar=mtBar('check',[...(S.canWrite?[['week','주간 일정']]:[]),['sheet',openS?`체크 · ${esc(cshort(openS.content))}${openS.extra?'(추가)':''} ${md(openS.date)}${openUn?` <span class="xb">${openUn}</span>`:''}`:'체크'],['list',`회차 기록${unc.length?` <span class="xb">${unc.length}</span>`:''}`]],cc);
   return `${roNote()}${blockNote()}<div class="col mt-host">${lockNote()}${ckBar}<div${msA(cc,'week')}>${weekP}</div><div class="check-below${openS?' has-open':''}"><div class="col"${msA(cc,'list')}>
-    <div class="panel"><div class="spread"><h2>회차 기록</h2>${S.canWrite&&sessions.length&&!S.selMode?'<button class="btn small" data-action="selMode">삭제</button>':''}</div>${selBar}<div class="slist">${list}</div></div>
+    <div class="panel"><div class="spread"><h2>회차 기록</h2>${S.canWrite&&sessions.length&&!S.selMode?'<button class="btn small" data-action="selMode">삭제</button>':''}</div>${selBar}<div class="slist">${list}</div>${sessPg}</div>
     ${uncP}</div>
     <div class="col sheet-col" id="sheetCol"${msA(cc,'sheet')}>${renderSheet(members)}</div></div></div>`;
 }
@@ -1706,7 +1725,8 @@ function renderLogs(){
   src.sort((x,y)=>(y.at||0)-(x.at||0));
   const list=src.filter(l=>cats.has(logCat(l))&&(!q||[l.by,l.what,l.detail,sessLabel(l),...Object.values(l.changes||{}).map(c=>c.n)].some(v=>String(v||'').toLowerCase().includes(q))));
   const cnt={};src.forEach(l=>{const k=logCat(l);cnt[k]=(cnt[k]||0)+1});
-  const rows=list.slice(0,1000).map(l=>`<div class="logrow"><span class="w num">${l.at?hm(l.at):''}</span><span><span class="tag">${esc(logArea(l))}</span></span><span class="d">${logText(l)} <span class="hint">· ${esc(l.by||'')}</span></span></div>`).join('');
+  const LP=pager('logs',list.length,30,r.key+'|'+[...cats].sort().join()+'|'+q);
+  const rows=list.slice(LP.a,LP.b).map(l=>`<div class="logrow"><span class="w num">${l.at?hm(l.at):''}</span><span><span class="tag">${esc(logArea(l))}</span></span><span class="d">${logText(l)} <span class="hint">· ${esc(l.by||'')}</span></span></div>`).join('');
   const loading=S.plogs&&S.plogs.key===r.key&&S.plogs.loading;
   return `<div class="panel"><div class="spread"><h2>변경 기록</h2><span class="hint">운영진만 볼 수 있어요 · 고치거나 지울 수 없어요</span></div>
     <div class="row"><div class="seg2" role="group" aria-label="기간 단위"><button data-action="lpMode" data-m="month" aria-pressed="${S.lp.mode==='month'}">월별</button><button data-action="lpMode" data-m="week" aria-pressed="${S.lp.mode==='week'}">주별</button></div>
@@ -1718,7 +1738,7 @@ function renderLogs(){
     ${S.logBlocked||(S.plogs&&S.plogs.error)?'<div class="confirm">변경 기록을 불러올 수 없어요. Firestore 규칙이 최신인지 확인해 주세요.</div>':''}
     ${loading?'<p class="hint">기록을 불러오는 중이에요…</p>':''}
     <div>${rows||(loading?'':'<p class="hint">이 기간에 조건에 맞는 기록이 없어요.</p>')}</div>
-    <p class="hint">${list.length}건${list.length>1000?' 중 1000건 표시':''}</p>
+    ${LP.html||`<p class="hint">${list.length}건</p>`}
     ${notes(['<b>월별 / 주별</b>을 고르고 ◀ ▶로 기간을 옮겨요','보고 싶은 종류만 체크하세요. 기본은 출석 체크를 뺀 전부예요','검색칸에 사람·닉네임·내용을 넣고 <b>검색</b>을 누르거나 Enter를 눌러요','이 기능을 넣기 전의 변경은 남아 있지 않아요'])}</div>`;
 }
 function lockNote(){if(!S.canWrite||S.demo)return '';const cur=todayStr().slice(0,7);const ms=monthList().filter(m=>m<cur&&!S.locks[m]);if(!ms.length)return '';
@@ -2143,7 +2163,8 @@ function renderPayLog(){
       <label class="f grow">검색<span class="sugwrap"><input type="search" id="rfQ" data-keep="0" data-action="rfQ" value="${esc(F.q)}" placeholder="닉네임 또는 기록 이름" autocomplete="off">${rfSugg()}</span></label>
       <label class="chk"><input type="checkbox" id="rfUnpaid" data-keep="0" data-action="rfUnpaid"${F.unpaid?' checked':''}> 미지급만</label>
       <button class="btn small" data-action="payLogCsv"${D.recs.length?'':' disabled'}>CSV 내보내기</button></div>`;
-  const recTable=D.list.length?`<div class="scroll"><table class="paytbl"><thead><tr><th>번호</th><th>달</th><th>종류</th><th style="text-align:left">기록 이름</th><th>수량</th><th>지급</th><th style="text-align:left">기록한 사람</th><th></th></tr></thead><tbody>${D.list.map((r,i)=>rewardRow(r,i+1)).join('')}</tbody></table></div>`:'';
+  const RP=pager('pay',D.list.length,15,JSON.stringify(S.rf));
+  const recTable=D.list.length?`<div class="scroll"><table class="paytbl"><thead><tr><th>번호</th><th>달</th><th>종류</th><th style="text-align:left">기록 이름</th><th>수량</th><th>지급</th><th style="text-align:left">기록한 사람</th><th></th></tr></thead><tbody>${D.list.slice(RP.a,RP.b).map((r,i)=>rewardRow(r,RP.a+i+1)).join('')}</tbody></table></div>`:'';
   const tiles=`<div class="tiles">
       <div class="tile"><span class="l">지급 기록</span><span class="v">${D.recs.length}건</span><span class="l">아이템 ${won(D.items)}개</span></div>
       <div class="tile"><span class="l">문파원에게 나간 금전</span><span class="v">${won(D.paid)}</span></div>
@@ -2153,14 +2174,14 @@ function renderPayLog(){
   const uTxt=o=>[o.uMoney?won(o.uMoney)+'금전':'',o.uItem?o.uItem+'개':''].filter(Boolean).join(' · ')||'–';
   const ppl=D.people.length?`<div class="scroll"><table><thead><tr><th>닉네임</th>${hasM?'<th>받은 금전</th>':''}${hasI?'<th>받은 아이템</th>':''}<th>횟수</th>${hasU?'<th>미지급</th>':''}<th>마지막 지급</th></tr></thead><tbody>${D.people.map(o=>`<tr><td>${esc(o.name)}</td>${hasM?`<td>${o.money?won(o.money):'–'}</td>`:''}${hasI?`<td>${o.item?o.item+'개':'–'}</td>`:''}<td>${o.times}회</td>${hasU?`<td${o.uN?' style="color:var(--warn);font-weight:600"':''}>${uTxt(o)}</td>`:''}<td>${o.last?monLabel(o.last):''}</td></tr>`).join('')}</tbody></table></div>`:'<p class="hint">조건에 맞는 문파원이 없어요.</p>';
   const pc=mtCur('pay',['rec','ppl','man'],'rec');
-  const recs=D.list.length?`<div class="attnlist">${D.list.map(rewardItem).join('')}</div>`:'<p class="hint">조건에 맞는 지급 기록이 없어요. 월간 정산 → 금전 분배 / 아이템 개수 분배에서 <b>지급 기록으로 저장</b>을 누르면 여기에 쌓여요.</p>';
+  const recs=D.list.length?`<div class="attnlist">${D.list.slice(RP.a,RP.b).map(rewardItem).join('')}</div>`:'<p class="hint">조건에 맞는 지급 기록이 없어요. 월간 정산 → 금전 분배 / 아이템 개수 분배에서 <b>지급 기록으로 저장</b>을 누르면 여기에 쌓여요.</p>';
   return `<div class="col mt-host">
     <div class="panel"><div class="spread"><h2>지급 기록</h2><span class="hint">운영진만 볼 수 있어요</span></div>${filt}
       ${notes(['위에서 <b>기간(달) · 종류 · 검색어</b>로 기록을 좁혀 볼 수 있어요. 검색칸을 누르면 문파원 이름이 떠요. <b>미지급만</b>을 켜면 아직 안 준 것만 보여요','실제로 건네준 뒤 기록의 <b>지급 체크</b>를 눌러 이름을 하나씩 체크하세요','<b>문파원별 누적</b>은 고른 조건 안에서 각자 받을 금전과 아이템을 더한 값이에요','지급 체크 말고는 기록을 고칠 수 없어요. 잘못 저장했다면 문주가 지우고 다시 저장해 주세요'])}</div>
     ${mtBar('pay',[['rec',`기록 목록 ${D.list.length}`],['ppl',`문파원별 ${D.people.length}`],['man','직접 기록']],pc)}
     <div${msA(pc,'rec')}>${tiles}</div>
     <div${msA(pc,'man')}>${renderManual()}</div>
-    <div class="pay-grid"><div class="panel"${msA(pc,'rec')}><div class="spread"><h2>기록 목록</h2><span class="hint">${D.list.length}건</span></div>${recTable?`<div class="dt-only">${recTable}</div><div class="mb-only">${recs}</div>`:recs}</div><div class="panel"${msA(pc,'ppl')}><h2>문파원별 누적</h2>${ppl}</div></div></div>`;
+    <div class="pay-grid"><div class="panel"${msA(pc,'rec')}><div class="spread"><h2>기록 목록</h2><span class="hint">${D.list.length}건</span></div>${recTable?`<div class="dt-only">${recTable}</div><div class="mb-only">${recs}</div>`:recs}${RP.html}</div><div class="panel"${msA(pc,'ppl')}><h2>문파원별 누적</h2>${ppl}</div></div></div>`;
 }
 function payLogCsv(){
   const D=payLogData(),c=v=>{v=String(v??'');return /[",\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
@@ -2306,7 +2327,8 @@ function renderWarn(){
       ${issued(x.m.id,cur,'s')?`<span class="tag">이번 달 경고 기록됨</span><button class="btn small" data-action="notice" data-id="${cur}_${x.m.id}_s">안내문 복사</button>`:`<button class="btn small danger" data-action="warn" data-mid="${x.m.id}" data-mon="${cur}" data-type="s" data-n="${x.n}">경고 기록</button>`}</div>`).join('');
   const ex=expelCands();
   const exHtml=ex.map(c=>`<div class="it" style="flex-direction:column;align-items:flex-start"><div class="row"><b>${esc(c.name)}</b><span class="pill-low">경고 ${c.l.length}회</span>${c.gone?'<span class="tag">명단에 없음</span>':''}</div><span class="hint">${c.l.map(w=>esc(w.reason)).join(' / ')}</span></div>`).join('');
-  const hist=S.warnings.slice().sort((a,b)=>(b.at||0)-(a.at||0)).map(w=>`<tr><td>${monLabel(w.month)}</td><td>${esc(memberName(w.mid)||w.name)}</td><td style="white-space:normal;text-align:left">${esc(w.reason)}${w.type==='s'?' <span class="tag">연속 불참</span>':''}</td><td>${esc(w.by||'')}</td><td>${w.at?hm(w.at):''}</td><td><button class="btn small" data-action="notice" data-id="${esc(w.id)}">안내문</button> ${S.isOwner?(S.confirm==='w:'+w.id?`<button class="btn small danger" data-action="delWarn" data-id="${esc(w.id)}">정말 취소</button>`:`<button class="btn small" data-action="askDelW" data-id="${esc(w.id)}">취소</button>`):''}</td></tr>`).join('');
+  const WL=S.warnings.slice().sort((a,b)=>(b.at||0)-(a.at||0)),WP=pager('warnh',WL.length,15);
+  const hist=WL.slice(WP.a,WP.b).map(w=>`<tr><td>${monLabel(w.month)}</td><td>${esc(memberName(w.mid)||w.name)}</td><td style="white-space:normal;text-align:left">${esc(w.reason)}${w.type==='s'?' <span class="tag">연속 불참</span>':''}</td><td>${esc(w.by||'')}</td><td>${w.at?hm(w.at):''}</td><td><button class="btn small" data-action="notice" data-id="${esc(w.id)}">안내문</button> ${S.isOwner?(S.confirm==='w:'+w.id?`<button class="btn small danger" data-action="delWarn" data-id="${esc(w.id)}">정말 취소</button>`:`<button class="btn small" data-action="askDelW" data-id="${esc(w.id)}">취소</button>`):''}</td></tr>`).join('');
   return `<div class="panel"><div class="spread"><h2>월간 경고 판정</h2>
       <select id="wMonth" data-keep="0" data-action="wmonth" aria-label="판정할 달">${ml.map(m=>`<option value="${m}"${m===mon?' selected':''}>${monLabel(m)}${m===cur?' (진행 중)':''}</option>`).join('')}</select></div>
     ${notes([`<b>기준</b>: ${critText()}`,excuseText(),`정규 ${minJudge()}회 미만은 판정 보류`,ms.done?'':'진행 중인 달이라 결과가 바뀔 수 있어요. 경고는 달이 끝난 뒤 기록할 수 있어요'])}
@@ -2318,14 +2340,15 @@ function renderWarn(){
     <div class="panel"><div class="spread"><h2>추방 후보</h2><span class="hint">${W.expelM?`최근 ${W.expelM}개월`:'전체 기간'} 경고 ${W.expelN}회 이상</span></div>${ex.length?`<div class="attnlist">${exHtml}</div>`:'<p class="hint">해당하는 문파원이 없어요.</p>'}<p class="hint">추방은 운영진이 직접 결정해요. 이 목록은 근거 자료예요.</p></div>
   </div>
   <div class="panel"><h2>경고 이력</h2><p class="hint">운영진만 볼 수 있어요.${S.isOwner?' 잘못 기록한 경고는 문파장이 취소할 수 있어요.':''}</p>
-    <div class="scroll"><table><thead><tr><th>달</th><th>닉네임</th><th>사유</th><th>기록</th><th>시각</th><th></th></tr></thead><tbody>${hist||'<tr><td colspan="6" class="dash">기록된 경고가 없어요</td></tr>'}</tbody></table></div></div>
+    <div class="scroll"><table><thead><tr><th>달</th><th>닉네임</th><th>사유</th><th>기록</th><th>시각</th><th></th></tr></thead><tbody>${hist||'<tr><td colspan="6" class="dash">기록된 경고가 없어요</td></tr>'}</tbody></table></div>${WP.html}</div>
 `;
 }
 function renderDeleted(){
+  const DP=pager('del',(S.delLogs&&S.delLogs.list||[]).length,10);
   const dl=S.delLogs;
   const delHtml=!dl?'<button class="btn small" data-action="loadDel">삭제된 회차 기록 보기</button>':dl.loading?'<p class="hint">불러오는 중…</p>':dl.error?`<div class="confirm">${esc(dl.error)}</div>`:
-    (dl.list.length?`<div class="attnlist">${dl.list.map((l,i)=>{const d=l.data||{};const n=Object.values(d.marks||{}).filter(validMark).length;const alive=allSessions().some(x=>x.id===l.sid);
-      return `<div class="it"><span class="n">${esc(l.date||d.date||'')} ${esc(CMAP[l.content||d.content]?.name||'')}${(l.extra||d.extra)?' (추가)':''}</span><span class="hint">체크 ${n}건 · ${esc(l.by||'')} ${l.at?hm(l.at):''} 삭제</span>${alive?'<span class="tag">복원됨</span>':`<button class="btn small" data-action="restore" data-i="${i}">복원</button>`}</div>`}).join('')}</div>`:'<p class="hint">삭제된 회차가 없어요.</p>');
+    (dl.list.length?`<div class="attnlist">${dl.list.map((l,i)=>[l,i]).slice(DP.a,DP.b).map(([l,i])=>{const d=l.data||{};const n=Object.values(d.marks||{}).filter(validMark).length;const alive=allSessions().some(x=>x.id===l.sid);
+      return `<div class="it"><span class="n">${esc(l.date||d.date||'')} ${esc(CMAP[l.content||d.content]?.name||'')}${(l.extra||d.extra)?' (추가)':''}</span><span class="hint">체크 ${n}건 · ${esc(l.by||'')} ${l.at?hm(l.at):''} 삭제</span>${alive?'<span class="tag">복원됨</span>':`<button class="btn small" data-action="restore" data-i="${i}">복원</button>`}</div>`}).join('')}</div>${DP.html}`:'<p class="hint">삭제된 회차가 없어요.</p>');
   return `<div class="panel"><h2>삭제된 회차</h2><p class="hint">실수로 지운 회차를 체크 기록과 함께 되살릴 수 있어요.</p>${delHtml}</div>`;
 }
 function noticeText(w){
@@ -2411,8 +2434,9 @@ function renderBuy(){
     ${conf||'<div class="row"><button class="btn primary" data-action="buyAsk">구매 기록 저장</button></div>'}
     ${notes(['순번표의 <b>구매 기록</b>을 누르면 그 문파원이 미리 골라져요','<b>어떤 아이템이든</b> 구매를 기록하면 그 사람의 구매 포인트가 0이 돼요. 양보하거나 안 사면 기록하지 마세요','판매 금액은 월간 정산 → 금전 분배에 넣어 나눠 주세요'])}</div>`;
   const hist=S.purchases.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.at||0)-(a.at||0));
+  const HP=pager('buyh',hist.length,15);
   const histP=`<div class="panel"><div class="spread"><h2>구매 내역</h2><button class="btn small" data-action="buyCsv"${hist.length?'':' disabled'}>CSV 내보내기</button></div>
-    ${hist.length?`<div class="scroll"><table><thead><tr><th>날짜</th><th>닉네임</th><th>아이템</th><th>금액</th><th>기록</th><th></th></tr></thead><tbody>${hist.slice(0,100).map(p=>`<tr><td class="num">${esc(p.date)}</td><td>${esc(memberName(p.mid)||p.name)}</td><td>${esc(p.item)}</td><td>${p.price?won(p.price):'–'}</td><td>${esc(p.by||'')}</td><td>${S.isOwner?(S.confirm==='buyDel:'+p.id?`<button class="btn small danger" data-action="buyDel" data-id="${esc(p.id)}">정말 삭제</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small" data-action="askBuyDel" data-id="${esc(p.id)}">삭제</button>`):''}</td></tr>`).join('')}</tbody></table></div>`:'<p class="hint">아직 구매 기록이 없어요.</p>'}
+    ${hist.length?`<div class="scroll"><table><thead><tr><th>날짜</th><th>닉네임</th><th>아이템</th><th>금액</th><th>기록</th><th></th></tr></thead><tbody>${hist.slice(HP.a,HP.b).map(p=>`<tr><td class="num">${esc(p.date)}</td><td>${esc(memberName(p.mid)||p.name)}</td><td>${esc(p.item)}</td><td>${p.price?won(p.price):'–'}</td><td>${esc(p.by||'')}</td><td>${S.isOwner?(S.confirm==='buyDel:'+p.id?`<button class="btn small danger" data-action="buyDel" data-id="${esc(p.id)}">정말 삭제</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small" data-action="askBuyDel" data-id="${esc(p.id)}">삭제</button>`):''}</td></tr>`).join('')}</tbody></table></div>${HP.html}`:'<p class="hint">아직 구매 기록이 없어요.</p>'}
     <p class="hint">구매 내역은 문파원도 볼 수 있어요 (내 출석의 구매 포인트 계산에 쓰여요). 잘못 남긴 기록은 문파장이 지울 수 있어요.</p></div>`;
   const cfg=`<div class="panel"><div class="spread"><h2>구매 우선권 기준</h2><button class="btn primary small" data-action="buySave">기준 저장</button></div>
     <div class="fg2"><label class="f">최근 포인트 기간 (일)<input type="number" id="buyDays" data-keep="0" min="1" max="365" step="1" value="${C.days}"></label>
@@ -2702,6 +2726,7 @@ document.addEventListener('click',e=>{
   if(a==='nViewClose'){if(b.classList.contains('overlay')&&e.target!==b)return;S.nView=null;S.nDel=null;render();return}
   if(a==='nEditOpen'){S.nEdit=b.dataset.id||'new';S.nDel=null;S.nView=null;if(S.tab!=='home'){S.tab='home';remember('tab','home')}render();$('#nTitle')?.focus();return}
   if(a==='nCancel'){S.nEdit=null;render();return}
+  if(a==='pgGo'){S.pg??={};S.pg[b.dataset.k]=Math.max(0,+b.dataset.p||0);render();const t=b.closest('.panel');if(t&&t.getBoundingClientRect().top<0)t.scrollIntoView({block:'start'});return}
   if(a==='nPage'){S.nPage=Math.max(0,+b.dataset.p||0);render();return}
   if(a==='nDel'){S.nDel=b.dataset.id||null;render();return}
   if(a==='nSave'){const id=b.dataset.id,title=($('#nTitle')?.value||'').trim().slice(0,60),body=($('#nBody')?.value||'').replace(/\s+$/,'').slice(0,2000),pinned=!!$('#nPin')?.checked;
@@ -2730,7 +2755,7 @@ document.addEventListener('click',e=>{
   if(a==='selMode'){S.selMode=true;S.sel=new Set();S.confirm=null;render();return}
   if(a==='selExit'){S.selMode=false;S.sel=new Set();S.confirm=null;render();return}
   if(a==='selToggle'){const id=b.dataset.sid;if(S.sel.has(id))S.sel.delete(id);else S.sel.add(id);S.confirm=null;render();return}
-  if(a==='selAll'){[...S.sessions].sort(sessionSort).slice(0,80).forEach(x=>{if(!isLocked(x.date))S.sel.add(x.id)});render();return}
+  if(a==='selAll'){(S.pgVisSess?S.sessions.filter(x=>S.pgVisSess.includes(x.id)):[...S.sessions].sort(sessionSort).slice(0,20)).forEach(x=>{if(!isLocked(x.date))S.sel.add(x.id)});render();return}
   if(a==='selNone'){S.sel=new Set();S.confirm=null;render();return}
   if(a==='bulkDelAsk'){if(S.sel.size){S.confirm='bulkDel';render()}return}
   if(a==='bulkDelYes'){S.confirm=null;deleteMany([...S.sel]);return}
