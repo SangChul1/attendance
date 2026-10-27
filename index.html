@@ -953,6 +953,15 @@ body{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 .home-r1 .npin{padding:10px 14px;gap:6px}
 .home-r1 .npin .notice-body.clamp{-webkit-line-clamp:3;font-size:16px;line-height:1.65}
 .home-r1>.notice{gap:10px}
+/* 공지: 학살 문파 칸 높이에 맞춰 7줄이 칸을 채움 */
+@media (min-width:901px){
+.home-r1>.notice .nlist{flex:1 1 auto}
+.home-r1>.notice .nlist>.nrow{flex:1 0 auto;display:flex;flex-direction:column;justify-content:center}
+.home-r1>.notice .nlist>.nrow.open{justify-content:flex-start}
+}
+.home-r1 .nlist .nline{padding:8px 4px;font-size:18px}
+.home-r1 .nlist .nline .hint{font-size:14px}
+.home-r1 .nlist .nnew{font-size:12px}
 
 .pager{flex-wrap:wrap;align-items:center;padding-top:10px}
 .pager .pg{min-width:32px;height:32px}
