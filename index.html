@@ -1107,6 +1107,33 @@ body{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 .bg-ic{flex:none;display:inline-flex;gap:3px}
 @media (max-width:600px){.bdg-top{gap:6px;padding:18px 8px 14px}.em.big{width:76px;height:76px}.em.big.ach{width:60px}.em.big .core{font-size:34px}.em.big .hj{font-size:12px}.em.big.ach::after{--h:76px}.bt-it .bn{font-size:13px}.bt-it .bt{font-size:12px;padding:2px 8px}
   .bdg-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.rm-grid b{font-size:22px}.bdg-d{gap:12px}}
+
+/* 주간 일정 팝업 */
+.hero-wk{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px 16px;border-radius:14px;cursor:pointer;font:inherit;font-size:15px;font-weight:700;color:#fff;
+  background:linear-gradient(90deg,rgba(0,0,0,.22),rgba(0,0,0,.08));border:1px solid rgba(255,221,150,.45);transition:background .15s,border-color .15s}
+.hero-wk:hover{background:linear-gradient(90deg,rgba(0,0,0,.3),rgba(0,0,0,.14));border-color:rgba(255,221,150,.8)}
+.hero-wk .ar{font-size:20px;line-height:1;color:#ffe1a3;margin-left:2px}
+.overlay .panel.nv.wkp{width:min(760px,100%)}
+.wk-nav{position:relative;display:flex;gap:6px;margin-top:14px}
+.wkn{min-width:40px;height:34px;padding:0 12px;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.14);color:#fff;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.wkn:hover:not(:disabled){background:rgba(255,255,255,.26)}.wkn:disabled{opacity:.45;cursor:default}
+.nv-body.wt{white-space:normal;font-size:15px;line-height:1.5;padding:12px 20px 16px;display:flex;flex-direction:column}
+.wt-row{display:grid;grid-template-columns:78px minmax(0,1fr);gap:14px;align-items:center;padding:12px 4px;border-bottom:1px solid var(--line)}
+.wt-row:last-child{border-bottom:0}
+.wt-row.none{padding:7px 4px}.wt-row.none .wt-d{opacity:.55}
+.wt-row.past:not(.today){opacity:.7}
+.wt-row.today{margin:4px -10px;padding:12px 14px;border-radius:14px;border-bottom-color:transparent;background:color-mix(in srgb,var(--accent) 9%,var(--surface));box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--accent) 45%,transparent)}
+.wt-d{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.wt-d b{font-size:18px;font-weight:800}.wt-d .num{font-size:13px;color:var(--muted)}
+.wt-today{font-size:11.5px;font-weight:800;padding:1px 8px;border-radius:999px;background:var(--accent);color:var(--accent-ink,#fff)}
+.wt-items{display:flex;flex-direction:column;gap:6px;min-width:0}
+.wt-it{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:9px 12px;border-radius:10px;border:1px solid var(--line);border-left:4px solid var(--cc,var(--accent));background:var(--surface);color:var(--ink);font:inherit;text-align:left;min-width:0}
+button.wt-it{cursor:pointer}button.wt-it:hover{border-color:var(--cc,var(--accent))}
+.wt-n{font-weight:700;flex:1;min-width:0}
+.wt-t{font-size:13.5px;color:var(--muted)}
+.wt-s{font-size:12.5px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--line);color:var(--muted);white-space:nowrap}
+.wt-s.ok{background:var(--good-soft);color:var(--good,var(--ink))}.wt-s.no{background:transparent;border:1px dashed var(--line)}
+@media (max-width:600px){.wt-row{grid-template-columns:56px minmax(0,1fr);gap:10px}.wt-d{flex-direction:column;gap:0}.wt-d b{font-size:16px}.nv-body.wt{padding:8px 14px 14px}.wt-row.today{margin:4px -6px;padding:10px 8px}}
 </style>
 </head>
 <body>
@@ -1137,7 +1164,7 @@ body{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
   </div>
 </div>
 <div id="detailbox"></div>
-<div id="noticebox"></div>
+<div id="noticebox"></div><div id="wkbox"></div>
 <button type="button" class="memo-fab" id="memoFab" aria-label="메모장 열기" aria-expanded="false" title="메모장"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h9l3.5 3.5v13.5H6z"/><path d="M14.5 3.5V7.5h4M9 11.5h6M9 15h6"/></svg><span class="memo-dot" id="memoDot" hidden></span></button>
 <div class="memo-pad" id="memoPad" role="dialog" aria-label="메모장" hidden>
   <div class="memo-h"><b>메모장</b><span class="memo-st" id="memoSt">자동 저장</span><span class="grow"></span>
@@ -1351,7 +1378,7 @@ function render(){
   renderNav();
   $('#guildTitle').textContent=(S.config.guild?S.config.guild+' ':'')+'문파 출석부';
   document.title=$('#guildTitle').textContent;
-  setSync();renderAuth();{const nb=$('#noticebox');if(nb){const h=S.nView?renderNoticeView():'';if(render._nh!==h){nb.innerHTML=h;render._nh=h}}}{const db=$('#detailbox');if(db){const h=S.detail&&S.canWrite&&!S.demo?renderDetail():'';if(render._dh!==h){const sc=db.querySelector('.panel')?.scrollTop||0;db.innerHTML=h;render._dh=h;const pn=db.querySelector('.panel');if(pn&&h)pn.scrollTop=sc}}}
+  setSync();renderAuth();{const wb=$('#wkbox');if(wb){const h=S.wkPop&&S.tab==='home'&&S.ready?renderWeekPop():'';if(render._wh!==h){const sc=wb.querySelector('.nv-body')?.scrollTop||0;wb.innerHTML=h;render._wh=h;const bd=wb.querySelector('.nv-body');if(bd)bd.scrollTop=sc}}}{const nb=$('#noticebox');if(nb){const h=S.nView?renderNoticeView():'';if(render._nh!==h){nb.innerHTML=h;render._nh=h}}}{const db=$('#detailbox');if(db){const h=S.detail&&S.canWrite&&!S.demo?renderDetail():'';if(render._dh!==h){const sc=db.querySelector('.panel')?.scrollTop||0;db.innerHTML=h;render._dh=h;const pn=db.querySelector('.panel');if(pn&&h)pn.scrollTop=sc}}}
   if(S.setup){app.innerHTML='<div class="panel"><div class="empty"><h3>Firebase 설정값이 비어 있어요</h3><p class="hint">index.html 위쪽 FIREBASE_CONFIG에 Firebase 콘솔의 firebaseConfig 값을 붙여 넣고 다시 올려 주세요.</p></div></div>';return}
   if(S.err==='quota'){app.innerHTML='<div class="panel"><div class="empty"><h3>오늘 무료 사용량을 다 썼어요</h3><p class="hint">Firebase 무료 요금제의 하루 읽기 한도를 넘었어요. 한국 시간 오후 4~5시쯤 초기화되면 다시 보여요. 요금은 나가지 않아요.</p></div></div>';return}
   if(S.err){app.innerHTML='<div class="panel"><div class="empty"><h3>저장소에 연결할 수 없어요</h3><p class="hint">Firestore 데이터베이스가 만들어졌는지, 보안 규칙이 게시됐는지 확인해 주세요. 잠시 후 새로고침해도 같으면 운영진에게 알려 주세요.</p></div></div>';return}
@@ -1403,22 +1430,28 @@ function badgeAll(){
   const ord=s=>CONTENTS.findIndex(c=>c.k===s.content);
   const ss=allS.filter(s=>s.date<=gd).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:(ord(a)-ord(b))||((a.createdAt||0)-(b.createdAt||0)));
   const act=activeContents(),mj=minJudge(),from26=addDays(weekStart(todayStr()),-7*25);
+  const buys={};for(const x of buyList()){if(x&&x.mid&&x.date&&x.date<=gd&&(!buys[x.mid]||x.date<buys[x.mid]))buys[x.mid]=x.date}
   const per=new Map();
-  for(const m of members){const z={m,tot:0,run:0,best:0,B:0,byC:{},first:'',firstX:'',d50:'',pol:0,mon:{},wk:{},o26:0,x26:0,first0:'',cross:{tot:[],best:[],B:[],c:{}},back:0};
+  for(const m of members){
+    const z={m,tot:0,run:0,best:0,B:0,byC:{},firstC:{},first:'',firstX:'',d50:'',d100:'',pol:0,mon:{},wkEnd:{},wkAll:{},wkX:{},o26:0,x26:0,first0:'',cross:{tot:[],best:[],B:[],c:{}},back:0,buy:buys[m.id]||''};
     const leaves=(m.leaves||[]).filter(l=>l&&l.from&&l.to&&l.to<gd).map(l=>l.to);const backDone=new Set();
+    const gotO=d=>{z.tot++;z.cross.tot[z.tot]=d;if(!z.first)z.first=d;if(z.tot===50)z.d50=d;if(z.tot===100)z.d100=d};
     for(const s of ss){if(!eligible(m,s))continue;const v=effOf(s,m.id),mo=s.date.slice(0,7),M=z.mon[mo]??={O:0,E:0,X:0,XA:0,B:0,P:0,need:0,ok:0,xe:0};
+      const wk=weekMon(s.date);
       if(v&&!z.first0)z.first0=s.date;
-      if(isBonus(s)){M.xe++;if(v==='O'){M.B++;M.P+=sessPts(s);z.B++;z.tot++;if(!z.firstX)z.firstX=s.date;if(!z.first)z.first=s.date;if(z.tot===50)z.d50=s.date}continue}
+      if(isBonus(s)){M.xe++;const X=z.wkX[wk]??={n:0,o:0};X.n++;
+        if(v==='O'){M.B++;M.P+=sessPts(s);z.B++;z.cross.B[z.B]=s.date;X.o++;X.d=s.date;if(!z.firstX)z.firstX=s.date;gotO(s.date)}continue}
       M.need++;
       for(const to of leaves){if(!backDone.has(to)&&s.date>to){backDone.add(to);if(v==='O')z.back++}}
-      const dw=dow(s.date);let w=null;if(dw===5||dw===6){w=z.wk[weekMon(s.date)]??={n:0,o:0};w.n++}
+      const A=z.wkAll[wk]??={n:0,o:0};A.n++;
+      const dw=dow(s.date);let w=null;if(dw===5||dw===6){w=z.wkEnd[wk]??={n:0,o:0};w.n++}
       if(!v)continue;
       if(s.date>=from26){if(v==='O')z.o26++;else if(v!=='E')z.x26++}
-      if(v==='O'){M.O++;M.ok++;M.P+=sessPts(s);z.tot++;z.run++;if(z.run>z.best)z.best=z.run;z.byC[s.content]=(z.byC[s.content]||0)+1;if(!z.first)z.first=s.date;if(z.tot===50)z.d50=s.date;if(w)w.o++;
-        (z.cross.c[s.content]??=[])[z.byC[s.content]]=s.date}
+      if(v==='O'){M.O++;M.ok++;M.P+=sessPts(s);A.o++;if(w)w.o++;gotO(s.date);
+        z.run++;if(z.run>z.best){z.best=z.run;z.cross.best[z.best]=s.date}
+        const k=s.content;z.byC[k]=(z.byC[k]||0)+1;(z.cross.c[k]??=[])[z.byC[k]]=s.date;if(!z.firstC[k])z.firstC[k]=s.date}
       else if(v==='E'){M.E++;M.ok++;z.pol++}
-      else{if(v==='XA'){M.XA++;z.pol++}else M.X++;z.run=0}
-      z.cross.tot[z.tot]=z.cross.tot[z.tot]||s.date;z.cross.best[z.best]=z.cross.best[z.best]||s.date}
+      else{if(v==='XA'){M.XA++;z.pol++}else M.X++;z.run=0}}
     for(const mo in z.mon){const M=z.mon[mo];M.absent=M.X+M.XA;M.perfect=M.need>0&&M.O>0&&M.ok===M.need;M.closed=mo<curMon}
     per.set(m.id,z)}
   // 월별 순위 (마감된 달)
@@ -1430,44 +1463,57 @@ function badgeAll(){
   for(const z of per.values())out.set(z.m.id,badgesOf(z,{mons,top,topB,rk,act,mj,gd}));
   return BADGE=out;
 }
+const kstDay=ms=>new Date(ms+9*3600e3).toISOString().slice(0,10);
 function badgesOf(z,C){
   const m=z.m,list=[];const closed=Object.keys(z.mon).filter(mo=>z.mon[mo].closed).sort();
-  const dateAt=(arr,n)=>{if(!arr)return '';for(let i=n;i<arr.length;i++)if(arr[i])return arr[i];return ''};
   const reach=(id,ic,name,desc,val,T,unit,dates)=>{let t=0;while(t<4&&val>=T[t])t++;list.push({id,ic,name,desc,kind:'reach',val,T,t,unit,next:t<4?T[t]:null,dates:dates||[],n:t})};
   const special=(id,ic,name,desc,hits)=>list.push({id,ic,name,desc,kind:'special',n:hits.length,hits});
   const ach=(id,ic,name,desc,date,prog)=>list.push({id,ic,name,desc,kind:'ach',n:date?1:0,date:date||'',prog});
-  const tDates=(arr,T)=>T.map(x=>dateAt(arr,x));
+  const at=(arr,T)=>T.map(x=>(arr&&arr[x])||'');
   // 도달 배지
-  const T1=[5,25,50,150];reach('tot','🎯','누적 참여','정규·추가 진행 회차에 참여한 횟수예요',z.tot,T1,'회',tDates(z.cross.tot,T1));
-  const T2=[3,5,10,20];reach('best','🔥','최고 연속 참여','정규 회차를 쉬지 않고 연달아 참여한 최고 기록이에요 (면제된 사전공지는 안 끊겨요)',z.best,T2,'회',tDates(z.cross.best,T2));
+  const T1=[5,25,50,150];reach('tot','🎯','누적 참여','정규·추가 진행 회차에 참여한 횟수예요',z.tot,T1,'회',at(z.cross.tot,T1));
+  const T2=[3,5,10,20];reach('best','🔥','최고 연속 참여','정규 회차를 쉬지 않고 연달아 참여한 최고 기록이에요 (면제된 사전공지는 안 끊겨요)',z.best,T2,'회',at(z.cross.best,T2));
   const perfM=closed.filter(mo=>z.mon[mo].perfect),noAbs=closed.filter(mo=>{const M=z.mon[mo];return M.need>0&&M.O>0&&M.absent===0});
   const T3=[1,2,3,6];reach('perf','🏅','개근한 달','지난달까지, 그 달 정규 회차를 모두 참여한 달 수예요',perfM.length,T3,'달',T3.map(x=>perfM[x-1]||''));
-  const start=m.joinedAt||z.first0;const days=start?Math.max(0,Math.round((parseD(C.gd)-parseD(start))/864e5)):0;
-  const T4=[15,50,180,365];reach('days','🤝','함께한 날',`${m.joinedAt?'가입일':'첫 기록'}부터 오늘까지 함께한 날이에요`,days,T4,'일',T4.map(x=>start&&days>=x?addDays(start,x):''));
-  const T5=[3,8,15,30];reach('extra','⚔️','보강 전사','추가 진행 회차에 참여한 횟수예요',z.B,T5,'회');
+  const start=m.joinedAt||(m.createdAt?kstDay(m.createdAt):'')||z.first0;const days=start&&start<=C.gd?Math.round((parseD(C.gd)-parseD(start))/864e5):0;
+  const T4=[15,50,180,365];reach('days','🤝','함께한 날',`${m.joinedAt?'가입일':'명단에 추가된 날'}부터 오늘까지 함께한 날이에요`,days,T4,'일',T4.map(x=>start&&days>=x?addDays(start,x):''));
+  const T5=[3,8,15,30];reach('extra','⚔️','보강 전사','추가 진행 회차에 참여한 횟수예요',z.B,T5,'회',at(z.cross.B,T5));
   const T6=[1,2,3,6];reach('noabs','🧱','불참 없는 달','지난달까지, 불참이 한 번도 없었던 달 수예요 (사전공지는 괜찮아요)',noAbs.length,T6,'달',T6.map(x=>noAbs[x-1]||''));
-  const T7=[10,25,50,100];for(const c of C.act)reach('c_'+c.k,'📘',`${c.short||c.name} 달인`,`${c.name} 정규 회차에 참여한 횟수예요`,z.byC[c.k]||0,T7,'회',tDates(z.cross.c[c.k],T7));
+  const T7=[10,25,50,100];for(const c of C.act)reach('c_'+c.k,'📘',`${c.short||c.name} 달인`,`${c.name} 정규 회차에 참여한 횟수예요`,z.byC[c.k]||0,T7,'회',at(z.cross.c[c.k],T7));
   // 특별 배지
   special('top','👑','월간 포인트 1위','마감된 달에 포인트 1위를 했어요 (공동 1위 포함)',closed.filter(mo=>C.top[mo]>0&&z.mon[mo].P===C.top[mo]));
+  special('top3','🥉','월간 TOP 3','마감된 달에 포인트 3위 안에 들었어요 (공동 순위 포함)',closed.filter(mo=>z.mon[mo].P>0&&C.rk[mo]&&C.rk[mo][m.id]<=3));
   special('topx','🗡️','보강왕','마감된 달에 추가 진행을 가장 많이 참여했어요 (공동 포함)',closed.filter(mo=>C.topB[mo]>0&&z.mon[mo].B===C.topB[mo]));
+  special('xfull','🌕','추가 진행 개근','마감된 달에 열린 추가 진행을 모두 참여했어요',closed.filter(mo=>{const M=z.mon[mo];return M.xe>0&&M.B===M.xe}));
   special('flaw','💯','완벽한 달','개근하면서 사전공지 0회, 열린 추가 진행까지 모두 참여한 달이에요',closed.filter(mo=>{const M=z.mon[mo];return M.perfect&&!M.E&&!M.XA&&M.B===M.xe}));
-  special('rise','📈','역전의 명수','지난달보다 포인트 순위가 3계단 이상 올랐어요',closed.filter((mo,i)=>{const pm=monthAdd(mo,-1),a=C.rk[pm]&&C.rk[pm][m.id],b=C.rk[mo]&&C.rk[mo][m.id];return a&&b&&a-b>=3}));
+  special('rise','📈','역전의 명수','지난달보다 포인트 순위가 3계단 이상 올랐어요',closed.filter(mo=>{const pm=monthAdd(mo,-1),a=C.rk[pm]&&C.rk[pm][m.id],b=C.rk[mo]&&C.rk[mo][m.id];return a&&b&&a-b>=3}));
   const iron=z.o26+z.x26>=C.mj&&z.x26===0;special('iron','🛡️','철벽','최근 26주 정규 회차 출석률 100%예요 (지금 상태 · '+C.mj+'회 이상 기록)',iron?['now']:[]);
   const jm=m.joinedAt?m.joinedAt.slice(0,7):'';special('rookie','🌱','신입 개근','가입한 달에 바로 개근했어요',jm&&z.mon[jm]&&z.mon[jm].closed&&z.mon[jm].perfect?[jm]:[]);
   const all=C.act.length>0&&C.act.every(c=>(z.byC[c.k]||0)>=25);special('all','🏆','올라운더','모든 콘텐츠를 각각 25회 이상 참여했어요',all?['now']:[]);
   // 업적
+  const gname=(S.config.guild||'문파').trim();
+  ach('join','🏯',`${gname}의 일원`,`${gname} 문파원으로 함께하게 됐어요`,start||'달성');
   ach('first','👣','첫 참여','처음으로 회차에 참여했어요',z.first);
   ach('firstp','✨','첫 개근','처음으로 개근한 달이에요',perfM[0]||'');
   ach('firstx','⚡','첫 추가 진행','처음으로 추가 진행 회차에 참여했어요',z.firstX);
+  const expN=C.act.filter(c=>z.firstC[c.k]).length,expD=C.act.length&&expN===C.act.length?C.act.map(c=>z.firstC[c.k]).sort().pop():'';
+  ach('explore','🧭','콘텐츠 탐험가','모든 콘텐츠를 한 번씩 이상 참여했어요',expD,[expN,C.act.length]);
   ach('d50','🎉','50번째 참여','50번째로 참여한 날이에요',z.d50,[Math.min(z.tot,50),50]);
-  const wkN=Object.values(z.wk).filter(w=>w.n>0&&w.o===w.n).length;
-  ach('wkend','🌙','주말 전사','금·토 정규 회차를 모두 참여한 주가 5번이에요',wkN>=5?'달성':'',[Math.min(wkN,5),5]);
+  ach('d100','🎆','100번째 참여','100번째로 참여한 날이에요',z.d100,[Math.min(z.tot,100),100]);
+  const doneWk=k=>addDays(k,6)<C.gd;
+  const wkN=Object.keys(z.wkEnd).filter(k=>addDays(k,5)<C.gd&&z.wkEnd[k].n>0&&z.wkEnd[k].o===z.wkEnd[k].n).sort();
+  ach('wkend','🌙','주말 전사','금·토 정규 회차를 모두 참여한 주가 5번이에요',wkN[4]?addDays(wkN[4],5):'',[Math.min(wkN.length,5),5]);
+  let r3=0,b3=0,d3='',prev='';for(const k of Object.keys(z.wkAll).filter(doneWk).sort()){const A=z.wkAll[k];const okW=A.n>0&&A.o===A.n;r3=okW?(prev&&addDays(prev,7)===k?r3+1:1):0;prev=okW?k:'';if(r3>b3)b3=r3;if(r3>=3&&!d3)d3=addDays(k,6)}
+  ach('wk3','🔁','3주 연속 전 회차','3주 연속으로 그 주 정규 회차를 모두 참여했어요',d3,[Math.min(b3,3),3]);
+  let rx=0,bx=0,dx='';for(const k of Object.keys(z.wkX).sort()){const X=z.wkX[k];if(!doneWk(k)&&!X.o)continue;rx=X.o?rx+1:0;if(rx>bx)bx=rx;if(rx>=5&&!dx)dx=X.d}
+  ach('xreg','🏮','화요일 단골','추가 진행이 열린 주에 5주 연속 참여했어요',dx,[Math.min(bx,5),5]);
   ach('polite','📢','예의 바른 사람','못 올 때 사전공지를 5번 했어요',z.pol>=5?'달성':'',[Math.min(z.pol,5),5]);
   ach('back','🔙','돌아온 문파원','휴식이 끝난 뒤 첫 정규 회차에 바로 참여했어요',z.back?'달성':'');
   let pp='';for(let i=1;i<perfM.length;i++)if(monthAdd(perfM[i-1],1)===perfM[i]){pp=perfM[i];break}
-  ach('pp','🗓️','개근 연속','두 달 연속으로 개근했어요',pp,[Math.min(perfM.length?(pp?2:1):0,2),2]);
+  ach('pp','🗓️','개근 연속','두 달 연속으로 개근했어요',pp,[pp?2:perfM.length?1:0,2]);
+  ach('buy','🧧','첫 구매','구매 우선권으로 처음 아이템을 샀어요',z.buy);
   const score=list.reduce((a,b)=>a+b.n,0),kinds=list.filter(b=>b.n>0).length;
-  const w=b=>b.kind==='special'?100+b.n:b.kind==='reach'?b.t*20+(b.t===4?40:0):5;
+  const w=b=>b.kind==='special'?100+b.n:b.kind==='reach'?b.t*20+(b.t===4?40:0):b.id==='join'?1:5;
   const best=list.filter(b=>b.n>0).sort((a,b)=>w(b)-w(a));
   return {list,score,kinds,best,mon:z.mon};
 }
@@ -1538,6 +1584,26 @@ function homeWeek(){
     return `<div class="wkcol${dt===t?' today':''}${chips?'':' none'}"><div class="wk-d"><b>${DAYS[dow(dt)]}</b><span class="num">${md(dt)}</span>${dt===t?'<span class="tag">오늘</span>':''}</div>${chips||'<span class="hint">–</span>'}</div>`}).join('');
   return {ws,we,html:`<div class="wkgrid home-wk">${cols}</div>`};
 }
+function renderWeekPop(){
+  const t=gameDay(),off=S.wkPopOff|0,ws=addDays(weekMon(t),7*off),we=addDays(ws,6),act=activeMembers(S.members),mid=new Map(act.map(m=>[m.id,m]));
+  let nReg=0,nX=0;
+  const rows=weekSlots(ws).map(({dt,slots})=>{const fut=dt>t,past=dt<t;
+    const items=slots.map(x=>{const c=CMAP[x.k],s=findSession(dt,x.k,x.extra),run=s&&!fut;if(x.extra)nX++;else nReg++;
+      const nm=`${esc(c?.name||x.k)}${x.extra?' <span class="tag extra">추가</span>':''}`;
+      const tm=c?.time&&!x.extra?`<span class="wt-t num">${esc(c.time)}</span>`:'';
+      let st;if(run){const n=countSession(s,mid),el=act.filter(m=>eligible(m,s)).length;st=`<span class="wt-s ok">✓ 참여 ${n.o}/${el}명</span>`}
+        else if(past)st='<span class="wt-s no">진행 안 함</span>';else st=`<span class="wt-s">${x.pick?esc(x.pick)+' 중 하루':dt===t?'오늘 진행':'예정'}</span>`;
+      const inner=`<span class="wt-n">${nm}</span>${tm}${st}`;
+      return S.canWrite&&s?`<button class="wt-it" ${ck(x.k)} data-action="homeOpen" data-sid="${s.id}" title="출석 체크로 열기">${inner}</button>`:`<div class="wt-it" ${ck(x.k)}>${inner}</div>`}).join('');
+    return `<div class="wt-row${dt===t?' today':''}${past?' past':''}${items?'':' none'}"><div class="wt-d"><b>${DAYS[dow(dt)]}</b><span class="num">${md(dt)}</span>${dt===t?'<span class="wt-today">오늘</span>':''}</div><div class="wt-items">${items||'<span class="hint">일정 없음</span>'}</div></div>`}).join('');
+  const lab=off===0?'이번 주':off===1?'다음 주':off===-1?'지난주':off>0?`${off}주 뒤`:`${-off}주 전`;
+  return `<div class="overlay nv-ov" data-action="wkPopClose"><div class="panel nv wkp" role="dialog" aria-modal="true" aria-label="주간 일정">
+    <div class="nv-h"><div class="nv-tags"><span class="nbadge">📅 주간 일정</span></div><h3>${lab} 일정</h3><div class="nv-meta num">${md(ws)}(월) ~ ${md(we)}(일) · 정규 ${nReg}회${nX?` · 추가 진행 ${nX}회`:''}</div>
+      <div class="wk-nav"><button class="wkn" data-action="wkPopGo" data-d="-1"${off<=-8?' disabled':''} aria-label="지난주">◀</button><button class="wkn now" data-action="wkPopGo" data-d="0"${off===0?' disabled':''}>이번 주</button><button class="wkn" data-action="wkPopGo" data-d="1"${off>=2?' disabled':''} aria-label="다음 주">▶</button></div>
+      <button class="nv-x" data-action="wkPopClose" aria-label="닫기">✕</button></div>
+    <div class="nv-body wt">${rows}</div>
+    <div class="nv-f"><span class="hint">요신·결계처럼 '금·토 중 하루'인 콘텐츠는 둘 중 하루만 진행해요${S.canWrite?' · 회차를 누르면 출석 체크로 열려요':''}</span><span class="grow"></span>${S.canWrite?'<button class="btn small primary" data-action="wkPopCheck">출석 체크로</button>':''}<button class="btn small" data-action="wkPopClose">닫기</button></div></div></div>`;
+}
 function renderHome(){
   if(!S.ready) return loading;
   const t=gameDay(),mon=t.slice(0,7),act=activeMembers(S.members);
@@ -1566,7 +1632,8 @@ function renderHome(){
   const hero=`<div class="hero hero2"><div class="hero-t"><span class="hero-k">도깨비의세계</span><h2>${g}</h2><p>${mdd(t)} · 오늘도 함께해요</p></div>
     <div class="hero-mid">${motto}${cdHtml}</div>
     <div class="hero-days"><div class="hd${tod&&tod.slots.length?' on':''}"><div class="hd-h"><b>오늘</b><span>${mdd(t)}</span></div>${tod&&tod.slots.length?runOf(tod):'<p class="hd-none">오늘은 정규 일정이 없어요</p>'}</div>
-      <div class="hd${!(tod&&tod.slots.length)&&nxt?' on':''}"><div class="hd-h"><b>다음</b><span>${nxt?`${mdd(nxt.dt)} · ${dLeft(nxt.dt)}`:''}</span></div>${nxt?runOf(nxt):'<p class="hd-none">2주 안에 일정이 없어요</p>'}</div></div></div>`;
+      <div class="hd${!(tod&&tod.slots.length)&&nxt?' on':''}"><div class="hd-h"><b>다음</b><span>${nxt?`${mdd(nxt.dt)} · ${dLeft(nxt.dt)}`:''}</span></div>${nxt?runOf(nxt):'<p class="hd-none">2주 안에 일정이 없어요</p>'}</div></div>
+    <button class="hero-wk" data-action="wkPop"><span aria-hidden="true">📅</span> 이번 주 전체 일정 보기<span class="ar" aria-hidden="true">›</span></button></div>`;
   const tiles=`<div class="tiles home-tiles dk">
     <div class="tile"><span class="hti" aria-hidden="true">👥</span><span class="l">활동 문파원</span><span class="v">${act.length}<small>명</small></span><span class="l">${S.members.length-act.length?'탈퇴·이동 '+(S.members.length-act.length)+'명 제외':'지금 함께하는 문파원'}</span></div>
     <div class="tile"><span class="hti" aria-hidden="true">🗓️</span><span class="l">${+mon.slice(5)}월 회차</span><span class="v">${ms.reg}<small>회</small></span><span class="l">정규${ms.n>ms.reg?' · 추가 진행 '+(ms.n-ms.reg)+'회':''}</span></div>
@@ -1589,7 +1656,7 @@ function renderHome(){
   let alerts='';
   if(S.canWrite){const from=monthAdd(mon,-1)+'-01';const unc=S.sessions.filter(s=>s.date>=from&&s.date<t&&!isLocked(s.date)&&act.some(m=>eligible(m,s)&&!validMark(marksOf(s)[m.id])));
     alerts=`${lockNote()}${backupNote()}${unc.length?`<div class="lockbar"><span>체크가 덜 끝난 회차가 <b>${unc.length}개</b> 있어요.</span><span class="grow"></span><button class="btn small primary" data-action="homeUnc">확인하러 가기</button></div>`:''}`}
-  return `<div class="col">${roNote()}${blockNote()}${alerts}<div class="home-r1">${hero}${notice}</div><div class="home-r2">${topP}${topB}${topG}</div>${tiles}${week}</div>`;
+  return `<div class="col">${roNote()}${blockNote()}${alerts}<div class="home-r1">${hero}${notice}</div><div class="home-r2">${topP}${topB}${topG}</div>${tiles}</div>`;
 }
 function renderCheck(){
   if(!S.ready) return loading;
@@ -3023,9 +3090,13 @@ function exportCsv(){
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-action]');if(!b||b.disabled)return;const a=b.dataset.action;
   if(b.tagName==='SELECT'||b.tagName==='INPUT'||b.tagName==='TEXTAREA')return;
-  if(a==='tab'){S.tab=b.dataset.tab;remember('tab',S.tab);S.confirm=null;S.selMode=false;S.sel=new Set();render();window.scrollTo({top:0});return}
+  if(a==='tab'){S.tab=b.dataset.tab;remember('tab',S.tab);S.confirm=null;S.wkPop=false;S.selMode=false;S.sel=new Set();render();window.scrollTo({top:0});return}
   if(a==='openUnc'){S.mt.check='sheet';S.openSid=b.dataset.sid;S.onlyUnchecked=true;S.confirm=null;S.editSid=null;S.search='';S.hist=null;render();scrollSheet();return}
-  if(a==='homeOpen'){S.tab='check';remember('tab','check');S.mt.check='sheet';S.openSid=b.dataset.sid;S.confirm=null;S.editSid=null;S.search='';S.hist=null;render();window.scrollTo({top:0});scrollSheet();return}
+  if(a==='wkPop'){S.wkPop=true;S.wkPopOff=0;render();$('#wkbox .nv-x')?.focus();return}
+  if(a==='wkPopClose'){if(b.classList.contains('overlay')&&e.target!==b)return;S.wkPop=false;render();$('.hero-wk')?.focus();return}
+  if(a==='wkPopGo'){const d=+b.dataset.d;S.wkPopOff=d===0?0:Math.max(-8,Math.min(2,(S.wkPopOff|0)+d));render();return}
+  if(a==='wkPopCheck'){S.wkPop=false;S.tab='check';remember('tab','check');render();window.scrollTo({top:0});return}
+  if(a==='homeOpen'){S.wkPop=false;S.tab='check';remember('tab','check');S.mt.check='sheet';S.openSid=b.dataset.sid;S.confirm=null;S.editSid=null;S.search='';S.hist=null;render();window.scrollTo({top:0});scrollSheet();return}
   if(a==='homeUnc'){S.tab='check';remember('tab','check');S.mt.check='list';render();window.scrollTo({top:0});return}
   if(a==='nView'){S.nView=b.dataset.id;S.nDel=null;render();$('#noticebox .nv-x')?.focus();return}
   if(a==='nViewClose'){if(b.classList.contains('overlay')&&e.target!==b)return;S.nView=null;S.nDel=null;render();return}
@@ -3319,6 +3390,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&e.target.id==='roleNew'){e.preventDefault();$('[data-action="roleAdd"]')?.click()}
   if(e.key==='Escape'&&!$('#copybox').hidden)$('#copybox').hidden=true;
   else if(e.key==='Escape'&&S.rfSug){S.rfSug=false;render()}
+  else if(e.key==='Escape'&&S.wkPop){S.wkPop=false;render()}
   else if(e.key==='Escape'&&S.nView){S.nView=null;S.nDel=null;render()}
   else if(e.key==='Escape'&&S.detail){S.detail=null;render()}
 });
