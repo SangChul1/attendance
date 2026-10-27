@@ -968,6 +968,17 @@ body{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 .hero-cd .cd-t{text-align:right;white-space:nowrap;font-size:16px}
 .hero-cd .cd-t b{font-size:34px}
 @media (max-width:420px){.hero-cd .cd-n{font-size:19px}.hero-cd .cd-t b{font-size:28px}}
+
+/* 내 출석 숫자 칸 설명 */
+.me-key .tile{padding-right:44px}
+.ibtn{position:absolute;top:10px;right:10px;z-index:2;width:26px;height:26px;border-radius:50%;border:0;display:grid;place-items:center;cursor:pointer;
+  font:italic 800 15px/1 Georgia,'Times New Roman',serif;color:#12403c;background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.28),0 4px 10px -4px rgba(0,0,0,.5)}
+.ibtn:hover,.ibtn[aria-expanded="true"]{background:#ffe1a3;color:#5e3a08;box-shadow:0 0 0 3px rgba(255,225,163,.45)}
+.ibtn.static{position:static;flex:none;box-shadow:none;background:var(--accent);color:#fff}
+.me-info{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:14px;background:var(--surface);border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line));box-shadow:var(--card-shadow)}
+.me-info .tx{flex:1;min-width:0}
+.me-info .tx b{font-size:15px}
+.me-info p{margin:4px 0 0;font-size:14.5px;line-height:1.75;color:var(--ink)}
 </style>
 </head>
 <body>
@@ -2525,11 +2536,25 @@ function renderMe(){
   const bar=`<div class="panel me-bar0 deep"><div class="me-head">${avatar(me)}<div class="me-id"><h2>${esc(me.name)} 님</h2><span class="hint">${esc(me.role||baseRole())} · ${me.joinedAt?'가입 '+esc(me.joinedAt.replace(/-/g,'.')):'처음부터 함께'}</span></div><span class="grow"></span><button class="btn small" data-action="mePickOpen" aria-expanded="${!!S.mePick}">바꾸기 ▾</button></div></div>`;
   // ---- 핵심 숫자 4개
   const bt=!br?['–','']:br.why?['대기',esc(br.why)]:[br.rank+'위',`최근 ${B.C.days}일 ${br.R}점 · 조건 충족${br.tie?' · 동점':''}`];
+  // 이번 달 콘텐츠별 참여
+  const mSess=allS.filter(s=>s.date.slice(0,7)===mon&&s.date<=gdm&&eligible(me,s)&&!isBonus(s));
+  const byM={};for(const s of mSess){const o=byM[s.content]??={n:0,o:0};o.n++;if(effOf(s,me.id)==='O')o.o++}
+  const ord=CONTENTS.map(c=>c.k);const perC=Object.keys(byM).sort((a,b)=>(ord.indexOf(a)+1||99)-(ord.indexOf(b)+1||99)).map(k=>`${esc(CMAP[k]?.short||CMAP[k]?.name||k)} ${byM[k].o}/${byM[k].n}`).join(' · ');
+  const mainNames=activeContents().map(c=>c.short||c.name).join('·');
+  const ptsTxt=activeContents().map(c=>`${esc(c.short||c.name)} ${pts(c.k)}점`).join(' · ')+(pts('bonus')?` · 추가 진행 ${pts('bonus')}점`:'');
+  const iBtn=k=>`<button class="ibtn" data-action="meInfo" data-k="${k}" aria-label="설명 보기" aria-expanded="${S.meInfo===k}">i</button>`;
+  const lim0=excuseLimit();
+  const INFO={
+    pt:[`${M}월 누적 포인트`,`이번 달에 참여한 회차의 포인트를 모두 더한 값이에요.<br>회차당 포인트: <b>${ptsTxt}</b><br>사전공지·불참은 0점이에요. 순위는 이번 달 문파원 포인트 순위예요.`],
+    at:[`${M}월 참여 횟수`,`이번 달에 열린 회차 중 내가 <b>참여</b>로 체크된 횟수예요. (오늘까지, 가입 전·휴식 기간 회차는 빠져요)<br>콘텐츠별: <b>${perC||'아직 없음'}</b><br>추가 진행 회차는 이 숫자에 안 들어가고 따로 표시돼요.`],
+    rt:[`최근 4주 출석률`,`최근 4주 동안 <b>${esc(mainNames)}</b> 회차 기준이에요.<br>출석률 = 참여 ÷ (참여 + 불참)<br>${lim0>0&&lim0<31?`사전공지는 한 달에 ${lim0}회까지 계산에서 빠지고(면제), 넘으면 불참으로 세요.`:lim0>=31?'사전공지는 모두 계산에서 빠져요.':'사전공지도 불참으로 세요.'} 추가 진행 회차는 빠져요.`],
+    by:[`구매 우선권 순번`,`문파 상점 특별 아이템을 살 수 있는 순서예요.<br><b>구매 포인트</b> = 마지막으로 산 다음 날부터 쌓인 참여 포인트 (추가 진행 포함)<br>최근 ${B.C.days}일 포인트가 ${B.C.min}점 이상이어야 대상이고${B.C.lock?`, 산 뒤에는 ${B.C.lock}일 동안 대기`:''}${B.C.exWarn?', 지난달·이번 달 경고자는 제외':''}예요. 휴식 중에는 빠져요.`]};
   const tiles=`<div class="tiles me-key dk">
-    <div class="tile"><span class="l">${M}월 포인트</span><span class="v">${mrow?mrow.P:0}<small>점</small></span><span class="l">${rank?`${rank}위 · ${mrows.length}명 중`:'아직 기록 없음'}</span></div>
-    <div class="tile"><span class="l">${M}월 정규 참여</span><span class="v">${mrow?mrow.O:0}<small>/${need}</small></span><span class="l">${mrow&&mrow.B?'추가 진행 '+mrow.B+'회':'정규 회차 기준'}</span></div>
-    <div class="tile"><span class="l">최근 4주 출석률</span><span class="v">${pct(w4.r)}</span><span class="l">참여 ${w4.o} · 면제 ${w4.e} · 불참 ${w4.x}</span></div>
-    <div class="tile"><span class="l">구매 우선권</span><span class="v">${bt[0]}</span><span class="l">${bt[1]||'&nbsp;'}</span></div></div>`;
+    <div class="tile">${iBtn('pt')}<span class="l">${M}월 누적 포인트</span><span class="v">${mrow?mrow.P:0}<small>점</small></span><span class="l">${rank?`${rank}위 · ${mrows.length}명 중`:'아직 기록 없음'}</span></div>
+    <div class="tile">${iBtn('at')}<span class="l">${M}월 참여 횟수</span><span class="v">${mrow?mrow.O:0}<small>/${need}회</small></span><span class="l">${perC||'이번 달 회차 없음'}${mrow&&mrow.B?` · 추가 ${mrow.B}회`:''}</span></div>
+    <div class="tile">${iBtn('rt')}<span class="l">최근 4주 출석률</span><span class="v">${pct(w4.r)}</span><span class="l">참여 ${w4.o} · 면제 ${w4.e} · 불참 ${w4.x}</span></div>
+    <div class="tile">${iBtn('by')}<span class="l">구매 우선권 순번</span><span class="v">${bt[0]}</span><span class="l">${bt[1]||'&nbsp;'}</span></div></div>
+    ${S.meInfo&&INFO[S.meInfo]?`<div class="me-info" role="note"><span class="ibtn static" aria-hidden="true">i</span><div class="tx"><b>${INFO[S.meInfo][0]}</b><p>${INFO[S.meInfo][1]}</p></div><button class="btn small" data-action="meInfo" data-k="">닫기</button></div>`:''}`;
   // ---- 상태 한 줄 (문제 있을 때만 경고색)
   const st=[];const lim=excuseLimit(),usedE=mrow?mrow.E+mrow.XA:0;
   if(leaveNow){const l=(me.leaves||[]).find(l=>l&&gdm>=l.from&&gdm<=(l.to||'9999'));st.push(['lv',`휴식 중${l&&l.to?' · '+md(l.to)+'까지':''} · 판정에서 빠져요`])}
@@ -2545,9 +2570,9 @@ function renderMe(){
   const upc=[];{const w0=weekMon(gdm);for(const d of [...weekSlots(w0),...weekSlots(addDays(w0,7))]){if(d.dt<gdm)continue;
     for(const x of d.slots){const c=CMAP[x.k];if(x.pick&&upc.some(u=>u.x.k===x.k&&!u.x.extra&&u.x.pick&&weekMon(u.dt)===weekMon(d.dt)))continue;
       const ss=allS.find(s=>s.date===d.dt&&s.content===x.k&&!!s.extra===!!x.extra);const v=ss?effOf(ss,me.id):null;upc.push({dt:d.dt,x,c,v,lv:onLeave(me,d.dt)})}
-    if(upc.length>=6)break}}
+    if(upc.length>=3)break}}
   const nextP=`<div class="panel"><div class="spread"><h2>다음 진행</h2>${upc.length?`<span class="hint">${mdd(upc[0].dt)}부터</span>`:''}</div>
-    ${upc.length?`<div class="me-up">${upc.slice(0,6).map(u=>`<div class="it${u.dt===gdm?' today':''}"><span class="d num">${u.dt===gdm?'오늘':u.x.pick?u.x.pick+' 중':mdd(u.dt)}</span><span class="chip" ${ck(u.x.k)}>${esc(u.c?.name||u.x.k)}</span>${u.x.extra?'<span class="tag extra">추가</span>':''}<span class="hint num">${u.c?.time&&!u.x.extra?esc(u.c.time):''}</span><span class="grow"></span>${u.lv?'<span class="mk A">휴식</span>':u.v?`<span class="mk ${cls[u.v]}">${lab[u.v]}</span>`:''}</div>`).join('')}</div>
+    ${upc.length?`<div class="me-up">${upc.slice(0,3).map(u=>`<div class="it${u.dt===gdm?' today':''}"><span class="d num">${u.dt===gdm?'오늘':u.x.pick?u.x.pick+' 중':mdd(u.dt)}</span><span class="chip" ${ck(u.x.k)}>${esc(u.c?.name||u.x.k)}</span>${u.x.extra?'<span class="tag extra">추가</span>':''}<span class="hint num">${u.c?.time&&!u.x.extra?esc(u.c.time):''}</span><span class="grow"></span>${u.lv?'<span class="mk A">휴식</span>':u.v?`<span class="mk ${cls[u.v]}">${lab[u.v]}</span>`:''}</div>`).join('')}</div>
       <p class="hint">못 오는 날은 미리 운영진에게 사전공지 해 주세요${lim>0&&lim<31&&mrow?` · 이번 달 면제 ${Math.max(0,lim-usedE)}회 남음`:''}</p>`:'<p class="hint">2주 안에 잡힌 정규 일정이 없어요.</p>'}</div>`;
   // ---- 순위 근처
   const near=(list,key,getRk,unit)=>{const i=list.findIndex(r=>r.m.id===me.id);if(i<0)return '';const a=Math.max(0,Math.min(i-1,list.length-3)),sl=list.slice(a,a+3);
@@ -2758,6 +2783,7 @@ document.addEventListener('click',e=>{
     guard(()=>S.db.doc('notices/'+n.id).delete(),'공지를 지웠어요',{area:'설정',what:'공지 삭제',detail:(n.title||'').slice(0,60)});return}
   if(a==='manToggle'){S.manOpen=!S.manOpen;try{localStorage.setItem('att.manOpen',S.manOpen?'1':'')}catch(_){}render();return}
   if(a==='rfPick'){S.rf.q=b.dataset.n||'';S.rfSug=false;const i=$('#rfQ');if(i){i.value=S.rf.q;i.blur()}render();return}
+  if(a==='meInfo'){const k=b.dataset.k||null;S.meInfo=S.meInfo===k?null:k;render();return}
   if(a==='mePickOpen'){S.mePick=!S.mePick;S.meQ='';render();if(S.mePick)$('#meQ')?.focus();return}
   if(a==='mePickBtn'){const id=b.dataset.mid;if(S.demo)S.meDemo=id;else{S.me=id;remember('me',id)}S.mePick=false;S.meQ='';S.meMon='';S.meDay='';render();window.scrollTo({top:0});return}
   if(a==='meMon'){if(b.dataset.m){S.meMon=b.dataset.m;S.meDay=''}render();return}
