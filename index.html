@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Song+Myung&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&text=%E8%99%90%E6%AE%BA&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&text=%E8%99%90%E6%AE%BA%E9%8A%85%E9%8A%80%E9%87%91%E5%82%B3%E8%AA%AA%E7%89%B9%E6%A5%AD&display=swap">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
 /* Layout: 상단 문파 헤더 + 탭 3개(출석 체크 / 통계 / 문파원·설정). 체크 탭은 회차 목록 | 체크리스트 2열, 모바일은 1열 */
@@ -979,6 +979,134 @@ body{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 .me-info .tx{flex:1;min-width:0}
 .me-info .tx b{font-size:15px}
 .me-info p{margin:4px 0 0;font-size:14.5px;line-height:1.75;color:var(--ink)}
+
+/* 홈: TOP5 세 개 + 숫자 4칸 한 줄 */
+.home-r2{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+@media (max-width:1100px){.home-r2{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}.home-r2>.h5p:last-child{grid-column:1/-1}}
+@media (max-width:720px){.home-r2{grid-template-columns:minmax(0,1fr)!important}}
+.h5p{display:flex;flex-direction:column}.h5p .h5s{flex:1}.h5p .hrank{flex:1}
+.h5p .hint{margin-top:auto}
+.home-tiles{grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-auto-rows:auto}
+@media (max-width:900px){.home-tiles{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+.home-tiles .tile .v{font-size:34px}
+.bg-ic{flex:none;font-size:15px;letter-spacing:1px}
+/* 내 출석: 좌우 높이 맞춤 */
+@media (min-width:1000px){.me-grid{align-items:stretch!important}.me-l>.panel:last-child,.me-r>.panel:last-child{flex:1}}
+/* 이번 달 남은 일정 */
+.me-rem{display:flex;flex-direction:column}.me-rem .rm-grid{flex:1;grid-auto-rows:1fr}.me-rem .rm-grid>div{justify-content:center}
+.rm-bar{height:8px;border-radius:999px;background:var(--line);overflow:hidden;margin:2px 0 4px}
+.rm-bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--g1a),var(--g1b))}
+.rm-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.rm-grid>div{display:flex;flex-direction:column;gap:2px;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--accent) 6%,var(--surface));border:1px solid var(--line);min-width:0}
+.rm-grid .l{font-size:12.5px;font-weight:700;color:var(--muted)}
+.rm-grid b{font-size:26px;line-height:1.15}.rm-grid b small{font-size:13px;font-weight:500;color:var(--muted);margin-left:2px}
+.rm-grid .hint{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* 6개월 추이 */
+.tr-leg{gap:12px;font-size:12px;color:var(--muted)}.tr-leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.tr-leg .bp,.tr-b.p{background:linear-gradient(180deg,var(--g3a),var(--g3b))}.tr-leg .br,.tr-b.r{background:linear-gradient(180deg,var(--g1a),var(--g1b))}
+.tr-ch{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;align-items:end;height:170px;padding-top:20px}
+.tr-c{display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;border-radius:10px;padding:0 2px}
+.tr-c.cur{background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.tr-bars{flex:1;width:100%;display:flex;justify-content:center;align-items:flex-end;gap:4px;border-bottom:1px solid var(--line)}
+.tr-b{position:relative;width:min(18px,40%);min-height:2px;border-radius:5px 5px 0 0}
+.tr-b.na{background:var(--line)}
+.tr-b span{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap;padding-bottom:2px}
+.tr-c.cur .tr-b span{color:var(--ink)}
+.tr-m{font-size:12.5px;font-weight:600;color:var(--muted);white-space:nowrap}.tr-c.cur .tr-m{color:var(--accent);font-weight:800}
+.tr-m em{font-style:normal;font-size:12px;margin-left:1px}
+/* 기록·배지 */
+.me-badge h2 .hint{font-weight:500;margin-left:6px}
+.bdg-tabs{flex:0 1 auto}.bdg-tabs button{padding:6px 12px;font-size:14px}.bdg-tabs small{opacity:.7;font-size:12px}
+.bdg-top{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;padding:22px 18px 18px;border-radius:18px;overflow:hidden;isolation:isolate;
+  background:radial-gradient(120% 90% at 50% 120%,rgba(84,52,190,.55),transparent 60%),radial-gradient(60% 70% at 10% 0%,rgba(40,140,150,.35),transparent 70%),linear-gradient(160deg,#16121f,#0c0a12 70%);
+  box-shadow:inset 0 0 0 1px rgba(255,214,140,.18),0 14px 30px -18px rgba(0,0,0,.8)}
+.bdg-top::before{content:'虐殺';position:absolute;right:-6px;bottom:-26px;font:900 120px/1 var(--f-han),serif;color:rgba(255,214,140,.05);z-index:-1;pointer-events:none}
+.bdg-top::after{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.8;
+  background:radial-gradient(3px 3px at 12% 70%,#8fe8ff,transparent),radial-gradient(2px 2px at 30% 20%,#ffd98a,transparent),radial-gradient(2px 2px at 72% 30%,#b99bff,transparent),radial-gradient(3px 3px at 88% 75%,#8fe8ff,transparent),radial-gradient(2px 2px at 55% 85%,#ffd98a,transparent)}
+.bdg-top>.hint{color:#cfc6b2;grid-column:1/-1;text-align:center}
+.bt-it{display:flex;flex-direction:column;align-items:center;gap:8px;padding:6px 6px 2px;color:#f6ecd6;text-align:center;min-width:0}
+.bt-it{position:relative}.bt-it .em{margin-bottom:10px}
+.bt-it::before{content:'';position:absolute;left:50%;top:78px;width:150px;height:46px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(255,214,140,.22),transparent);z-index:-1}
+.bt-it.k-special::before{background:radial-gradient(closest-side,rgba(255,90,70,.28),transparent)}.bt-it.lv4::before{background:radial-gradient(closest-side,rgba(127,227,255,.32),transparent)}
+@media (max-width:600px){.bt-it::before{top:56px;width:100px}}
+.bt-it .bn{font-weight:800;font-size:16px;letter-spacing:-.01em;text-shadow:0 2px 6px rgba(0,0,0,.6)}
+.bt-it .bt{font-size:12px;font-weight:700;padding:2px 12px;border-radius:999px;color:#ffe3a6;background:rgba(255,214,140,.1);border:1px solid rgba(255,214,140,.3)}
+.bt-it.lv4 .bt{color:#c7f3ff;border-color:rgba(127,227,255,.5);background:rgba(110,80,255,.2)}
+/* 문양 공용 */
+.em{--r1:#4a4f57;--r2:#9aa0a8;--in1:#2c2f35;--in2:#17191d;position:relative;width:64px;height:64px;display:grid;place-items:center;flex:none}
+.em.big{width:104px;height:104px}.em.mini{width:24px;height:24px}
+.em::before,.em::after{content:'';position:absolute;pointer-events:none}
+.em .core{position:relative;z-index:2;font-size:28px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.55))}
+.em.big .core{font-size:46px}.em.mini .core{font-size:12px;filter:none}
+.em .hj{position:absolute;z-index:3;left:50%;bottom:-7px;transform:translateX(-50%);white-space:nowrap;font:900 11px/1.35 var(--f-han),serif;padding:1px 7px;border-radius:4px;
+  color:var(--r2);background:#16110a;border:1px solid var(--r2);box-shadow:0 2px 6px rgba(0,0,0,.45);letter-spacing:.06em}
+.em.big .hj{font-size:15px;bottom:-9px;padding:1px 10px}
+.em .lk{position:absolute;z-index:3;right:-2px;bottom:-2px;font-size:15px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+.em.big .lk{font-size:22px}
+.em .cnt{position:absolute;z-index:3;top:-4px;right:-8px;font-size:11px;font-weight:800;padding:1px 6px;border-radius:999px;background:#ffd36a;color:#4a1a00;box-shadow:0 2px 6px rgba(0,0,0,.4)}
+.em.big .cnt{font-size:14px;top:0;right:-6px}
+/* 도달: 금속 메달 (동·은·금·전설) */
+.em.reach::before{inset:0;border-radius:50%;background:conic-gradient(from 210deg,var(--r2),var(--r1) 25%,var(--r2) 50%,var(--r1) 75%,var(--r2));
+  box-shadow:0 6px 14px -6px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.35)}
+.em.reach::after{inset:12%;border-radius:50%;background:radial-gradient(circle at 35% 30%,var(--in1),var(--in2) 75%);box-shadow:inset 0 2px 6px rgba(0,0,0,.6),0 0 0 2px color-mix(in srgb,var(--r2) 60%,transparent)}
+.em.mini.reach::after{inset:14%;box-shadow:none}
+.em.lv1{--r1:#7a421c;--r2:#f0b27a;--in1:#5a2f17;--in2:#2a140a}
+.em.lv2{--r1:#6d7684;--r2:#f4f7fb;--in1:#4a5260;--in2:#1d222a}
+.em.lv3{--r1:#9a6400;--r2:#ffe9a3;--in1:#6a3f00;--in2:#2b1700}
+.em.reach.lv3::before{box-shadow:0 6px 16px -6px rgba(0,0,0,.6),0 0 16px -4px rgba(255,210,90,.55),inset 0 0 0 1px rgba(255,255,255,.45)}
+.em.lv4{--r1:#4b23c9;--r2:#7fe3ff;--in1:#3a1690;--in2:#0b0624}
+.em.reach.lv4::before{background:conic-gradient(from 0deg,#7fe3ff,#5b2bd6,#ff6fd8,#5b2bd6,#7fe3ff);box-shadow:0 0 22px -2px rgba(127,227,255,.75),0 0 40px -10px rgba(170,90,255,.9);animation:emspin 6s linear infinite}
+.em.lv4 .hj{color:#c7f3ff;border-color:#7fe3ff;background:#120a33}
+/* 특별: 붉은 옻칠 팔각 인장 */
+.em.special::before{inset:0;clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%);background:linear-gradient(145deg,#ffe9a3,#b07a12 45%,#ffe08a 60%,#7a4c00)}
+.em.special::after{inset:8%;clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%);background:radial-gradient(circle at 35% 30%,#c8323a,#6e0d14 70%,#3d050a)}
+.em.special:not(.lock){filter:drop-shadow(0 0 10px rgba(255,90,70,.45)) drop-shadow(0 6px 8px rgba(0,0,0,.45))}
+.em.special .hj{color:#ffe08a;border-color:#d9a43a;background:#3d050a}
+/* 업적: 도깨비 부적 */
+.em.ach{width:52px}.em.big.ach{width:84px}.em.mini.ach{width:18px}
+.em.ach::before{inset:0;border-radius:4px;background:linear-gradient(180deg,#f7dc7a,#e5b545 60%,#d49b2c);box-shadow:inset 0 0 0 2px #b3121b,inset 0 0 0 4px #f3d06a,inset 0 0 0 5px #b3121b,0 6px 12px -6px rgba(0,0,0,.55)}
+.em.mini.ach::before{box-shadow:inset 0 0 0 1.5px #b3121b}
+.em.ach::after{left:18%;right:18%;top:9%;height:2px;background:#b3121b;box-shadow:0 4px 0 #b3121b,0 calc(var(--h,64px)*.74) 0 #b3121b}
+.em.big.ach::after{--h:104px}.em.mini.ach::after{display:none}
+.em.ach .core{filter:drop-shadow(0 1px 0 rgba(120,20,0,.35))}
+.em.ach .hj{color:#fff1c4;border-color:#7a0a10;background:#b3121b}
+/* 잠김: 먹빛 돌 */
+.em.lock::before{background:linear-gradient(145deg,#6a6e75,#3a3d43)!important;animation:none!important;filter:none}
+.em.lock::after{background:radial-gradient(circle at 35% 30%,#3b3e44,#1c1e22)!important}
+.em.lock.ach::before{box-shadow:inset 0 0 0 2px #2b2d31,inset 0 0 0 4px #55585e!important}
+.em.lock.ach::after{background:#2b2d31!important}
+.em.lock .core{filter:grayscale(1) brightness(.55) contrast(.9);opacity:.75}
+/* 전설 도깨비불 */
+.em .fx{position:absolute;z-index:1;width:9px;height:13px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:radial-gradient(circle at 50% 70%,#e9fbff,#7fe3ff 45%,rgba(91,43,214,0) 75%);filter:blur(.3px);animation:emfire 2.6s ease-in-out infinite}
+.em .f1{left:-6px;top:20%}.em .f2{right:-7px;top:38%;animation-delay:-.9s}.em .f3{left:42%;top:-10px;animation-delay:-1.7s}
+.em.big .fx{width:13px;height:19px}
+.em.mini .fx{display:none}.em.mini.special:not(.lock){filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}.em.mini.reach.lv4::before{box-shadow:0 0 6px rgba(127,227,255,.6);animation:none}
+@keyframes emspin{to{filter:hue-rotate(360deg)}}
+@keyframes emfire{0%,100%{transform:translateY(0) scale(1);opacity:.9}50%{transform:translateY(-5px) scale(.8);opacity:.45}}
+@media (prefers-reduced-motion:reduce){.em.reach.lv4::before,.em .fx{animation:none}}
+/* 배지판 */
+.bdg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:10px}
+.bdg{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 6px 16px;border-radius:14px;border:1px solid var(--line);color:var(--ink);cursor:pointer;font:inherit;text-align:center;min-width:0;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 5%,var(--surface)),var(--surface));transition:transform .15s,border-color .15s,box-shadow .15s}
+.bdg .em{margin-bottom:6px}
+.bdg:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--gold) 60%,var(--line));box-shadow:0 10px 20px -14px rgba(0,0,0,.55)}
+.bdg.sel{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 35%,transparent)}
+.bdg .bn{font-size:13px;font-weight:700;line-height:1.3;word-break:keep-all}
+.bdg .bt{font-size:12px;font-weight:700;padding:0 8px;border-radius:999px;background:var(--line);color:var(--muted)}
+.bdg.t1 .bt{background:#f1d6b8;color:#6b3d12}.bdg.t2 .bt{background:#e4e8ee;color:#3d4653}.bdg.t3 .bt{background:#f7e2a0;color:#6a4a00}
+.bdg.t4 .bt{background:linear-gradient(90deg,#5b2bd6,#2bb7e6);color:#fff}
+.bdg.k-special:not(.off) .bt{background:#b3121b;color:#ffe9a3}.bdg.k-ach:not(.off) .bt{background:#e9bd4c;color:#5a1a00}
+.bdg.t4{border-color:#8f6bff;box-shadow:0 0 22px -10px #7fe3ff}
+.bdg.off{background:var(--surface)}.bdg.off .bn{color:var(--muted)}
+.bdg .bp{position:absolute;left:14px;right:14px;bottom:7px;height:4px;border-radius:9px;background:var(--line);overflow:hidden}
+.bdg .bp i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),#ffd98a)}
+.bdg-d{display:flex;gap:18px;align-items:center;padding:16px 18px;border-radius:14px;background:var(--surface);border:1px solid color-mix(in srgb,var(--gold) 45%,var(--line))}
+.bdg-d .tx{flex:1;min-width:0}.bdg-d p{margin:4px 0 0}
+.bdg-d .tiers{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.bdg-d .tr{font-size:12.5px;padding:3px 10px;border-radius:999px;background:var(--line);color:var(--muted)}.bdg-d .tr.on{background:var(--good-soft);color:var(--ink)}
+.bg-ic{flex:none;display:inline-flex;gap:3px}
+@media (max-width:600px){.bdg-top{gap:6px;padding:18px 8px 14px}.em.big{width:76px;height:76px}.em.big.ach{width:60px}.em.big .core{font-size:34px}.em.big .hj{font-size:12px}.em.big.ach::after{--h:76px}.bt-it .bn{font-size:13px}.bt-it .bt{font-size:12px;padding:2px 8px}
+  .bdg-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.rm-grid b{font-size:22px}.bdg-d{gap:12px}}
 </style>
 </head>
 <body>
@@ -1216,7 +1344,7 @@ function paint(el,html){
 }
 function render(){
   S.demo=!!S.demoT[S.tab]&&['stats','settle','me'].includes(S.tab);
-  EFF=null;applyContents();applyRoles();
+  EFF=null;BADGE=null;applyContents();applyRoles();
   const app=$('#app');
   const ae=document.activeElement, aid=ae&&app.contains(ae)&&ae.id, sel=aid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
   const vals={};app.querySelectorAll('input[id],textarea[id],select[id]').forEach(e=>{if(e.dataset.keep!=='0')vals[e.id]=e.type==='checkbox'?e.checked:e.value});
@@ -1265,6 +1393,89 @@ function renderAuth(){const el=$('#authbar');if(!el)return;
   el.innerHTML=S.authUser?`<span class="authwho">${esc(S.myNick||S.authUser.email||'')}${S.isOwner?' · 문파장':S.canWrite?' · 운영진':''}</span><button class="btn small" data-action="logout">로그아웃</button>`
     :`<button class="btn small" data-action="login">운영진 로그인</button>`}
 
+
+/* ---------- 기록·배지 ---------- */
+let BADGE=null;
+const TIER=['','동','은','금','전설'];
+function badgeAll(){
+  if(BADGE)return BADGE;
+  const {members:allM,sessions:allS}=data();const members=activeMembers(allM);const gd=gameDay(),curMon=gd.slice(0,7);
+  const ord=s=>CONTENTS.findIndex(c=>c.k===s.content);
+  const ss=allS.filter(s=>s.date<=gd).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:(ord(a)-ord(b))||((a.createdAt||0)-(b.createdAt||0)));
+  const act=activeContents(),mj=minJudge(),from26=addDays(weekStart(todayStr()),-7*25);
+  const per=new Map();
+  for(const m of members){const z={m,tot:0,run:0,best:0,B:0,byC:{},first:'',firstX:'',d50:'',pol:0,mon:{},wk:{},o26:0,x26:0,first0:'',cross:{tot:[],best:[],B:[],c:{}},back:0};
+    const leaves=(m.leaves||[]).filter(l=>l&&l.from&&l.to&&l.to<gd).map(l=>l.to);const backDone=new Set();
+    for(const s of ss){if(!eligible(m,s))continue;const v=effOf(s,m.id),mo=s.date.slice(0,7),M=z.mon[mo]??={O:0,E:0,X:0,XA:0,B:0,P:0,need:0,ok:0,xe:0};
+      if(v&&!z.first0)z.first0=s.date;
+      if(isBonus(s)){M.xe++;if(v==='O'){M.B++;M.P+=sessPts(s);z.B++;z.tot++;if(!z.firstX)z.firstX=s.date;if(!z.first)z.first=s.date;if(z.tot===50)z.d50=s.date}continue}
+      M.need++;
+      for(const to of leaves){if(!backDone.has(to)&&s.date>to){backDone.add(to);if(v==='O')z.back++}}
+      const dw=dow(s.date);let w=null;if(dw===5||dw===6){w=z.wk[weekMon(s.date)]??={n:0,o:0};w.n++}
+      if(!v)continue;
+      if(s.date>=from26){if(v==='O')z.o26++;else if(v!=='E')z.x26++}
+      if(v==='O'){M.O++;M.ok++;M.P+=sessPts(s);z.tot++;z.run++;if(z.run>z.best)z.best=z.run;z.byC[s.content]=(z.byC[s.content]||0)+1;if(!z.first)z.first=s.date;if(z.tot===50)z.d50=s.date;if(w)w.o++;
+        (z.cross.c[s.content]??=[])[z.byC[s.content]]=s.date}
+      else if(v==='E'){M.E++;M.ok++;z.pol++}
+      else{if(v==='XA'){M.XA++;z.pol++}else M.X++;z.run=0}
+      z.cross.tot[z.tot]=z.cross.tot[z.tot]||s.date;z.cross.best[z.best]=z.cross.best[z.best]||s.date}
+    for(const mo in z.mon){const M=z.mon[mo];M.absent=M.X+M.XA;M.perfect=M.need>0&&M.O>0&&M.ok===M.need;M.closed=mo<curMon}
+    per.set(m.id,z)}
+  // 월별 순위 (마감된 달)
+  const mons=[...new Set(ss.map(s=>s.date.slice(0,7)))].filter(mo=>mo<curMon).sort();
+  const top={},topB={},rk={};
+  for(const mo of mons){let mx=0,mb=0;const list=[];for(const z of per.values()){const M=z.mon[mo];if(!M||(!M.need&&!M.B))continue;list.push([z.m.id,M.P]);if(M.P>mx)mx=M.P;if(M.B>mb)mb=M.B}
+    top[mo]=mx;topB[mo]=mb;list.sort((a,b)=>b[1]-a[1]);const r={};let pv=null,k=0;list.forEach(([id,P],i)=>{if(P!==pv){pv=P;k=i+1}r[id]=k});rk[mo]=r}
+  const out=new Map();
+  for(const z of per.values())out.set(z.m.id,badgesOf(z,{mons,top,topB,rk,act,mj,gd}));
+  return BADGE=out;
+}
+function badgesOf(z,C){
+  const m=z.m,list=[];const closed=Object.keys(z.mon).filter(mo=>z.mon[mo].closed).sort();
+  const dateAt=(arr,n)=>{if(!arr)return '';for(let i=n;i<arr.length;i++)if(arr[i])return arr[i];return ''};
+  const reach=(id,ic,name,desc,val,T,unit,dates)=>{let t=0;while(t<4&&val>=T[t])t++;list.push({id,ic,name,desc,kind:'reach',val,T,t,unit,next:t<4?T[t]:null,dates:dates||[],n:t})};
+  const special=(id,ic,name,desc,hits)=>list.push({id,ic,name,desc,kind:'special',n:hits.length,hits});
+  const ach=(id,ic,name,desc,date,prog)=>list.push({id,ic,name,desc,kind:'ach',n:date?1:0,date:date||'',prog});
+  const tDates=(arr,T)=>T.map(x=>dateAt(arr,x));
+  // 도달 배지
+  const T1=[5,25,50,150];reach('tot','🎯','누적 참여','정규·추가 진행 회차에 참여한 횟수예요',z.tot,T1,'회',tDates(z.cross.tot,T1));
+  const T2=[3,5,10,20];reach('best','🔥','최고 연속 참여','정규 회차를 쉬지 않고 연달아 참여한 최고 기록이에요 (면제된 사전공지는 안 끊겨요)',z.best,T2,'회',tDates(z.cross.best,T2));
+  const perfM=closed.filter(mo=>z.mon[mo].perfect),noAbs=closed.filter(mo=>{const M=z.mon[mo];return M.need>0&&M.O>0&&M.absent===0});
+  const T3=[1,2,3,6];reach('perf','🏅','개근한 달','지난달까지, 그 달 정규 회차를 모두 참여한 달 수예요',perfM.length,T3,'달',T3.map(x=>perfM[x-1]||''));
+  const start=m.joinedAt||z.first0;const days=start?Math.max(0,Math.round((parseD(C.gd)-parseD(start))/864e5)):0;
+  const T4=[15,50,180,365];reach('days','🤝','함께한 날',`${m.joinedAt?'가입일':'첫 기록'}부터 오늘까지 함께한 날이에요`,days,T4,'일',T4.map(x=>start&&days>=x?addDays(start,x):''));
+  const T5=[3,8,15,30];reach('extra','⚔️','보강 전사','추가 진행 회차에 참여한 횟수예요',z.B,T5,'회');
+  const T6=[1,2,3,6];reach('noabs','🧱','불참 없는 달','지난달까지, 불참이 한 번도 없었던 달 수예요 (사전공지는 괜찮아요)',noAbs.length,T6,'달',T6.map(x=>noAbs[x-1]||''));
+  const T7=[10,25,50,100];for(const c of C.act)reach('c_'+c.k,'📘',`${c.short||c.name} 달인`,`${c.name} 정규 회차에 참여한 횟수예요`,z.byC[c.k]||0,T7,'회',tDates(z.cross.c[c.k],T7));
+  // 특별 배지
+  special('top','👑','월간 포인트 1위','마감된 달에 포인트 1위를 했어요 (공동 1위 포함)',closed.filter(mo=>C.top[mo]>0&&z.mon[mo].P===C.top[mo]));
+  special('topx','🗡️','보강왕','마감된 달에 추가 진행을 가장 많이 참여했어요 (공동 포함)',closed.filter(mo=>C.topB[mo]>0&&z.mon[mo].B===C.topB[mo]));
+  special('flaw','💯','완벽한 달','개근하면서 사전공지 0회, 열린 추가 진행까지 모두 참여한 달이에요',closed.filter(mo=>{const M=z.mon[mo];return M.perfect&&!M.E&&!M.XA&&M.B===M.xe}));
+  special('rise','📈','역전의 명수','지난달보다 포인트 순위가 3계단 이상 올랐어요',closed.filter((mo,i)=>{const pm=monthAdd(mo,-1),a=C.rk[pm]&&C.rk[pm][m.id],b=C.rk[mo]&&C.rk[mo][m.id];return a&&b&&a-b>=3}));
+  const iron=z.o26+z.x26>=C.mj&&z.x26===0;special('iron','🛡️','철벽','최근 26주 정규 회차 출석률 100%예요 (지금 상태 · '+C.mj+'회 이상 기록)',iron?['now']:[]);
+  const jm=m.joinedAt?m.joinedAt.slice(0,7):'';special('rookie','🌱','신입 개근','가입한 달에 바로 개근했어요',jm&&z.mon[jm]&&z.mon[jm].closed&&z.mon[jm].perfect?[jm]:[]);
+  const all=C.act.length>0&&C.act.every(c=>(z.byC[c.k]||0)>=25);special('all','🏆','올라운더','모든 콘텐츠를 각각 25회 이상 참여했어요',all?['now']:[]);
+  // 업적
+  ach('first','👣','첫 참여','처음으로 회차에 참여했어요',z.first);
+  ach('firstp','✨','첫 개근','처음으로 개근한 달이에요',perfM[0]||'');
+  ach('firstx','⚡','첫 추가 진행','처음으로 추가 진행 회차에 참여했어요',z.firstX);
+  ach('d50','🎉','50번째 참여','50번째로 참여한 날이에요',z.d50,[Math.min(z.tot,50),50]);
+  const wkN=Object.values(z.wk).filter(w=>w.n>0&&w.o===w.n).length;
+  ach('wkend','🌙','주말 전사','금·토 정규 회차를 모두 참여한 주가 5번이에요',wkN>=5?'달성':'',[Math.min(wkN,5),5]);
+  ach('polite','📢','예의 바른 사람','못 올 때 사전공지를 5번 했어요',z.pol>=5?'달성':'',[Math.min(z.pol,5),5]);
+  ach('back','🔙','돌아온 문파원','휴식이 끝난 뒤 첫 정규 회차에 바로 참여했어요',z.back?'달성':'');
+  let pp='';for(let i=1;i<perfM.length;i++)if(monthAdd(perfM[i-1],1)===perfM[i]){pp=perfM[i];break}
+  ach('pp','🗓️','개근 연속','두 달 연속으로 개근했어요',pp,[Math.min(perfM.length?(pp?2:1):0,2),2]);
+  const score=list.reduce((a,b)=>a+b.n,0),kinds=list.filter(b=>b.n>0).length;
+  const w=b=>b.kind==='special'?100+b.n:b.kind==='reach'?b.t*20+(b.t===4?40:0):5;
+  const best=list.filter(b=>b.n>0).sort((a,b)=>w(b)-w(a));
+  return {list,score,kinds,best,mon:z.mon};
+}
+function badgeEm(b,sz){const on=b.n>0,lv=b.kind==='reach'?b.t:on?3:0;
+  const hj=b.kind==='reach'?['','銅','銀','金','傳說'][b.t]:b.kind==='special'?'特':'業';
+  return `<span class="em ${b.kind} lv${lv}${on?'':' lock'}${sz?' '+sz:''}" aria-hidden="true"><span class="core">${b.ic}</span>${on&&sz!=='mini'?`<span class="hj">${hj}</span>`:''}${!on&&sz!=='mini'?'<span class="lk">🔒</span>':''}${b.kind==='special'&&b.n>1&&sz!=='mini'?`<span class="cnt num">×${b.n}</span>`:''}${lv===4&&on?'<i class="fx f1"></i><i class="fx f2"></i><i class="fx f3"></i>':''}</span>`}
+function badgeLabel(b){return b.kind==='reach'?(b.t?TIER[b.t]:'잠김'):b.kind==='special'?(b.n?(b.n>1?'×'+b.n:'획득'):'잠김'):(b.n?'달성':'잠김')}
+function badgeDate(x){return /^\d{4}-\d{2}-\d{2}$/.test(x)?x.replace(/-/g,'.'):/^\d{4}-\d{2}$/.test(x)?monLabel(x):x==='now'?'지금 유지 중':x}
 /* ---------- 공용 페이징 ---------- */
 function pager(k,total,per,sig){S.pg??={};S.pgs??={};if(sig!==undefined&&S.pgs[k]!==sig){if(S.pgs[k]!==undefined)S.pg[k]=0;S.pgs[k]=sig}
   const pages=Math.max(1,Math.ceil(total/per));let p=S.pg[k]|0;if(p>pages-1)p=pages-1;if(p<0)p=0;S.pg[k]=p;const a=p*per,b=Math.min(total,a+per);
@@ -1364,16 +1575,21 @@ function renderHome(){
   const notice=renderNotices(N);
   const week=`<div class="panel tint-a"><div class="spread"><h2>이번 주 일정 <span class="hint num">${md(W.ws)}(월) ~ ${md(W.we)}(일)</span></h2>${S.canWrite?'<button class="btn small" data-action="tab" data-tab="check">출석 체크로</button>':''}</div>${W.html}</div>`;
   const pad=n=>Array.from({length:Math.max(0,5-n)},(_,i)=>`<div class="it ph">${rankMark(n+i+1)}<span class="n">–</span><b class="num"></b></div>`).join('');
-  const topP=`<div class="panel home-top5 tint-w"><div class="h5s"><div class="spread"><h2>${+mon.slice(5)}월 포인트 TOP 5</h2><button class="btn small" data-action="tab" data-tab="settle">월간 정산</button></div>
+  const topP=`<div class="panel h5p tint-w"><div class="h5s"><div class="spread"><h2>${+mon.slice(5)}월 포인트 TOP 5</h2><button class="btn small" data-action="tab" data-tab="settle">월간 정산</button></div>
     <div class="hrank">${top.map((r,i)=>`<div class="it">${rankMark(i+1)}<span class="n">${esc(r.m.name)}${r.perfect?' <span class="pill-perfect">개근</span>':''}</span><b class="num">${r.P}<small>점</small></b></div>`).join('')}${pad(top.length)}</div>
-    <div class="hperf"><span class="l">개근 후보 ${perf.length}명</span>${perf.length?perf.map(r=>`<span class="tag ok">${esc(r.m.name)}</span>`).join(''):'<span class="hint">아직 없어요</span>'}</div></div>
-    <div class="h5s h5sep"><div class="spread"><h2>구매 우선권 TOP 5</h2><span class="hint">${mdd(B.t)} 기준</span></div>
+    <div class="hperf"><span class="l">개근 후보 ${perf.length}명</span>${perf.length?perf.map(r=>`<span class="tag ok">${esc(r.m.name)}</span>`).join(''):'<span class="hint">아직 없어요</span>'}</div></div></div>`;
+  const topB=`<div class="panel h5p tint-w"><div class="h5s"><div class="spread"><h2>구매 우선권 TOP 5</h2><span class="hint">${mdd(B.t)} 기준</span></div>
     <div class="hrank">${btop.map(r=>`<div class="it">${rankMark(r.rank)}<span class="n">${esc(r.m.name)}${r.tie?' <span class="tag no">동점</span>':''}</span><b class="num">${r.P}<small>점</small></b></div>`).join('')}${pad(btop.length)}</div>
     <p class="hint">최근 ${B.C.days}일 ${B.C.min}점 이상 · 구매 포인트 높은 순${S.canWrite?'':' · 정확한 순번은 운영진 공지를 확인해 주세요'}</p></div></div>`;
+  const BA=badgeAll();const bgt=act.map(m=>({m,b:BA.get(m.id)})).filter(x=>x.b&&x.b.score>0).sort((x,y)=>y.b.score-x.b.score||y.b.kinds-x.b.kinds||memberSort(x.m,y.m)).slice(0,5);
+  const bgRk=[];{let pv=null,k=0;bgt.forEach((x,i)=>{if(x.b.score!==pv){pv=x.b.score;k=i+1}bgRk.push(k)})}
+  const topG=`<div class="panel h5p tint-w"><div class="h5s"><div class="spread"><h2>배지 TOP 5</h2><button class="btn small" data-action="tab" data-tab="me">내 배지</button></div>
+    <div class="hrank">${bgt.map((x,i)=>`<div class="it">${rankMark(bgRk[i])}<span class="n">${esc(x.m.name)}</span><span class="bg-ic">${x.b.best.slice(0,3).map(b=>badgeEm(b,'mini')).join('')}</span><b class="num">${x.b.score}<small>개</small></b></div>`).join('')}${pad(bgt.length)}</div>
+    <p class="hint">도달 단계·특별 배지·업적을 모두 더한 개수예요</p></div></div>`;
   let alerts='';
   if(S.canWrite){const from=monthAdd(mon,-1)+'-01';const unc=S.sessions.filter(s=>s.date>=from&&s.date<t&&!isLocked(s.date)&&act.some(m=>eligible(m,s)&&!validMark(marksOf(s)[m.id])));
     alerts=`${lockNote()}${backupNote()}${unc.length?`<div class="lockbar"><span>체크가 덜 끝난 회차가 <b>${unc.length}개</b> 있어요.</span><span class="grow"></span><button class="btn small primary" data-action="homeUnc">확인하러 가기</button></div>`:''}`}
-  return `<div class="col">${roNote()}${blockNote()}${alerts}<div class="home-r1">${hero}${notice}</div><div class="home-r2">${topP}${tiles}</div>${week}</div>`;
+  return `<div class="col">${roNote()}${blockNote()}${alerts}<div class="home-r1">${hero}${notice}</div><div class="home-r2">${topP}${topB}${topG}</div>${tiles}${week}</div>`;
 }
 function renderCheck(){
   if(!S.ready) return loading;
@@ -2599,6 +2815,55 @@ function renderMe(){
     <div class="me-cal"><div class="wh">월</div><div class="wh">화</div><div class="wh">수</div><div class="wh">목</div><div class="wh">금</div><div class="wh sat">토</div><div class="wh sun">일</div>${cells}</div>
     <div class="me-leg"><span><i class="O"></i>참여 ${mc.O}</span><span><i class="A"></i>사전공지 ${mc.A}</span><span><i class="X"></i>불참 ${mc.X}</span><span><i class="lvk"></i>휴식</span><span class="hint">테두리 점 = 추가 진행</span></div>
     ${dayList}</div>`;
+
+  // ---- 이번 달 남은 회차 & 예상
+  const lastM=addDays(monthAdd(mon,1)+'-01',-1),rem={},remX=[];let remP=0;
+  {let w=weekMon(gdm);while(w<=lastM){for(const d of weekSlots(w)){if(d.dt<gdm||d.dt>lastM||d.dt.slice(0,7)!==mon||onLeave(me,d.dt)||(me.joinedAt&&d.dt<me.joinedAt))continue;
+      for(const x of d.slots){if(allS.some(s=>s.date===d.dt&&s.content===x.k&&!!s.extra===!!x.extra))continue;
+        if(x.extra){remX.push(d.dt);remP+=pts('bonus');continue}
+        const key=x.pick?x.k+'@'+weekMon(d.dt):x.k+'@'+d.dt;if(rem[key])continue;rem[key]={k:x.k,dt:d.dt};remP+=pts(x.k)}}w=addDays(w,7)}}
+  const remR=Object.values(rem),remByC={};remR.forEach(r=>remByC[r.k]=(remByC[r.k]||0)+1);
+  const remTxt=Object.keys(remByC).map(k=>`${esc(CMAP[k]?.short||CMAP[k]?.name||k)} ${remByC[k]}`).join(' · ');
+  const curP=mrow?mrow.P:0,curO=mrow?mrow.O:0,curAb=mrow?mrow.absent:0,tot=need+remR.length;
+  const bestR=rateOf(curO+remR.length,curAb);
+  const perfS=leaveNow?['nt','휴식 중이라 이번 달은 판정에서 빠져요']:!tot?['nt','이번 달 정규 회차가 없어요']:curAb?['warn',`이번 달 불참 ${curAb}회 · 개근은 다음 달에 도전해요`]:unk?['nt',`체크 안 된 회차 ${unk}개 · 체크되면 개근 가능 여부가 정해져요`]:['ok',remR.length?`남은 ${remR.length}회를 모두 참여하면 개근이에요`:(curO?'이번 달 개근 확정이에요':'아직 참여 기록이 없어요')];
+  const doneW=tot?Math.round(done/tot*100):0;
+  const remainP=`<div class="panel me-rem"><div class="spread"><h2>이번 달 남은 일정</h2><span class="hint">${M}월 ${+lastM.slice(8)}일까지</span></div>
+    <div class="rm-bar" role="img" aria-label="정규 회차 ${tot}회 중 ${done}회 진행"><i style="width:${doneW}%"></i></div>
+    <div class="rm-grid">
+      <div><span class="l">남은 정규 회차</span><b class="num">${remR.length}<small>회</small></b><span class="hint">${remTxt||'남은 회차 없음'}</span></div>
+      <div><span class="l">남은 추가 진행</span><b class="num">${remX.length}<small>회</small></b><span class="hint">${remX.length?remX.map(d=>mdd(d)).join(', '):'예정 없음'}</span></div>
+      <div><span class="l">모두 참여하면</span><b class="num">${curP+remP}<small>점</small></b><span class="hint">지금 ${curP}점 + ${remP}점</span></div>
+      <div><span class="l">최대 출석률</span><b class="num">${pct(bestR)}</b><span class="hint">남은 정규 회차 모두 참여 시</span></div></div>
+    <div class="me-strip"><span class="ms ${perfS[0]}">${perfS[0]==='ok'?'🏅 ':''}${perfS[1]}</span></div></div>`;
+  // ---- 최근 6개월 추이
+  const BG=badgeAll().get(me.id);const trM=Array.from({length:6},(_,i)=>monthAdd(mon,i-5));
+  const trD=trM.map(mo=>{const x=BG&&BG.mon[mo];return {mo,P:x?x.P:0,r:x?rateOf(x.O,x.absent):null,pf:!!(x&&x.perfect)}});
+  const maxP=Math.max(1,...trD.map(d=>d.P));
+  const trendP=`<div class="panel me-trend"><div class="spread"><h2>최근 6개월 추이</h2><span class="row tr-leg"><span><i class="bp"></i>포인트</span><span><i class="br"></i>출석률</span></span></div>
+    <div class="tr-ch">${trD.map(d=>`<div class="tr-c${d.mo===mon?' cur':''}" title="${monLabel(d.mo)} · ${d.P}점 · 출석률 ${pct(d.r)}${d.pf?' · 개근':''}">
+      <div class="tr-bars"><div class="tr-b p" style="height:${Math.round(d.P/maxP*100)}%"><span class="num">${d.P}</span></div><div class="tr-b r${d.r==null?' na':''}" style="height:${d.r==null?0:Math.round(d.r*100)}%"><span class="num">${d.r==null?'–':Math.round(d.r*100)+'%'}</span></div></div>
+      <span class="tr-m">${+d.mo.slice(5)}월${d.pf?'<em>🏅</em>':''}</span></div>`).join('')}</div>
+    <p class="hint">${(()=>{const a=trD[4],b=trD[5];if(!a.P&&!b.P)return '포인트는 각 달 최고 점수 기준 높이, 출석률은 100% 기준 높이예요.';const dv=b.P-a.P;return `지난달보다 포인트 <b>${dv>=0?'+':''}${dv}점</b>${mon===gdm.slice(0,7)?' (이번 달은 진행 중)':''}`})()}</p></div>`;
+  // ---- 기록·배지
+  const tabB=S.bdgTab||'all',BL=BG?BG.list:[];const shown=BL.filter(b=>tabB==='all'||b.kind===tabB);
+  const prog=b=>b.kind==='reach'?(b.next?[b.val,b.next]:[b.val,b.val]):b.prog||null;
+  const card=b=>{const on=b.n>0,pg=prog(b),pc=pg?Math.min(100,Math.round(pg[0]/pg[1]*100)):0;
+    return `<button class="bdg k-${b.kind} t${b.kind==='reach'?b.t:on?3:0}${on?'':' off'}${S.bdgSel===b.id?' sel':''}" data-action="bdgSel" data-id="${b.id}" aria-pressed="${S.bdgSel===b.id}">
+      ${badgeEm(b)}<span class="bn">${esc(b.name)}</span><span class="bt">${badgeLabel(b)}</span>
+      ${pg&&!(b.kind==='reach'&&b.t===4)&&!(b.kind==='ach'&&on)?`<span class="bp"><i style="width:${pc}%"></i></span>`:''}</button>`};
+  const sel=BL.find(b=>b.id===S.bdgSel);
+  const detail=sel?`<div class="bdg-d">${badgeEm(sel,'big')}<div class="tx"><b>${esc(sel.name)} <span class="tag">${{reach:'도달',special:'특별',ach:'업적'}[sel.kind]} · ${badgeLabel(sel)}</span></b><p>${esc(sel.desc)}</p>
+      ${sel.kind==='reach'?`<div class="tiers">${sel.T.map((x,i)=>`<span class="tr ${i<sel.t?'on':''}"><b>${TIER[i+1]}</b> ${x}${sel.unit}${i<sel.t&&sel.dates[i]?` · ${badgeDate(sel.dates[i])}`:''}</span>`).join('')}</div><p class="hint">지금 <b>${sel.val}${sel.unit}</b>${sel.next?` · ${TIER[sel.t+1]}까지 ${sel.next-sel.val}${sel.unit} 남음`:' · 최고 단계 달성!'}</p>`
+      :sel.kind==='special'?(sel.n?`<p class="hint">획득: ${sel.hits.map(badgeDate).join(', ')}</p>`:'<p class="hint">아직 못 받았어요. 특별한 기록을 세우면 받을 수 있어요.</p>')
+      :sel.n?`<p class="hint">${/^\d/.test(sel.date)?'달성일: '+badgeDate(sel.date):'달성했어요'}</p>`:sel.prog?`<p class="hint">진행 ${sel.prog[0]} / ${sel.prog[1]}</p>`:'<p class="hint">아직 달성하지 않았어요.</p>'}</div>
+      <button class="btn small" data-action="bdgSel" data-id="">닫기</button></div>`:'';
+  const cnt=k=>BL.filter(b=>(k==='all'||b.kind===k)&&b.n>0).length+'/'+BL.filter(b=>k==='all'||b.kind===k).length;
+  const badgeP=`<div class="panel me-badge"><div class="spread"><h2>기록 · 배지 <span class="hint num">획득 ${BG?BG.kinds:0} / ${BL.length}종 · 배지 ${BG?BG.score:0}개</span></h2>
+      <div class="subtabs bdg-tabs" role="tablist">${[['all','전체'],['reach','도달'],['special','특별'],['ach','업적']].map(([k,l])=>`<button data-action="bdgTab" data-k="${k}" role="tab" aria-selected="${tabB===k}">${l} <small class="num">${cnt(k)}</small></button>`).join('')}</div></div>
+    <div class="bdg-top">${BG&&BG.best.length?BG.best.slice(0,3).map(b=>`<div class="bt-it k-${b.kind} lv${b.kind==='reach'?b.t:3}">${badgeEm(b,'big')}<span class="bn">${esc(b.name)}</span><span class="bt">${{reach:'도달',special:'특별',ach:'업적'}[b.kind]} · ${badgeLabel(b)}</span></div>`).join(''):'<p class="hint">아직 받은 배지가 없어요. 첫 참여부터 시작해 볼까요?</p>'}</div>
+    <div class="bdg-grid">${shown.map(card).join('')}</div>${detail}
+    <p class="hint"><b>도달</b>: 기준을 넘으면 동·은·금·전설로 올라가요 · <b>특별</b>: 그 달 기록으로만 받아요 (여러 번 가능) · <b>업적</b>: 한 번 달성하면 끝 · 배지를 누르면 자세히 보여요</p></div>`;
   // ---- 자세히 보기
   const myBuy=renderMyBuy(me);
   const more=`<details class="panel me-more" id="meMore"><summary><h2>자세히 보기</h2><span class="hint">26주 출석률 · 개근한 달 · 연속 참여 · 구매 포인트 · 콘텐츠별 · 계산 기준</span></summary>
@@ -2614,7 +2879,7 @@ function renderMe(){
     <div class="panel"><h2>콘텐츠별 (최근 26주, 정규 회차)</h2><div class="scroll"><table><thead><tr><th>콘텐츠</th><th>참여/기록</th><th>출석률</th></tr></thead><tbody>
         ${byC.map(x=>`<tr><td><span class="chip" ${ck(x.c.k)}>${esc(x.c.name)}</span></td><td>${x.t?x.o+'/'+x.t:'–'}</td><td>${x.t?`<span class="heat" style="${heat(x.r)}">${pct(x.r)}</span>`:'<span class="dash">–</span>'}</td></tr>`).join('')}</tbody></table></div>
         ${notes(ruleItems())}</div></div></div></details>`;
-  return `<div class="col">${demoB}${S.mePick?picker:bar}<div class="me-grid"><div class="col me-l">${tiles}${strip}${nextP}</div><div class="col me-r">${cal}${nearP}</div></div>${more}</div>`;
+  return `<div class="col">${demoB}${S.mePick?picker:bar}<div class="me-grid"><div class="col me-l">${tiles}${strip}${nextP}${remainP}</div><div class="col me-r">${cal}${trendP}${nearP}</div></div>${badgeP}${more}</div>`;
 }
 
 /* ---------- CSV 가져오기 ---------- */
@@ -2783,6 +3048,8 @@ document.addEventListener('click',e=>{
     guard(()=>S.db.doc('notices/'+n.id).delete(),'공지를 지웠어요',{area:'설정',what:'공지 삭제',detail:(n.title||'').slice(0,60)});return}
   if(a==='manToggle'){S.manOpen=!S.manOpen;try{localStorage.setItem('att.manOpen',S.manOpen?'1':'')}catch(_){}render();return}
   if(a==='rfPick'){S.rf.q=b.dataset.n||'';S.rfSug=false;const i=$('#rfQ');if(i){i.value=S.rf.q;i.blur()}render();return}
+  if(a==='bdgTab'){S.bdgTab=b.dataset.k||'all';render();return}
+  if(a==='bdgSel'){const k=b.dataset.id||null;S.bdgSel=S.bdgSel===k?null:k;render();return}
   if(a==='meInfo'){const k=b.dataset.k||null;S.meInfo=S.meInfo===k?null:k;render();return}
   if(a==='mePickOpen'){S.mePick=!S.mePick;S.meQ='';render();if(S.mePick)$('#meQ')?.focus();return}
   if(a==='mePickBtn'){const id=b.dataset.mid;if(S.demo)S.meDemo=id;else{S.me=id;remember('me',id)}S.mePick=false;S.meQ='';S.meMon='';S.meDay='';render();window.scrollTo({top:0});return}
