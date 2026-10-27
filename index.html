@@ -868,6 +868,7 @@ header.top{border-radius:18px}.hero{border-radius:18px}
 .npage .pg{min-width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-weight:600;cursor:pointer;color:var(--ink)}
 .npage .pg:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
 .npage .pg.on{background:linear-gradient(135deg,var(--g1a),var(--g1b));border-color:transparent;color:#fff}
+.npage .pg.on:hover{color:#fff;border-color:transparent}
 .npage .pg:disabled{opacity:.35;cursor:default}
 .hero2{min-height:400px;justify-content:space-between}
 .hero2 .hero-days{align-items:stretch}
@@ -943,10 +944,14 @@ body{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 @media (prefers-reduced-motion:reduce){.hero-cd.live .cd-l::before{animation:none}}
 
 /* 공지 7개 페이징: 현재 높이에 맞게 줄 간격 압축 */
-.home-r1 .nlist .nline{padding:7px 4px;font-size:14.5px}
-.home-r1 .nlist .nline .hint{font-size:12.5px}
+.home-r1 .nlist .nline{padding:7px 4px;font-size:16.5px}
+.home-r1 .nlist .nline .hint{font-size:13.5px}
+.home-r1 .nlist .nnew{font-size:11.5px}
+.home-r1 .npin .nh .nlink{font-size:18px}
+.home-r1 .npin .nh .hint{font-size:13.5px}
+.home-r1 .notice h2{font-size:21px}
 .home-r1 .npin{padding:10px 14px;gap:6px}
-.home-r1 .npin .notice-body.clamp{-webkit-line-clamp:3;font-size:14.5px;line-height:1.65}
+.home-r1 .npin .notice-body.clamp{-webkit-line-clamp:3;font-size:16px;line-height:1.65}
 .home-r1>.notice{gap:10px}
 
 .pager{flex-wrap:wrap;align-items:center;padding-top:10px}
