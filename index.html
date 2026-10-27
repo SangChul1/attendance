@@ -1284,8 +1284,8 @@ function renderNotices(){
     ${S.noticeBlocked&&adm?'<div class="confirm">공지를 불러올 수 없어요. Firestore 규칙을 새 버전으로 게시해 주세요.</div>':''}
     ${S.nEdit==='new'&&adm?noticeForm(null):''}
     ${pinHtml}
-    ${rest.length?`<div class="nlist"><div class="nlh"><span class="l">최근 공지</span><span class="hint">${rest.length}개</span></div>${rows}${pages>1?'<div class="nrow nph" aria-hidden="true"><span class="nline">&nbsp;</span></div>'.repeat(PER-shown.length):''}</div>`:''}
-    ${pages>1?`<div class="npage" role="navigation" aria-label="공지 페이지"><button class="pg" data-action="nPage" data-p="${S.nPage-1}"${S.nPage>0?'':' disabled'} aria-label="이전 페이지">‹</button>${(()=>{let a=Math.max(0,Math.min(S.nPage-2,pages-5)),z=Math.min(pages,a+5),o='';for(let i=a;i<z;i++)o+=`<button class="pg${i===S.nPage?' on':''}" data-action="nPage" data-p="${i}" aria-current="${i===S.nPage}">${i+1}</button>`;return o})()}<button class="pg" data-action="nPage" data-p="${S.nPage+1}"${S.nPage<pages-1?'':' disabled'} aria-label="다음 페이지">›</button></div>`:''}
+    ${rest.length?`<div class="nlist"><div class="nlh"><span class="l">최근 공지</span><span class="hint">${rest.length}개</span></div>${rows}${'<div class="nrow nph" aria-hidden="true"><span class="nline">&nbsp;</span></div>'.repeat(Math.max(0,PER-shown.length))}</div>`:''}
+    ${rest.length?`<div class="npage" role="navigation" aria-label="공지 페이지"><button class="pg" data-action="nPage" data-p="${S.nPage-1}"${S.nPage>0?'':' disabled'} aria-label="이전 페이지">‹</button>${(()=>{let a=Math.max(0,Math.min(S.nPage-2,pages-5)),z=Math.min(pages,a+5),o='';for(let i=a;i<z;i++)o+=`<button class="pg${i===S.nPage?' on':''}" data-action="nPage" data-p="${i}" aria-current="${i===S.nPage}">${i+1}</button>`;return o})()}<button class="pg" data-action="nPage" data-p="${S.nPage+1}"${S.nPage<pages-1?'':' disabled'} aria-label="다음 페이지">›</button></div>`:''}
     ${!L.length&&S.nEdit!=='new'?`<p class="hint">${adm?'아직 공지가 없어요. [＋ 새 공지]로 규칙이나 안내를 적어 두세요. 규칙은 📌 고정으로 올려 두면 맨 위에 보여요.':'아직 등록된 공지가 없어요.'}</p>`:''}</div>`;
 }
 /* ---------- 홈 ---------- */
