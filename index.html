@@ -1289,6 +1289,45 @@ nav.tabs[hidden]{display:none}
 .ga-btns{gap:8px}
 @media (max-width:900px){.ga-wrap{grid-template-columns:minmax(0,1fr)}.ga-list{max-height:none}}
 @media (max-width:520px){.ga-pl,.ga-f{grid-template-columns:minmax(0,1fr)}}
+
+/* 기능 켜기·끄기 */
+.feat-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.feat-it{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.feat-it .sw{flex:none;position:relative;width:40px;height:22px;border-radius:999px;background:var(--line);margin-top:2px;transition:background .15s}
+.feat-it .sw i{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .15s}
+.feat-it.on .sw{background:var(--accent)}.feat-it.on .sw i{left:21px}
+.feat-it .tx{display:flex;flex-direction:column;gap:2px}.feat-it small{color:var(--muted);font-size:12.5px;line-height:1.5}
+.feat-it:not(.on) b{color:var(--muted)}
+.home-r2.c2{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+@media (max-width:1100px){.home-r2.c2>.h5p:last-child{grid-column:auto}}
+@media (max-width:720px){.home-r2.c2{grid-template-columns:minmax(0,1fr)!important}}
+/* 전투력·도술 */
+.sk{display:inline-block;font-size:12px;font-weight:700;padding:1px 8px;border-radius:999px;background:color-mix(in srgb,var(--accent) 13%,var(--surface));color:var(--ink);border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));white-space:nowrap}
+.sk.lt{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.35);color:#fff}
+.sk-row{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px}
+.sk-pick{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;padding:8px;border-radius:10px;background:var(--sunken)}
+.sk-b{padding:3px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted);font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.sk-b.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.pw-in{display:inline-flex;align-items:center;gap:4px}.pw-in input{width:110px;text-align:right}.pw-in small{color:var(--muted)}
+tr.stale td{opacity:.55}tr.stale td:first-child{opacity:1}
+.pw-prev tr.bad td{color:var(--muted)}
+.pw-paste summary{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;cursor:pointer;list-style:none}.pw-paste summary h2{margin:0;white-space:nowrap}
+.pw-paste textarea{width:100%;margin-top:10px}
+.me-pw{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:4px;font-size:13.5px;color:rgba(255,255,255,.9)}.me-pw b{color:#ffe1a3}
+.sk-dist{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:6px}
+.sk-d{display:grid;grid-template-columns:44px minmax(0,1fr) 28px;align-items:center;gap:8px;padding:7px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;cursor:pointer}
+.sk-d .n{font-weight:700}.sk-d .bar{height:8px;border-radius:9px;background:var(--line);overflow:hidden}.sk-d .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--g1a),var(--g2a))}
+.sk-d.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 9%,var(--surface))}.sk-d b{text-align:right}
+/* 챙겨야 할 문파원 */
+.care-list{display:flex;flex-direction:column}
+.care-it{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 4px;border-bottom:1px solid var(--line)}
+.care-it .ms{font-size:12.5px}
+/* 랭크 추이 */
+.rc{width:100%;height:auto;display:block}
+.rc-g{stroke:var(--line);stroke-width:1}.rc-yl{font-size:11px;fill:var(--muted);text-anchor:end}.rc-xl{font-size:11px;fill:var(--muted);text-anchor:middle}
+.rc-l{fill:none;stroke:var(--c);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}.rc-p{fill:var(--surface);stroke:var(--c);stroke-width:2.5}
+.rc-last{font-size:11.5px;font-weight:800;fill:var(--c)}
+.rc-sum{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13.5px}.rc-s{display:inline-flex;align-items:center;gap:6px}.rc-s i{width:10px;height:10px;border-radius:50%;background:var(--c)}
 </style>
 </head>
 <body>
@@ -1528,6 +1567,13 @@ function countSession(s,mid){let o=0,e=0,x=0;for(const [id,m] of mid){if(!eligib
 function periodFrom(){return S.period==='all'?null:addDays(weekStart(todayStr()),-7*(+S.period-1))}
 function periodLabel(){const f=periodFrom();if(!f)return '전체 기간';return S.period==='52'?`최근 1년 (${f.slice(2).replace(/-/g,'.')}~${md(todayStr())})`:`최근 ${S.period}주 (${md(f)}~${md(todayStr())})`}
 function nameOf(v){return v?String(v):''}
+const FEATS=[['buy','구매 우선권','문파 상점 구매 포인트·순번 (홈 TOP 5, 월간 정산, 내 출석, 관리 메뉴, 첫 구매 배지)'],['power','전투력 · 주력 도술','문파원 전투력·도술 기록, 통계의 목록, 내 출석 표시'],['care','챙겨야 할 문파원','운영진 홈에 연속 불참·경고 위험·휴식 종료·신입 알림'],['rank','랭크 결과 추이','통계 → 추이 탭의 랭크 그래프'],['weekly','주간 요약 복사','주간 일정 팝업의 카톡용 요약 복사'],['move','문파 이동 연동','이동 처리할 때 다른 문파 명단에 바로 추가 (admin)']];
+function feat(k){const f=S.config.features;return !(f&&typeof f==='object'&&f[k]===false)}
+const SKILLS=['절명','연타','강타','파멸','저격','척살','제압','기만','헌신','강인','기동','주술'];
+const powOf=m=>typeof m.power==='number'&&isFinite(m.power)&&m.power>0?m.power:null;
+function fmtPow(v){if(v==null)return '–';if(v>=10000){const e=Math.floor(v/10000),r=Math.round(v%10000);return e+'억'+(r?' '+r.toLocaleString()+'만':'')}return (Math.round(v*10)/10).toLocaleString()+'만'}
+const daysAgo=d=>d?Math.max(0,Math.round((parseD(gameDay())-parseD(d))/864e5)):null;
+function skillChips(list,cls){return (list||[]).filter(x=>SKILLS.includes(x)).map(x=>`<span class="sk${cls?' '+cls:''}">${esc(x)}</span>`).join('')}
 const PERMS=[['check','출석 체크','회차 만들기·체크·삭제'],['notice','공지','문파 공지 쓰기·고치기'],['members','명단','문파원 추가·휴식·메모'],['manage','경고·정산','경고·월 마감·지급·구매 기록']];
 function permsOf(d){if(!d||typeof d.perms!=='object'||!d.perms)return null;const o={};for(const [k] of PERMS)o[k]=d.perms[k]===true;return o}
 function can(p){return S.isOwner||(S.canWrite&&(!S.perms||S.perms[p]===true))}
@@ -1691,7 +1737,7 @@ function badgesOf(z,C){
   ach('back','🔙','돌아온 문파원','휴식이 끝난 뒤 첫 정규 회차에 바로 참여했어요',z.back?'달성':'');
   let pp='';for(let i=1;i<perfM.length;i++)if(monthAdd(perfM[i-1],1)===perfM[i]){pp=perfM[i];break}
   ach('pp','🗓️','개근 연속','두 달 연속으로 개근했어요',pp,[pp?2:perfM.length?1:0,2]);
-  ach('buy','🧧','첫 구매','구매 우선권으로 처음 아이템을 샀어요',z.buy);
+  if(feat('buy'))ach('buy','🧧','첫 구매','구매 우선권으로 처음 아이템을 샀어요',z.buy);
   const score=list.reduce((a,b)=>a+b.n,0),kinds=list.filter(b=>b.n>0).length;
   const w=b=>b.kind==='special'?100+b.n:b.kind==='reach'?b.t*20+(b.t===4?40:0):b.id==='join'?1:5;
   const best=list.filter(b=>b.n>0).sort((a,b)=>w(b)-w(a));
@@ -1779,6 +1825,17 @@ function homeWeek(){
     return `<div class="wkcol${dt===t?' today':''}${chips?'':' none'}"><div class="wk-d"><b>${DAYS[dow(dt)]}</b><span class="num">${md(dt)}</span>${dt===t?'<span class="tag">오늘</span>':''}</div>${chips||'<span class="hint">–</span>'}</div>`}).join('');
   return {ws,we,html:`<div class="wkgrid home-wk">${cols}</div>`};
 }
+function weekText(off){
+  const t=gameDay(),ws=addDays(weekMon(t),7*(off|0)),we=addDays(ws,6),act=activeMembers(S.members),mid=new Map(act.map(m=>[m.id,m]));
+  const ss=S.sessions.filter(s=>s.date>=ws&&s.date<=we&&s.date<=t).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
+  const L=[`${kG()}주간 출석 요약`,`${md(ws)}(월) ~ ${md(we)}(일)`,KL];
+  if(ss.length){L.push('📅 진행한 회차');for(const s of ss){const n=countSession(s,mid),el=act.filter(m=>eligible(m,s)).length;L.push(`· ${mdd(s.date)} ${CMAP[s.content]?.name||s.content}${s.extra?' (추가)':''} 참여 ${n.o}/${el}명${s.rank?' · '+s.rank:''}`)}}else L.push('📅 이번 주 진행한 회차가 아직 없어요');
+  const reg=ss.filter(s=>!isBonus(s));const full=act.filter(m=>{const my=reg.filter(s=>eligible(m,s));return my.length&&my.every(s=>effOf(s,m.id)==='O')});
+  if(reg.length){L.push('',`🔥 이번 주 정규 회차 모두 참여 (${full.length}명)`);L.push(full.length?full.map(m=>m.name).join(', '):'아직 없어요')}
+  const ms=monthStats(t.slice(0,7)),pf=ms.rows.filter(r=>r.perfect);L.push('',`🏅 ${+t.slice(5,7)}월 개근 후보 (${pf.length}명)`,pf.length?pf.map(r=>r.m.name).join(', '):'아직 없어요');
+  const nx=weekSlots(addDays(ws,7)).filter(d=>d.slots.length);L.push('',KL,`📢 다음 주 일정 (${md(addDays(ws,7))}~)`);
+  if(nx.length)for(const d of nx)L.push(`· ${mdd(d.dt)} `+d.slots.map(x=>`${CMAP[x.k]?.name||x.k}${x.extra?'(추가)':''}${CMAP[x.k]?.time&&!x.extra?' '+CMAP[x.k].time:''}`).join(' / '));else L.push('· 잡힌 일정이 없어요');
+  L.push('','못 오는 날은 미리 사전공지 부탁드려요 🙏');return L.join('\n')}
 function renderWeekPop(){
   const t=gameDay(),off=S.wkPopOff|0,ws=addDays(weekMon(t),7*off),we=addDays(ws,6),act=activeMembers(S.members),mid=new Map(act.map(m=>[m.id,m]));
   let nReg=0,nX=0;
@@ -1797,8 +1854,22 @@ function renderWeekPop(){
       <div class="wk-nav"><button class="wkn" data-action="wkPopGo" data-d="-1"${off<=-8?' disabled':''} aria-label="지난주">◀</button><button class="wkn now" data-action="wkPopGo" data-d="0"${off===0?' disabled':''}>이번 주</button><button class="wkn" data-action="wkPopGo" data-d="1"${off>=2?' disabled':''} aria-label="다음 주">▶</button></div>
       <button class="nv-x" data-action="wkPopClose" aria-label="닫기">✕</button></div>
     <div class="nv-body wt">${rows}</div>
-    <div class="nv-f"><span class="hint">요신·결계처럼 '금·토 중 하루'인 콘텐츠는 둘 중 하루만 진행해요${S.canWrite?' · 회차를 누르면 출석 체크로 열려요':''}</span><span class="grow"></span>${S.canWrite?'<button class="btn small primary" data-action="wkPopCheck">출석 체크로</button>':''}<button class="btn small" data-action="wkPopClose">닫기</button></div></div></div>`;
+    <div class="nv-f"><span class="hint">요신·결계처럼 '금·토 중 하루'인 콘텐츠는 둘 중 하루만 진행해요${S.canWrite?' · 회차를 누르면 출석 체크로 열려요':''}</span><span class="grow"></span>${feat('weekly')?'<button class="btn small" data-action="wkCopy">카톡용 요약 복사</button>':''}${S.canWrite?'<button class="btn small primary" data-action="wkPopCheck">출석 체크로</button>':''}<button class="btn small" data-action="wkPopClose">닫기</button></div></div></div>`;
 }
+function careList(){
+  const gd=gameDay(),act=activeMembers(S.members),sk=streakMin(),W=warnCfg(),th=W.rate/100;const ms=monthStats(gd.slice(0,7));const mr=new Map(ms.rows.map(r=>[r.m.id,r]));
+  const out=[];
+  for(const m of act){const it=[];if(onLeave(m,gd)){const l=(m.leaves||[]).find(l=>l&&gd>=l.from&&gd<=(l.to||'9999-12-31'));if(l&&l.to&&l.to<=addDays(gd,7))it.push(['nt',`휴식 ${md(l.to)} 끝남`,1]);if(it.length)out.push({m,it});continue}
+    const st=streakOf(m);if(st>=sk)it.push(['bad',`연속 불참 ${st}회`,3]);
+    const r=mr.get(m.id);if(r&&!r.hold){if(r.fail)it.push(['bad',`이번 달 경고 기준 미달 (${valText(r)})`,2]);else if(W.basis==='rate'&&r.val!=null&&r.val<th+0.1)it.push(['warn',`경고 기준 근접 (${pct(r.val)})`,1]);else if(W.basis==='points'&&r.P<r.ptsNeed*1.2)it.push(['warn',`경고 기준 근접 (${r.P}점)`,1])}
+    if(m.joinedAt&&m.joinedAt>=addDays(gd,-14)&&(!r||!r.O)&&r&&r.need)it.push(['nt','신입 · 아직 참여 없음',1]);
+    if(it.length)out.push({m,it})}
+  out.sort((a,b)=>Math.max(...b.it.map(x=>x[2]))-Math.max(...a.it.map(x=>x[2]))||nameCmp(a.m.name,b.m.name,'ko'));return out}
+function renderCare(){if(!S.canWrite||!feat('care'))return '';const L=careList();
+  const all=S.careAll,show=all?L:L.slice(0,8);
+  return `<div class="panel care"><div class="spread"><h2>챙겨야 할 문파원 <span class="hint">운영진만 보여요</span></h2><span class="hint">${L.length}명</span></div>
+    ${L.length?`<div class="care-list">${show.map(x=>`<div class="care-it">${nmLink(x.m)}<span class="grow"></span>${x.it.map(([c,t])=>`<span class="ms ${c}">${esc(t)}</span>`).join('')}</div>`).join('')}</div>${L.length>8?`<button class="btn small" data-action="careAll">${all?'접기':`${L.length-8}명 더 보기`}</button>`:''}`:'<p class="hint">지금은 챙길 문파원이 없어요 👍</p>'}
+    <p class="hint">연속 불참 ${streakMin()}회 이상 · 이번 달 경고 기준 미달/근접 · 일주일 안에 휴식이 끝나는 사람 · 2주 안에 들어와 아직 참여가 없는 신입</p></div>`}
 function renderHome(){
   if(!S.ready) return loading;
   const t=gameDay(),mon=t.slice(0,7),act=activeMembers(S.members);
@@ -1851,7 +1922,7 @@ function renderHome(){
   let alerts='';
   if(S.canWrite){const from=monthAdd(mon,-1)+'-01';const unc=S.sessions.filter(s=>s.date>=from&&s.date<t&&!isLocked(s.date)&&act.some(m=>eligible(m,s)&&!validMark(marksOf(s)[m.id])));
     alerts=`${lockNote()}${backupNote()}${unc.length?`<div class="lockbar"><span>체크가 덜 끝난 회차가 <b>${unc.length}개</b> 있어요.</span><span class="grow"></span><button class="btn small primary" data-action="homeUnc">확인하러 가기</button></div>`:''}`}
-  return `<div class="col">${roNote()}${blockNote()}${alerts}<div class="home-r1">${hero}${notice}</div><div class="home-r2">${topP}${topB}${topG}</div>${tiles}</div>`;
+  return `<div class="col">${roNote()}${blockNote()}${alerts}<div class="home-r1">${hero}${notice}</div><div class="home-r2${feat('buy')?'':' c2'}">${topP}${feat('buy')?topB:''}${topG}</div>${tiles}${renderCare()}</div>`;
 }
 function renderCheck(){
   if(!S.ready) return loading;
@@ -2068,13 +2139,60 @@ function kakaoText(st){
   const hold=st.rows.filter(r=>r.hold).length;if(hold)L.push(`(정규 ${st.mj}회 미만 ${hold}명은 판정 보류)`);
   return L.join('\n');
 }
+/* ---------- 전투력 · 주력 도술 ---------- */
+function parsePowerPaste(text){const act=activeMembers(S.members);const names=act.slice().sort((a,b)=>String(b.name).length-String(a.name).length);const out=[];
+  for(const raw of String(text||'').split(/\r?\n/)){const line=raw.trim();if(!line)continue;
+    const lower=line.toLowerCase();const m=names.find(x=>lower.includes(String(x.name).toLowerCase()));
+    let rest=m?line.replace(new RegExp(String(m.name).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i'),' '):line;
+    let v=null;const eok=rest.match(/(\d+(?:\.\d+)?)\s*억(?:\s*(\d+(?:[.,]\d+)?)\s*만)?/);
+    if(eok){v=+eok[1]*10000+(eok[2]?+eok[2].replace(/,/g,''):0)}else{const mm=rest.replace(/(?<=\d),(?=\d)/g,'').match(/(\d+(?:\.\d+)?)\s*(만)?/);if(mm){const n=+mm[1];v=mm[2]?n:(n>=100000?Math.round(n/10000*10)/10:n)}}
+    const sk=SKILLS.filter(x=>rest.includes(x)).slice(0,3);
+    out.push({line,m,v:v&&v>0&&v<10000000?v:null,sk})}
+  return out}
+function renderPowerAdmin(){
+  const act=activeMembers(S.members).slice().sort((a,b)=>nameCmp(a.name,b.name,nameMode()));const gd=gameDay();
+  const P=S.pwPrev;
+  const prev=P?`<div class="pw-prev"><div class="scroll"><table><thead><tr><th style="text-align:left">붙여 넣은 줄</th><th>문파원</th><th>전투력</th><th>도술</th></tr></thead><tbody>${P.map(r=>`<tr class="${r.m&&(r.v||r.sk.length)?'':'bad'}"><td style="text-align:left">${esc(r.line)}</td><td>${r.m?esc(r.m.name):'<span class="tag no">못 찾음</span>'}</td><td>${r.v?fmtPow(r.v):'–'}</td><td>${skillChips(r.sk)||'–'}</td></tr>`).join('')}</tbody></table></div>
+      <div class="row"><button class="btn primary" data-action="pwApply">${P.filter(r=>r.m&&(r.v||r.sk.length)).length}명 적용</button><button class="btn" data-action="pwPrevX">취소</button><span class="hint">못 찾은 줄은 건너뛰어요. 도술이 적힌 줄은 도술도 바꿔요.</span></div></div>`:'';
+  const rows=act.map((m,i)=>{const v=powOf(m),ag=daysAgo(m.powerAt),old=ag!=null&&ag>30,open=S.skFor===m.id;
+    return `<tr${old?' class="stale"':''}><td style="text-align:left"><b>${esc(m.name)}</b></td>
+      <td><span class="pw-in"><input type="number" inputmode="decimal" id="pw-${m.id}" data-keep="0" data-action="pwIn" data-mid="${m.id}" data-i="${i}" min="0" step="0.1" value="${v??''}" placeholder="만 단위"><small>만</small></span></td>
+      <td class="hint num">${m.powerAt?`${md(m.powerAt)}${ag?` · ${ag}일 전`:' · 오늘'}`:'–'}</td>
+      <td style="text-align:left"><span class="sk-row">${skillChips(m.skills)||'<span class="hint">미입력</span>'}<button class="btn small" data-action="skFor" data-mid="${m.id}" aria-expanded="${open}">${open?'닫기':'✎ 도술'}</button></span>
+        ${open?`<div class="sk-pick">${SKILLS.map(x=>{const on=(m.skills||[]).includes(x);return `<button class="sk-b${on?' on':''}" data-action="skT" data-mid="${m.id}" data-s="${x}" aria-pressed="${on}">${x}</button>`}).join('')}<span class="hint">최대 3개</span></div>`:''}</td></tr>`}).join('');
+  const nIn=act.filter(m=>powOf(m)).length,nOld=act.filter(m=>{const a=daysAgo(m.powerAt);return a!=null&&a>30}).length;
+  return `<div class="col"><details class="panel pw-paste"${P?' open':''}><summary><h2>카톡에서 붙여 넣기</h2><span class="hint">"백야 152만 절명 연타"처럼 한 줄에 한 명</span></summary>
+      <textarea id="pwPaste" rows="6" placeholder="백야 152만 절명 연타&#10;청풍 1억 2000만&#10;소월 98.5"></textarea>
+      <p class="hint">숫자만 쓰면 '만' 단위로 봐요 (152 → 152만). 1520000처럼 원 단위도 알아서 바꿔요. 도술 이름(${SKILLS.join('·')})을 함께 적으면 주력 도술로 들어가요.</p>
+      <div class="row"><button class="btn" data-action="pwParse">미리보기</button></div>${prev}</details>
+    <div class="panel"><div class="spread"><h2>전투력 · 주력 도술 입력</h2><span class="hint">입력 ${nIn}/${act.length}명${nOld?` · 30일 넘은 기록 ${nOld}명`:''}</span></div>
+      <p class="hint">숫자를 쓰고 Enter를 누르면 저장되고 다음 사람으로 넘어가요. 30일이 넘은 기록은 흐리게 보여요. 주력 도술은 PvP 기준으로 최대 3개까지 골라요.</p>
+      <div class="scroll tall"><table class="pw-t"><thead><tr><th style="text-align:left">닉네임</th><th>전투력</th><th>갱신</th><th style="text-align:left">주력 도술</th></tr></thead><tbody>${rows||'<tr><td colspan="4" class="dash">활동 중인 문파원이 없어요</td></tr>'}</tbody></table></div></div></div>`;
+}
+function statPower(){
+  const {members:allM}=data();const act=activeMembers(allM);const f=S.pwSk&&SKILLS.includes(S.pwSk)?S.pwSk:'';
+  const cnt=Object.fromEntries(SKILLS.map(x=>[x,act.filter(m=>(m.skills||[]).includes(x)).length]));const mx=Math.max(1,...Object.values(cnt));
+  const list=act.filter(m=>!f||(m.skills||[]).includes(f));
+  const G={name:m=>m.name,pw:m=>powOf(m),at:m=>m.powerAt||''};if(!S.sorts.pw)S.sorts.pw={k:'pw',d:-1};
+  const sorted=applySort('pw',list,G);const vs=list.map(powOf).filter(Boolean);
+  const avg=vs.length?vs.reduce((a,b)=>a+b,0)/vs.length:null;
+  const rows=sorted.map((m,i)=>{const v=powOf(m),ag=daysAgo(m.powerAt);return `<tr${ag!=null&&ag>30?' class="stale"':''}><td style="text-align:left">${S.sorts.pw.k==='pw'&&v?`<span class="hint num">${i+1}.</span> `:''}${nmLink(m)}</td><td><b class="num">${fmtPow(v)}</b></td><td style="text-align:left">${skillChips(m.skills)||'<span class="dash">–</span>'}</td><td class="hint num">${m.powerAt?`${ag?ag+'일 전':'오늘'}`:'–'}</td></tr>`}).join('');
+  return `<div class="col"><div class="tiles"><div class="tile"><span class="l">입력한 문파원</span><span class="v">${act.filter(m=>powOf(m)).length}<small>/${act.length}명</small></span><span class="l">전투력 기록이 있는 활동 문파원</span></div>
+      <div class="tile"><span class="l">${f?esc(f)+' ':''}평균 전투력</span><span class="v">${fmtPow(avg)}</span><span class="l">${vs.length}명 기준</span></div>
+      <div class="tile"><span class="l">${f?esc(f)+' ':''}최고 전투력</span><span class="v">${fmtPow(vs.length?Math.max(...vs):null)}</span><span class="l">&nbsp;</span></div></div>
+    <div class="panel"><div class="spread"><h2>주력 도술 분포</h2>${f?`<button class="btn small" data-action="pwSk" data-s="">전체 보기</button>`:'<span class="hint">도술을 누르면 그 도술 문파원만 보여요</span>'}</div>
+      <div class="sk-dist">${SKILLS.map(x=>`<button class="sk-d${f===x?' on':''}" data-action="pwSk" data-s="${x}" aria-pressed="${f===x}"><span class="n">${x}</span><span class="bar"><i style="width:${Math.round(cnt[x]/mx*100)}%"></i></span><b class="num">${cnt[x]}</b></button>`).join('')}</div></div>
+    <div class="panel"><div class="spread"><h2>문파원 전투력 · 도술${f?` <span class="hint">${esc(f)}</span>`:''}</h2><span class="hint">${list.length}명</span></div>
+      <div class="scroll tall"><table><thead><tr>${sortTh('pw','name','닉네임',true)}${sortTh('pw','pw','전투력')}<th style="text-align:left">주력 도술</th>${sortTh('pw','at','갱신')}</tr></thead><tbody>${rows||'<tr><td colspan="4" class="dash">기록 없음</td></tr>'}</tbody></table></div>
+      ${notes(['전투력은 운영진이 입력한 값이라 실제와 다를 수 있어요','30일이 넘은 기록은 흐리게 보여요','주력 도술은 PvP 기준 최대 3개'])}</div></div>`;
+}
 function renderStats(){
   if(!S.ready&&!S.demo) return loading;
   if(!S.demo&&!S.sessions.length) return `<div class="panel"><div class="empty"><h3>통계를 낼 기록이 아직 없어요</h3><p class="hint">출석 체크 탭에서 회차를 만들고 체크하면 여기에 문파원별 출석률, 주간 추이, 월간 정산이 쌓여요.</p><div class="row" style="justify-content:center"><button class="btn" data-action="demo">예시 데이터로 미리보기</button><button class="btn primary" data-action="tab" data-tab="check">출석 체크하러 가기</button></div></div></div>`;
   const adm=S.canWrite;
   if(S.cfilter!=='all'&&!CMAP[S.cfilter])S.cfilter='all';
-  if(!['sum','mem','trend'].includes(S.stab))S.stab='sum';
-  const tabs=[['sum','요약'],['mem','문파원별'],['trend','추이 · 랭킹 결과']];
+  if(!['sum','mem','trend',...(feat('power')?['power']:[])].includes(S.stab))S.stab='sum';
+  const tabs=[['sum','요약'],['mem','문파원별'],['trend','추이 · 랭킹 결과'],...(feat('power')?[['power','전투력 · 도술']]:[])];
   const sub=`<div class="subtabs" role="tablist">${tabs.map(([k,l])=>`<button role="tab" data-action="stab" data-k="${k}" aria-selected="${S.stab===k}">${l}</button>`).join('')}</div>`;
   const banner=S.demo?`<div class="demo-banner"><span>예시 데이터로 보는 화면이에요. 실제 기록이 아니며 저장되지 않아요.</span><button class="btn small" data-action="demoOff">예시 닫기</button></div>`:'';
   const st=computeStats();
@@ -2085,6 +2203,7 @@ function renderStats(){
     </div>
     </div>
     ${S.olderLoading?'<p class="hint"><b style="color:var(--accent)">이전 기록을 불러오는 중이에요…</b></p>':''}`;
+  if(S.stab==='power')return `<div class="col">${banner}${sub}${statPower()}</div>`;
   const body=S.stab==='mem'?statMembers(st):S.stab==='trend'?statTrend(st):statSummary(st);
   return `<div class="col">${banner}${sub}${filt}${body}<details class="rules"><summary><h3>계산 기준</h3><span class="hint">눌러서 보기</span></summary>${notes([...ruleItems(),adm?`<b>저조</b> = ${warnCfg().scope==='main'?mainLabel()+' ':''}출석률 ${Math.round(st.th*100)}% 미만 (운영진에게만 보여요)`:'',`한 주는 <b>${DAYS[+S.config.weekStart||0]}요일</b>에 시작해요`])}</details></div>`;
 }
@@ -2141,6 +2260,18 @@ function statMembers(st){
     ${notes([`이름 아래는 <b>${mainLabel()} 출석률</b>과 콘텐츠별 참여/기록 횟수예요`,'<b>사유 면제</b>는 한도 안의 사전공지예요. 한도를 넘은 사전공지는 불참에 들어가요','<b>판정 보류</b>인 문파원은 순위 맨 아래에 있어요'])}
     <div class="rk2" style="--rows:${Math.max(1,Math.ceil(rows.length/2))}">${list||'<p class="hint">조건에 맞는 문파원이 없어요.</p>'}</div></div>`;
 }
+function rankChart(rk,numOf){
+  const by={};for(const s of rk){if(!/위/.test(s.rank))continue;const n=numOf(s.rank);if(n==null)continue;(by[s.content]??=[]).push({d:s.date,n,x:!!s.extra})}
+  const ks=Object.keys(by).filter(k=>by[k].length);if(!ks.length)return `<div class="panel"><h2>랭크 결과 추이</h2><p class="hint">회차의 '회차 수정 · 메모'에 "3위"처럼 순위를 적으면 여기에 그래프가 그려져요.</p></div>`;
+  for(const k of ks)by[k]=by[k].slice(-12);
+  const maxN=Math.max(3,...ks.flatMap(k=>by[k].map(p=>p.n))),W=640,H=220,L=36,R=36,T=14,B=30,cw=W-L-R,ch=H-T-B;
+  const dates=[...new Set(ks.flatMap(k=>by[k].map(p=>p.d)))].sort();const xi=d=>L+(dates.length<2?cw/2:dates.indexOf(d)*cw/(dates.length-1));const yi=n=>T+(n-1)/(maxN-1)*ch;
+  const step=maxN<=10?1:maxN<=20?2:5;let grid='';for(let n=1;n<=maxN;n+=step)grid+=`<line x1="${L}" x2="${W-R}" y1="${yi(n)}" y2="${yi(n)}" class="rc-g"/><text x="${L-6}" y="${yi(n)+4}" class="rc-yl">${n}위</text>`;
+  const lab=dates.map((d,i)=>dates.length<=8||i%Math.ceil(dates.length/8)===0||i===dates.length-1?`<text x="${xi(d)}" y="${H-8}" class="rc-xl">${md(d)}</text>`:'').join('');
+  const ser=ks.map(k=>{const c=`var(--k${(CMAP[k]?.color??7)%8})`,pts=by[k];return `<g style="--c:${c}"><polyline points="${pts.map(p=>xi(p.d)+','+yi(p.n)).join(' ')}" class="rc-l"/>${pts.map(p=>`<circle cx="${xi(p.d)}" cy="${yi(p.n)}" r="4.5" class="rc-p"><title>${md(p.d)} ${esc(CMAP[k]?.name||k)} ${p.n}위</title></circle>`).join('')}<text x="${xi(pts[pts.length-1].d)+7}" y="${yi(pts[pts.length-1].n)+4}" class="rc-last">${pts[pts.length-1].n}위</text></g>`}).join('');
+  const sum=ks.map(k=>{const p=by[k],a=p[p.length-1],f=p.length>1?p[p.length-2]:null,best=Math.min(...p.map(x=>x.n));const d=f?f.n-a.n:0;
+    return `<span class="rc-s" style="--c:var(--k${(CMAP[k]?.color??7)%8})"><i></i><b>${esc(CMAP[k]?.name||k)}</b> 최근 ${a.n}위${f?(d>0?` <span class="up">▲${d}</span>`:d<0?` <span class="down">▼${-d}</span>`:''):''} · 최고 ${best}위</span>`}).join('');
+  return `<div class="panel rchart"><h2>랭크 결과 추이</h2><div class="rc-sum">${sum}</div><svg viewBox="0 0 ${W} ${H}" class="rc" role="img" aria-label="랭크 결과 추이 그래프">${grid}${lab}${ser}</svg><p class="hint">위쪽일수록 높은 순위예요. 콘텐츠마다 최근 12번까지 보여요.</p></div>`}
 function statTrend(st){
   const cols=shownContents(st.scoped);
   const wv=st.weeks.slice(-12);
@@ -2159,7 +2290,8 @@ function statTrend(st){
   const last={};const rr=rk.map(s=>{const n=numOf(s.rank),key=s.content,p=last[key];let ch='';
     if(n!=null&&p!=null&&/위/.test(s.rank)){const d=p-n;ch=d>0?`<span class="up">▲${d}</span>`:d<0?`<span class="down">▼${-d}</span>`:'<span class="hint">–</span>'}
     if(n!=null)last[key]=n;return {s,ch}}).reverse().slice(0,30);
-  const rank=`<div class="panel"><h2>랭킹 결과 기록</h2><p class="hint">회차의 '회차 수정 · 메모'에서 적은 순위·결과를 모았어요. "3위"처럼 적으면 지난번과 비교해 오르내림을 보여 줘요.</p>
+  const rchart=feat('rank')?rankChart(rk,numOf):'';
+  const rank=`${rchart}<div class="panel"><h2>랭킹 결과 기록</h2><p class="hint">회차의 '회차 수정 · 메모'에서 적은 순위·결과를 모았어요. "3위"처럼 적으면 지난번과 비교해 오르내림을 보여 줘요.</p>
     ${rr.length?`<div class="scroll"><table><thead><tr><th>날짜</th><th>콘텐츠</th><th>결과</th><th>변화</th></tr></thead><tbody>${rr.map(({s,ch})=>`<tr><td class="num">${mdd(s.date)}</td><td><span class="chip" ${ck(s.content)}>${esc(CMAP[s.content]?.name||s.content)}</span>${s.extra?' <span class="tag extra">추가</span>':''}</td><td style="white-space:normal">${esc(s.rank)}</td><td>${ch}</td></tr>`).join('')}</tbody></table></div>`:'<p class="hint">이 기간에 적힌 순위·결과가 없어요.</p>'}</div>`;
   return `${weekly}${days?`<div class="two">${rank}<div class="col">${days}</div></div>`:rank}`;
 }
@@ -2187,14 +2319,14 @@ function csvText(opt){
 function renderAdmin(){
   if(!S.ready||!S.authKnown) return loading;
   if(!S.canWrite) return `<div class="col">${roNote()}${renderAdmins()}</div>`;
-  const TP={warn:'manage',members:'members',pay:'manage',buy:'manage',cfg:'owner'};
-  const tabs=[['warn','경고 · 추방'],['members','문파원 명단'],['pay','지급 기록'],['buy','구매 포인트'],['cfg','설정 · 콘텐츠'],['team','운영진 · 백업'],['logs','변경 기록']].filter(([k])=>!TP[k]||(TP[k]==='owner'?S.isOwner:can(TP[k])));
+  const TP={warn:'manage',members:'members',pay:'manage',buy:'manage',power:'members',cfg:'owner'};
+  const tabs=[['warn','경고 · 추방'],['members','문파원 명단'],['pay','지급 기록'],['buy','구매 포인트'],['power','전투력 · 도술'],['cfg','설정 · 콘텐츠'],['team','운영진 · 백업'],['logs','변경 기록']].filter(([k])=>!TP[k]||(TP[k]==='owner'?S.isOwner:can(TP[k]))).filter(([k])=>(k!=='buy'||feat('buy'))&&(k!=='power'||feat('power')));
   if(!tabs.some(t=>t[0]===S.atab))S.atab=tabs[0][0];
   const sub=`<div class="subtabs" role="tablist">${tabs.map(([k,l])=>`<button role="tab" data-action="atab" data-k="${k}" aria-selected="${S.atab===k}">${l}</button>`).join('')}</div>`;
-  const body=S.atab==='members'?renderMemberAdmin():S.atab==='pay'?renderPayLog():S.atab==='buy'?renderBuy():S.atab==='logs'?renderLogs():S.atab==='cfg'?renderSettings():S.atab==='team'?`${renderAdmins()}${renderBackup()}${renderDeleted()}`:renderWarn();
+  const body=S.atab==='power'?renderPowerAdmin():S.atab==='members'?renderMemberAdmin():S.atab==='pay'?renderPayLog():S.atab==='buy'?renderBuy():S.atab==='logs'?renderLogs():S.atab==='cfg'?renderSettings():S.atab==='team'?`${renderAdmins()}${renderBackup()}${renderDeleted()}`:renderWarn();
   return `<div class="col">${blockNote()}${lockNote()}${backupNote()}${sub}${lastNote(S.atab)}${body}</div>`;
 }
-const AREAS={warn:['경고'],members:['문파원'],pay:['지급'],buy:['구매'],cfg:['설정','콘텐츠','직위'],team:['운영진','백업']};
+const AREAS={power:['전투력'],warn:['경고'],members:['문파원'],pay:['지급'],buy:['구매'],cfg:['설정','콘텐츠','직위'],team:['운영진','백업']};
 const LOGCAT=[['sess','회차 만들기·삭제·수정'],['mark','출석 체크'],['문파원','문파원'],['cfg','설정·콘텐츠·직위'],['경고','경고·추방'],['마감','월 마감'],['지급','지급 기록'],['구매','구매 포인트'],['etc','운영진·백업']];
 const LOGDEF=['sess','문파원','cfg','경고','마감','지급','구매','etc'];
 function logArea(l){return l.type==='act'?(l.area||'기타'):l.type==='mark'?'출석 체크':'회차'}
@@ -2278,7 +2410,7 @@ function renderMemberAdmin(){
       <label class="f full">사유 (선택, 링크를 가진 누구나 볼 수 있어요)<input type="text" id="bkNote" maxlength="40" placeholder="예: 개인 사정"></label></div>
       <div class="row"><button class="btn small primary" data-action="mBulkYes" data-k="leave">선택한 ${selA.length}명에게 휴식 등록</button><button class="btn small" data-action="mBulk" data-k="">취소</button></div></div>`
     :K==='out'&&selA.length?`<div class="confirm">${nm(selA)} · <b>${selA.length}명</b>을 탈퇴 처리할까요? 명단과 통계에서 빠지고 기록은 남아요. <button class="btn small danger" data-action="mBulkYes" data-k="out">탈퇴 처리</button><button class="btn small" data-action="mBulk" data-k="">취소</button></div>`
-    :K==='move'&&selA.length?`<div class="inline-form"><span class="sec-title">이동 처리 · ${selA.length}명</span><p class="hint">${nm(selA)}</p><label class="f">이동한 곳 (선택)<input type="text" id="bkMove" maxlength="30" placeholder="예: 묘룡2 학살 문파"></label>
+    :K==='move'&&selA.length?`<div class="inline-form"><span class="sec-title">이동 처리 · ${selA.length}명</span><p class="hint">${nm(selA)}</p><label class="f">이동한 곳 (선택)<input type="text" id="bkMove" maxlength="30" placeholder="예: 묘룡2 학살 문파"></label>${feat('move')&&S.isOwner?Object.keys(GUILDS).filter(k=>k!==GKEY).map(k=>{const P=S.peers[k],ok=P&&P.owner;return `<label class="chk"><input type="checkbox" id="bkPeer-${k}" data-keep="0"${ok?' checked':' disabled'}> ${esc(GUILDS[k].name)} 문파 명단에도 바로 추가${ok?'':' <span class="hint">(운영진 · 백업 → 문파별 운영진에서 먼저 연결해 주세요)</span>'}</label>`}).join(''):''}
       <div class="row"><button class="btn small primary" data-action="mBulkYes" data-k="move">선택한 ${selA.length}명 이동 처리</button><button class="btn small" data-action="mBulk" data-k="">취소</button><span class="hint">명단과 통계에서 빠지고, 기록은 남아요</span></div></div>`
     :K==='back'&&selO.length?`<div class="confirm">${nm(selO)} · <b>${selO.length}명</b>을 복귀시킬까요? <button class="btn small primary" data-action="mBulkYes" data-k="back">복귀</button><button class="btn small" data-action="mBulk" data-k="">취소</button></div>`
     :K==='del'?`<div class="confirm">${nm(sel)} · <b>${sel.length}명</b>을 명단에서 지울까요? 지금까지의 출석 기록도 통계에서 빠져요. 기록을 남기려면 '탈퇴'를 쓰세요. <button class="btn small danger" data-action="mBulkYes" data-k="del">${sel.length}명 삭제</button><button class="btn small" data-action="mBulk" data-k="">취소</button></div>`:'';
@@ -2310,9 +2442,13 @@ function renderLeave(m){
     <div class="row"><button class="btn small primary" data-action="addLeave" data-mid="${m.id}">휴식 추가</button><button class="btn small" data-action="leaveFor" data-mid="${m.id}">닫기</button></div>
     ${notes(['휴식 기간의 회차는 체크 명단에서 빠지고, 출석률·개근·연속 불참·경고 판정에서도 빠져요','사유는 링크를 가진 누구나 볼 수 있어요. 민감한 사유는 <b>메모</b>에 적어 주세요'])}</div>`;
 }
+function renderFeatures(){const F=S.config.features||{};
+  return `<div class="panel feat-p"><div class="spread"><h2>기능 켜기 · 끄기</h2><span class="hint">${esc(S.config.guild||'')} 문파에만 적용 · admin만 보여요</span></div>
+    <p class="hint">끄면 화면에서만 숨기고 기록은 지우지 않아요. 다시 켜면 그대로 돌아와요.</p>
+    <div class="feat-list">${FEATS.map(([k,l,d])=>{const on=F[k]!==false;return `<button class="feat-it${on?' on':''}" data-action="featT" data-k="${k}" aria-pressed="${on}"><span class="sw" aria-hidden="true"><i></i></span><span class="tx"><b>${l}</b><small>${esc(d)}</small></span></button>`}).join('')}</div></div>`}
 function renderSettings(){
   const C=S.config,W=warnCfg();const sc=mtCur('cfg',['base','role','content'],'base');
-  return `<div class="col mt-host">${mtBar('cfg',[['base','기본 · 기준'],['role','직위'],['content','콘텐츠 · 포인트']],sc)}<div class="panel" data-ms="cfgp"${sc!=='content'?' data-on':''}><div class="spread"><h2>설정</h2><button class="btn primary" data-action="saveCfg">설정 저장</button></div>
+  return `${S.isOwner?renderFeatures():''}<div class="col mt-host">${mtBar('cfg',[['base','기본 · 기준'],['role','직위'],['content','콘텐츠 · 포인트']],sc)}<div class="panel" data-ms="cfgp"${sc!=='content'?' data-on':''}><div class="spread"><h2>설정</h2><button class="btn primary" data-action="saveCfg">설정 저장</button></div>
     <div class="cfg-cols"><div class="cfg-stack">
       <div class="cfg-group"${msA(sc,'base')}><h3>기본</h3><div class="fg2">
         <label class="f">문파 이름<input type="text" id="cfgGuild" maxlength="30" placeholder="예: 학살" value="${esc(C.guild||'')}"></label>
@@ -2440,6 +2576,13 @@ function setupPeers(){
         P.un=fsnap(fcol(P.fs,'admins'),x=>{P.admins=x.docs.map(d=>({id:d.id,...d.data()}));render()},()=>{})}catch(_){P.owner=false}}
       P.known=true;render()})}
 }
+async function peerAddMembers(g,list){const P=S.peers[g];const res={add:0,back:0,skip:0};if(!P||!P.fs)return res;const t=todayStr(),from=GUILD?GUILD.name:'';
+  for(const m of list){const q=await getDocs(query(fcol(P.fs,'members'),fWhere('name','==',m.name)));const ex=q.docs[0];
+    const extra={};if(powOf(m)){extra.power=m.power;extra.powerAt=m.powerAt||''}if(Array.isArray(m.skills)&&m.skills.length)extra.skills=m.skills;
+    if(ex){const d=ex.data();if(d.active!==false){res.skip++;continue}await updateDoc(fdoc(P.fs,'members',ex.id),{active:true,moved:false,movedFrom:from,joinedAt:t,...extra});res.back++}
+    else{await setDoc(fdoc(fcol(P.fs,'members')),{name:m.name,role:'',active:true,joinedAt:t,createdAt:Date.now(),createdBy:myName(),movedFrom:from,...extra});res.add++}}
+  try{await setDoc(fdoc(fcol(P.fs,'logs')),{type:'act',area:'문파원',what:'다른 문파에서 이동',detail:`${from} → ${GUILDS[g].name} · ${list.map(m=>m.name).join(', ').slice(0,280)}`,by:myName(),email:(S.authUser&&S.authUser.email)||'',at:Date.now()})}catch(_){}
+  return res}
 async function peerLogin(k){const P=S.peers[k];if(!P||!P.auth)return;const pv=new GoogleAuthProvider();pv.setCustomParameters({prompt:'select_account'});
   try{await signInWithPopup(P.auth,pv)}catch(e){const c=e&&e.code;if(c==='auth/unauthorized-domain')toast(`${P.name} Firebase 승인된 도메인에 이 사이트 주소를 추가해 주세요`);else if(c!=='auth/popup-closed-by-user'&&c!=='auth/cancelled-popup-request'){console.error(e);toast('로그인하지 못했어요. 팝업 차단을 확인해 주세요')}}}
 function gaLists(){const keys=Object.keys(GUILDS),L={};L[GKEY]=S.admins;for(const k of keys)if(k!==GKEY)L[k]=S.peers[k]&&S.peers[k].owner?S.peers[k].admins:null;return L}
@@ -2591,7 +2734,7 @@ function renderDetail(){
     <div class="row">${m.joinedAt?`<span class="tag">가입 ${esc(m.joinedAt)}</span>`:''}${st?`<span class="pill-streak">현재 연속 불참 ${st}회</span>`:''}${warnCount(m.id)?`<span class="pill-low">집계 기간 경고 ${warnCount(m.id)}회</span>`:''}${leaves.map(l=>`<span class="tag">휴식 ${md(l.from)}~${l.to?md(l.to):'미정'}</span>`).join('')}</div>
     ${note?.text?`<div class="notebox">메모: ${esc(note.text)} <span class="hint">· ${esc(note.by||'')} ${note.at?hm(note.at):''}</span></div>`:''}
     <div class="tiles">
-      <div class="tile"><span class="l">구매 포인트</span><span class="v">${br?br.P:0}</span><span class="l">${br?(br.why?esc(br.why):`우선권 ${br.rank}번${br.tie?' (동점)':''}`):''}</span></div>
+${feat('buy')?`<div class="tile"><span class="l">구매 포인트</span><span class="v">${br?br.P:0}</span><span class="l">${br?(br.why?esc(br.why):`우선권 ${br.rank}번${br.tie?' (동점)':''}`):''}</span></div>`:''}
       <div class="tile"><span class="l">받은 금전 (전체)</span><span class="v">${won(money)}</span><span class="l">아이템 ${won(items)}개</span></div>
       <div class="tile${unpaid?' alert':''}"><span class="l">미지급</span><span class="v">${unpaid}</span><span class="l">건</span></div>
       <div class="tile"><span class="l">구매</span><span class="v">${PU.length}</span><span class="l">${PU[0]?'마지막 '+mdd(PU[0].date):'없음'}</span></div></div>
@@ -2640,15 +2783,15 @@ function renderSettle(){
     ${perf.length?`<div class="attn">${perf.map(r=>`<span class="who">${esc(r.m.name)}<span class="pill-perfect">개근</span></span>`).join('')}</div>`:'<p class="hint">이 달 개근자는 아직 없어요.</p>'}
     <div class="scroll"><table><thead><tr>${sortTh('st','rank','순위 · 닉네임',true)}${sortTh('st','P','포인트')}${sortTh('st','rate','출석률')}${sortTh('st','O','참여/정규')}${sortTh('st','E','사유 면제')}${sortTh('st','X','불참')}${sortTh('st','B','추가')}</tr></thead><tbody>${rows||'<tr><td colspan="7" class="dash">기록 없음</td></tr>'}</tbody></table></div>
     ${notes([`<b>▲▼</b>는 지난달(${monLabel(prev.mon)})과 비교한 변화예요. 출석률은 %p 단위예요`,`<b>포인트</b> = 참여 1회당 ${activeContents().map(c=>esc(c.short)+' '+pts(c.k)).join(' · ')} · 추가 진행 ${pts('bonus')}`,'<b>개근</b> = 그 달 정규 회차를 모두 참여. 면제된 사전공지는 괜찮고, 체크 안 된 회차가 있으면 개근이 아니에요',adm?`<b>경고 기준</b>: ${critText()} · 정규 ${minJudge()}회 미만은 판정 보류`:''])}</div>`;
-  const lt=S.leftTab==='buy'?'buy':'table';
-  const ltabs=cls=>`<div class="subtabs ${cls}" role="tablist"><button role="tab" data-action="leftTab" data-k="table" aria-selected="${lt==='table'}">포인트 · 개근</button><button role="tab" data-action="leftTab" data-k="buy" aria-selected="${lt==='buy'}">구매 포인트 · 우선권</button></div>`;
+  const lt=S.leftTab==='buy'&&feat('buy')?'buy':'table';
+  const ltabs=cls=>!feat('buy')?'':`<div class="subtabs ${cls}" role="tablist"><button role="tab" data-action="leftTab" data-k="table" aria-selected="${lt==='table'}">포인트 · 개근</button><button role="tab" data-action="leftTab" data-k="buy" aria-selected="${lt==='buy'}">구매 포인트 · 우선권</button></div>`;
   if(!adm)return `<div class="col">${head}${ltabs('')}${lt==='buy'?renderSettleBuy():table}</div>`;
-  const mt=['table','pay','dist','buy'].includes(S.setTab)?S.setTab:'table',ct=S.calcTab==='dist'?'dist':'pay';
-  const mtabs=[['table','정산표'],['pay','금전 분배'],['dist','아이템 분배'],['buy','구매 포인트']];
+  const mt=['table','pay','dist',...(feat('buy')?['buy']:[])].includes(S.setTab)?S.setTab:'table',ct=S.calcTab==='dist'?'dist':'pay';
+  const mtabs=[['table','정산표'],['pay','금전 분배'],['dist','아이템 분배'],...(feat('buy')?[['buy','구매 포인트']]:[])];
   return `<div class="col">${head}
     <div class="subtabs settle-mtabs" role="tablist">${mtabs.map(([k,l])=>`<button role="tab" data-action="setTab" data-k="${k}" aria-selected="${mt===k}">${l}</button>`).join('')}</div>
     <div class="settle-grid m-${mt} d-${ct} l-${lt}">
-      <div class="col settle-left">${ltabs('left-tabs')}<section data-sec="table">${table}</section><section data-sec="buy">${renderSettleBuy()}</section></div>
+      <div class="col settle-left">${ltabs('left-tabs')}<section data-sec="table">${table}</section>${feat('buy')?`<section data-sec="buy">${renderSettleBuy()}</section>`:''}</div>
       <div class="col settle-right">
         <div class="subtabs calc-tabs" role="tablist"><button role="tab" data-action="calcTab" data-k="pay" aria-selected="${ct==='pay'}">금전 분배</button><button role="tab" data-action="calcTab" data-k="dist" aria-selected="${ct==='dist'}">아이템 분배</button></div>
         <section data-sec="pay">${renderPay(ms)}</section><section data-sec="dist">${renderDist(ms)}</section>
@@ -3087,7 +3230,7 @@ function renderMe(){
   const B=buyStats(),br=B.rows.find(x=>x.m.id===me.id);
   const leaveNow=onLeave(me,gdm),need=mrow?mrow.need:0,done=mrow?mrow.O+mrow.E+mrow.absent:0,unk=Math.max(0,need-done);
   // ---- 닉네임 바
-  const bar=`<div class="panel me-bar0 deep"><div class="me-head">${avatar(me)}<div class="me-id"><h2>${esc(me.name)} 님</h2><span class="hint">${esc(me.role||baseRole())} · ${me.joinedAt?'가입 '+esc(me.joinedAt.replace(/-/g,'.')):'처음부터 함께'}</span></div><span class="grow"></span><button class="btn small" data-action="mePickOpen" aria-expanded="${!!S.mePick}">바꾸기 ▾</button></div></div>`;
+  const bar=`<div class="panel me-bar0 deep"><div class="me-head">${avatar(me)}<div class="me-id"><h2>${esc(me.name)} 님</h2><span class="hint">${esc(me.role||baseRole())} · ${me.joinedAt?'가입 '+esc(me.joinedAt.replace(/-/g,'.')):'처음부터 함께'}</span>${feat('power')&&(powOf(me)||(me.skills||[]).length)?`<span class="me-pw">${powOf(me)?`⚔ 전투력 <b>${fmtPow(powOf(me))}</b>`:''}${skillChips(me.skills,'lt')}</span>`:''}</div><span class="grow"></span><button class="btn small" data-action="mePickOpen" aria-expanded="${!!S.mePick}">바꾸기 ▾</button></div></div>`;
   // ---- 핵심 숫자 4개
   const bt=!br?['–','']:br.why?['대기',esc(br.why)]:[br.rank+'위',`최근 ${B.C.days}일 ${br.R}점 · 조건 충족${br.tie?' · 동점':''}`];
   // 이번 달 콘텐츠별 참여
@@ -3102,12 +3245,13 @@ function renderMe(){
     pt:[`${M}월 누적 포인트`,`이번 달에 참여한 회차의 포인트를 모두 더한 값이에요.<br>회차당 포인트: <b>${ptsTxt}</b><br>사전공지·불참은 0점이에요. 순위는 이번 달 문파원 포인트 순위예요.`],
     at:[`${M}월 참여 횟수`,`이번 달에 열린 회차 중 내가 <b>참여</b>로 체크된 횟수예요. (오늘까지, 가입 전·휴식 기간 회차는 빠져요)<br>콘텐츠별: <b>${perC||'아직 없음'}</b><br>추가 진행 회차는 이 숫자에 안 들어가고 따로 표시돼요.`],
     rt:[`최근 4주 출석률`,`최근 4주 동안 <b>${esc(mainNames)}</b> 회차 기준이에요.<br>출석률 = 참여 ÷ (참여 + 불참)<br>${lim0>0&&lim0<31?`사전공지는 한 달에 ${lim0}회까지 계산에서 빠지고(면제), 넘으면 불참으로 세요.`:lim0>=31?'사전공지는 모두 계산에서 빠져요.':'사전공지도 불참으로 세요.'} 추가 진행 회차는 빠져요.`],
+    run:[`연속 참여`,`정규 회차를 쉬지 않고 연달아 참여한 횟수예요. 면제된 사전공지는 끊기지 않고, 불참하면 0부터 다시 세요.`],
     by:[`구매 우선권 순번`,`문파 상점 특별 아이템을 살 수 있는 순서예요.<br><b>구매 포인트</b> = 마지막으로 산 다음 날부터 쌓인 참여 포인트 (추가 진행 포함)<br>최근 ${B.C.days}일 포인트가 ${B.C.min}점 이상이어야 대상이고${B.C.lock?`, 산 뒤에는 ${B.C.lock}일 동안 대기`:''}${B.C.exWarn?', 지난달·이번 달 경고자는 제외':''}예요. 휴식 중에는 빠져요.`]};
   const tiles=`<div class="tiles me-key dk">
     <div class="tile">${iBtn('pt')}<span class="l">${M}월 누적 포인트</span><span class="v">${mrow?mrow.P:0}<small>점</small></span><span class="l">${rank?`${rank}위 · ${mrows.length}명 중`:'아직 기록 없음'}</span></div>
     <div class="tile">${iBtn('at')}<span class="l">${M}월 참여 횟수</span><span class="v">${mrow?mrow.O:0}<small>/${need}회</small></span><span class="l">${perC||'이번 달 회차 없음'}${mrow&&mrow.B?` · 추가 ${mrow.B}회`:''}</span></div>
     <div class="tile">${iBtn('rt')}<span class="l">최근 4주 출석률</span><span class="v">${pct(w4.r)}</span><span class="l">참여 ${w4.o} · 면제 ${w4.e} · 불참 ${w4.x}</span></div>
-    <div class="tile">${iBtn('by')}<span class="l">구매 우선권 순번</span><span class="v">${bt[0]}</span><span class="l">${bt[1]||'&nbsp;'}</span></div></div>
+    ${feat('buy')?`<div class="tile">${iBtn('by')}<span class="l">구매 우선권 순번</span><span class="v">${bt[0]}</span><span class="l">${bt[1]||'&nbsp;'}</span></div>`:`<div class="tile">${iBtn('run')}<span class="l">연속 참여</span><span class="v">${run}<small>회</small></span><span class="l">정규 회차 · 지금까지 이어진 기록</span></div>`}</div>
     ${S.meInfo&&INFO[S.meInfo]?`<div class="me-info" role="note"><span class="ibtn static" aria-hidden="true">i</span><div class="tx"><b>${INFO[S.meInfo][0]}</b><p>${INFO[S.meInfo][1]}</p></div><button class="btn small" data-action="meInfo" data-k="">닫기</button></div>`:''}`;
   // ---- 상태 한 줄 (문제 있을 때만 경고색)
   const st=[];const lim=excuseLimit(),usedE=mrow?mrow.E+mrow.XA:0;
@@ -3117,7 +3261,7 @@ function renderMe(){
     if(mrow.perfect)st.push(['ok','🏅 개근 진행 중']);else if(unk&&!mrow.absent)st.push(['nt',`체크 안 된 회차 ${unk}개`]);
     if(lim>0&&lim<31)st.push(usedE>=lim?['warn',`📢 이번 달 사전공지 면제를 다 썼어요${mrow.XA?` (초과 ${mrow.XA}회는 불참)`:''}`]:['nt',`📢 사전공지 면제 ${lim-usedE}회 남음`]);
     if(!mrow.hold&&(W.basis==='points'?mrow.P<mrow.ptsNeed:(mrow.val!=null&&mrow.val<W.rate/100)))st.push([adm?'bad':'warn',W.basis==='points'?`⚖️ 경고 기준(${mrow.ptsNeed}점)보다 ${Math.round((mrow.ptsNeed-mrow.P)*10)/10}점 모자라요`:`⚖️ 이번 달 출석률이 경고 기준(${W.rate}%)보다 낮아요`])}
-  if(br&&br.why){if(br.why.startsWith('최근'))st.push(['warn',`🛒 우선권까지 최근 ${B.C.days}일 ${B.C.min-br.R}점 더 필요`]);else if(br.until&&B.t<br.until)st.push(['nt',`🛒 구매 후 대기 · ${md(br.until)}부터 가능`])}
+  if(feat('buy')&&br&&br.why){if(br.why.startsWith('최근'))st.push(['warn',`🛒 우선권까지 최근 ${B.C.days}일 ${B.C.min-br.R}점 더 필요`]);else if(br.until&&B.t<br.until)st.push(['nt',`🛒 구매 후 대기 · ${md(br.until)}부터 가능`])}
   if(adm&&streak>=sk)st.push(['warn',`연속 불참 ${streak}회`]);if(adm&&warnCount(me.id))st.push(['warn',`경고 ${warnCount(me.id)}회 (집계 기간)`]);
   const strip=st.length?`<div class="me-strip">${st.map(([c,t])=>`<span class="ms ${c}">${t}</span>`).join('')}</div>`:'';
   // ---- 다음 진행 일정
@@ -3132,11 +3276,11 @@ function renderMe(){
   const near=(list,key,getRk,unit)=>{const i=list.findIndex(r=>r.m.id===me.id);if(i<0)return '';const a=Math.max(0,Math.min(i-1,list.length-3)),sl=list.slice(a,a+3);
     return sl.map(r=>{const mine=r.m.id===me.id,dv=r[key]-list[i][key];return `<div class="it${mine?' me':''}">${rankMark(getRk(r))}<span class="n">${esc(r.m.name)}${mine?' <span class="tag ok">나</span>':''}</span><b class="num">${r[key]}<small>${unit}</small></b><span class="df hint">${mine?'':dv>0?`+${dv}점 앞`:dv<0?`${-dv}점 뒤`:'동점'}</span></div>`}).join('')};
   const pRk=new Map();{let pv=null,rk=0;mrows.forEach((r,i)=>{if(r.P!==pv){pv=r.P;rk=i+1}pRk.set(r.m.id,rk)})}
-  const pN=near(mrows,'P',r=>pRk.get(r.m.id),'점'),bN=br&&!br.why?near(B.ok,'P',r=>r.rank,'점'):'';
+  const pN=near(mrows,'P',r=>pRk.get(r.m.id),'점'),bN=feat('buy')&&br&&!br.why?near(B.ok,'P',r=>r.rank,'점'):'';
   const up=mrow&&rank>1?mrows.find(r=>pRk.get(r.m.id)===rank-1)||mrows.filter(r=>r.P>mrow.P).slice(-1)[0]:null;
   const gap=up?up.P-mrow.P:0;
   const nearP=pN||bN?`<div class="panel"><h2>순위 근처</h2>${rank>1&&gap>0?`<p class="me-goal">🔥 <b>${gap}점</b>만 더 모으면 ${M}월 포인트 <b>${pRk.get(up.m.id)}위</b>와 같아져요</p>`:rank===1?`<p class="me-goal">👑 지금 ${M}월 포인트 <b>1위</b>예요</p>`:''}
-    <div class="me-near">${pN?`<div><span class="l">${M}월 포인트</span>${pN}</div>`:''}${bN?`<div><span class="l">구매 우선권</span>${bN}</div>`:br?`<div><span class="l">구매 우선권</span><p class="hint">지금은 대기예요 · ${esc(br.why)}</p></div>`:''}</div></div>`:'';
+    <div class="me-near">${pN?`<div><span class="l">${M}월 포인트</span>${pN}</div>`:''}${bN?`<div><span class="l">구매 우선권</span>${bN}</div>`:feat('buy')&&br?`<div><span class="l">구매 우선권</span><p class="hint">지금은 대기예요 · ${esc(br.why)}</p></div>`:''}</div></div>`:'';
   // ---- 출석 달력
   const months=[...new Set(recs.map(s=>s.date.slice(0,7)))];if(!months.includes(mon))months.unshift(mon);months.sort();
   const cm=months.includes(S.meMon)?S.meMon:mon,ci=months.indexOf(cm);
@@ -3203,7 +3347,7 @@ function renderMe(){
     <div class="bdg-grid">${shown.map(card).join('')}</div>${detail}
     <p class="hint"><b>도달</b>: 기준을 넘으면 동·은·금·전설로 올라가요 · <b>특별</b>: 그 달 기록으로만 받아요 (여러 번 가능) · <b>업적</b>: 한 번 달성하면 끝 · 배지를 누르면 자세히 보여요</p></div>`;
   // ---- 자세히 보기
-  const myBuy=renderMyBuy(me);
+  const myBuy=feat('buy')?renderMyBuy(me):'';
   const more=`<details class="panel me-more" id="meMore"><summary><h2>자세히 보기</h2><span class="hint">26주 출석률 · 개근한 달 · 연속 참여 · 구매 포인트 · 콘텐츠별 · 계산 기준</span></summary>
     <div class="col">
     <div class="tiles">
@@ -3456,7 +3600,10 @@ document.addEventListener('click',e=>{
       if(isLocked(from)||(to&&isLocked(to))){toast('마감된 달이 걸린 휴식은 넣을 수 없어요');return}
       guard(async()=>{for(const m of A)await S.db.doc('members/'+m.id).update({leaves:[...(m.leaves||[]),{from,to,note}]})},`${A.length}명에게 휴식을 등록했어요`,{area:'문파원',what:'휴식 등록',detail:`${names(A)} ${from}~${to||'미정'}`}).then(done);return}
     if(k==='out'){if(!A.length)return;guard(async()=>{for(const m of A)await S.db.doc('members/'+m.id).update({active:false,moved:false,movedTo:'',leftAt:todayStr()})},`${A.length}명을 탈퇴 처리했어요`,{area:'문파원',what:'탈퇴 처리',detail:names(A)}).then(done);return}
-    if(k==='move'){if(!A.length)return;const to=($('#bkMove')?.value||'').trim().slice(0,30);guard(async()=>{for(const m of A)await S.db.doc('members/'+m.id).update({active:false,moved:true,movedTo:to,movedAt:todayStr()})},`${A.length}명을 이동 처리했어요`,{area:'문파원',what:'이동 처리',detail:`${names(A)}${to?' → '+to:''}`}).then(done);return}
+    if(k==='move'){if(!A.length)return;const pmsg=[];const peers=feat('move')&&S.isOwner?Object.keys(GUILDS).filter(g=>g!==GKEY&&$('#bkPeer-'+g)?.checked&&S.peers[g]&&S.peers[g].owner):[];
+      const to=($('#bkMove')?.value||'').trim().slice(0,30)||(peers.length?peers.map(g=>GUILDS[g].name+' 문파').join(', '):'');
+      guard(async()=>{for(const m of A)await S.db.doc('members/'+m.id).update({active:false,moved:true,movedTo:to,movedAt:todayStr()});
+        for(const g of peers){const r=await peerAddMembers(g,A);pmsg.push(`${GUILDS[g].name} 명단에 새로 ${r.add}명${r.back?` · 다시 활동 ${r.back}명`:''}${r.skip?` · 이미 있음 ${r.skip}명`:''}`)}},null,{area:'문파원',what:'이동 처리',detail:`${names(A)}${to?' → '+to:''}`}).then(ok=>{if(ok)toast(`${A.length}명을 이동 처리했어요${pmsg.length?' · '+pmsg.join(' · '):''}`);done(ok)});return}
     if(k==='back'){if(!O.length)return;guard(async()=>{for(const m of O)await S.db.doc('members/'+m.id).update({active:true,moved:false})},`${O.length}명이 복귀했어요`,{area:'문파원',what:'복귀',detail:O.map(m=>m.name+(m.moved?' (이동에서)':' (탈퇴에서)')).join(', ').slice(0,300)}).then(done);return}
     if(k==='del'){if(!sel.length)return;guard(async()=>{for(const m of sel)await S.db.doc('members/'+m.id).delete()},`${sel.length}명을 명단에서 지웠어요`,{area:'문파원',what:'문파원 삭제',detail:names(sel)}).then(done);return}
     return}
@@ -3484,6 +3631,19 @@ document.addEventListener('click',e=>{
   if(a==='logout'){signOut(S.auth);return}
   if(a==='copyUid'){if(S.authUser)copyText(S.authUser.uid,'UID를 복사했어요');return}
   if(a==='peerLogin'){peerLogin(b.dataset.g);return}
+  if(a==='pwParse'){S.pwPrev=parsePowerPaste($('#pwPaste')?.value||'');if(!S.pwPrev.length){S.pwPrev=null;toast('붙여 넣은 내용이 없어요')}render();return}
+  if(a==='pwPrevX'){S.pwPrev=null;render();return}
+  if(a==='pwApply'){const L=(S.pwPrev||[]).filter(r=>r.m&&(r.v||r.sk.length));if(!L.length)return;const t=todayStr();
+    guard(async()=>{for(const r of L){const d={};if(r.v){d.power=r.v;d.powerAt=t}if(r.sk.length)d.skills=r.sk;await S.db.doc('members/'+r.m.id).update(d)}},`${L.length}명 전투력을 넣었어요`,{area:'전투력',what:'전투력 붙여넣기',detail:L.map(r=>r.m.name+(r.v?' '+fmtPow(r.v):'')).join(', ').slice(0,300)}).then(ok=>{if(ok){S.pwPrev=null;const ta=$('#pwPaste');if(ta)ta.value='';render()}});return}
+  if(a==='skFor'){S.skFor=S.skFor===b.dataset.mid?null:b.dataset.mid;render();return}
+  if(a==='skT'){const m=S.members.find(x=>x.id===b.dataset.mid);if(!m)return;const cur=(m.skills||[]).filter(x=>SKILLS.includes(x)),x=b.dataset.s;
+    const nx=cur.includes(x)?cur.filter(y=>y!==x):cur.length>=3?null:[...cur,x];if(!nx){toast('주력 도술은 3개까지 고를 수 있어요');return}
+    guard(()=>S.db.doc('members/'+m.id).update({skills:nx}),null,{area:'전투력',what:'주력 도술',detail:`${m.name} ${nx.join('·')||'없음'}`});return}
+  if(a==='pwSk'){S.pwSk=S.pwSk===b.dataset.s?'':b.dataset.s;render();return}
+  if(a==='wkCopy'){copyText(weekText(S.wkPopOff),'주간 요약을 복사했어요. 공지방에 붙여 넣으세요');return}
+  if(a==='careAll'){S.careAll=!S.careAll;render();return}
+  if(a==='featT'){if(!S.isOwner)return;const k=b.dataset.k;const F={...(S.config.features||{})};F[k]=F[k]===false;const l=(FEATS.find(x=>x[0]===k)||[])[1]||k;
+    guard(()=>saveConfig({features:F}),`${l} 기능을 ${F[k]?'켰어요':'껐어요'}`,{area:'설정',what:'기능 켜기·끄기',detail:`${l} ${F[k]?'켬':'끔'}`});return}
   if(a==='gaPick'){const em=b.dataset.email||null;S.gaSel=S.gaSel===em&&em!=='new'?null:em;S.gaVer=(S.gaVer|0)+1;S.confirm=null;render();if(S.gaSel==='new')$('#gaEmail-'+S.gaVer)?.focus();return}
   if(a==='gaSave'){b.disabled=true;gaSave().finally(()=>{b.disabled=false});return}
   if(a==='gaDelAsk'){S.confirm='gaDel:'+b.dataset.email;render();return}
@@ -3640,6 +3800,9 @@ document.addEventListener('change',e=>{
   else if(a==='cfilter'){S.cfilter=t.value;render()}
   else if(a==='me'){if(S.demo)S.meDemo=t.value;else{S.me=t.value;remember('me',S.me)}S.meMon='';S.meDay='';render()}
   else if(a==='month'){S.month=t.value;S.dist=null;S.pay=null;render()}
+  else if(a==='pwIn'){const m=S.members.find(x=>x.id===t.dataset.mid);if(!m)return;const raw=String(t.value).trim();const v=raw===''?null:Math.round(+raw*10)/10;
+    if(v!=null&&!(v>0&&v<10000000)){toast('전투력은 만 단위 숫자로 넣어 주세요');return}if(v===powOf(m))return;
+    guard(()=>S.db.doc('members/'+m.id).update(v==null?{power:null,powerAt:''}:{power:v,powerAt:todayStr()}),null,{area:'전투력',what:'전투력 입력',detail:`${m.name} ${v==null?'지움':fmtPow(v)}`})}
   else if(a==='wmonth'){S.wmonth=t.value;render()}
   else if(a==='rfMon'){S.rf.mon=t.value;S.confirm=null;render()}
   else if(a==='rfKind'){S.rf.kind=t.value;render()}
@@ -3663,6 +3826,7 @@ document.addEventListener('change',e=>{
 });
 document.addEventListener('toggle',e=>{if(e.target&&e.target.id==='tierBox')S.tierOpen=e.target.open},true);
 document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&e.target.dataset&&e.target.dataset.action==='pwIn'&&!e.isComposing){e.preventDefault();const i=+e.target.dataset.i;const nx=document.querySelector(`[data-action="pwIn"][data-i="${i+1}"]`);e.target.blur();if(nx){nx.focus();nx.select&&nx.select()}}
   if(e.key==='Enter'&&e.target.dataset&&(e.target.dataset.action==='rename'||e.target.dataset.action==='roleRename'))e.target.blur();
   if(e.key==='Enter'&&e.target.id==='lfQ'){e.preventDefault();$('[data-action="lfGo"]')?.click()}
   if(e.key==='Enter'&&e.target.id==='meQ'&&!e.isComposing){const bs=document.querySelectorAll('[data-action="mePickBtn"]');if(bs.length===1){e.preventDefault();bs[0].click()}}
