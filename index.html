@@ -1261,6 +1261,34 @@ nav.tabs[hidden]{display:none}
 :root[data-guild="haksal"] .ibtn{color:#4a0c16}
 /* 진홍 머리글 위 도장은 먹색 바탕 + 금 글씨 */
 :root[data-guild="haksal"] header.top .seal{background:#140608;color:#ecc77d;box-shadow:inset 0 0 0 2px rgba(236,199,125,.55),inset 0 0 0 4px #140608,inset 0 0 0 5px rgba(236,199,125,.3),0 4px 12px -4px rgba(0,0,0,.6)}
+
+
+/* 문파별 운영진: 목록 + 편집 칸 */
+.ga-conn{display:flex;flex-wrap:wrap;gap:8px 16px;padding:8px 12px;border-radius:10px;background:var(--sunken);border:1px solid var(--line);font-size:13.5px}
+.ga-cn{display:inline-flex;align-items:center;gap:6px}.ga-cn.ok b::after{content:' ✓';color:var(--good)}
+.ga-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:16px;align-items:start}
+.ga-list{display:flex;flex-direction:column;gap:6px;max-height:560px;overflow:auto;padding-right:2px}
+.ga-it{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.ga-it:hover{border-color:color-mix(in srgb,var(--accent) 50%,var(--line))}
+.ga-it.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--surface));box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 20%,transparent)}
+.ga-n{flex:1;min-width:0;display:flex;flex-direction:column}.ga-n .hint{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ga-tags{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.ga-gt{font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;background:color-mix(in srgb,var(--accent) 12%,var(--surface));white-space:nowrap}.ga-gt small{color:var(--muted);font-weight:600}
+.ga-ed{display:flex;flex-direction:column;gap:12px;padding:16px;border-radius:14px;border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));background:color-mix(in srgb,var(--accent) 4%,var(--surface))}
+.ga-ed h3{margin:0;font-size:18px}
+.ga-ed.empty-ed{align-items:center;justify-content:center;min-height:180px;border-style:dashed;background:transparent}
+.ga-f{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)}
+.ga-sec{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
+.ga-sec.off{opacity:.6}
+.ga-sh{display:flex;align-items:center;gap:8px;font-size:15px;cursor:pointer}
+.ga-pl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.ga-pc{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border-radius:10px;border:1px solid var(--line);cursor:pointer}
+.ga-pc:has(input:checked){border-color:color-mix(in srgb,var(--accent) 50%,var(--line));background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
+.ga-pc span{display:flex;flex-direction:column}.ga-pc small{font-size:12px;color:var(--muted)}
+.ga-sec:has(.ga-sh input:not(:checked)) .ga-pl{opacity:.45;pointer-events:none}
+.ga-btns{gap:8px}
+@media (max-width:900px){.ga-wrap{grid-template-columns:minmax(0,1fr)}.ga-list{max-height:none}}
+@media (max-width:520px){.ga-pl,.ga-f{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body>
@@ -2414,46 +2442,68 @@ function setupPeers(){
 }
 async function peerLogin(k){const P=S.peers[k];if(!P||!P.auth)return;const pv=new GoogleAuthProvider();pv.setCustomParameters({prompt:'select_account'});
   try{await signInWithPopup(P.auth,pv)}catch(e){const c=e&&e.code;if(c==='auth/unauthorized-domain')toast(`${P.name} Firebase 승인된 도메인에 이 사이트 주소를 추가해 주세요`);else if(c!=='auth/popup-closed-by-user'&&c!=='auth/cancelled-popup-request'){console.error(e);toast('로그인하지 못했어요. 팝업 차단을 확인해 주세요')}}}
-async function peerSetAdmin(k,email,nick,on,perms){
-  const cur=k===GKEY;const fs=cur?S.fs:S.peers[k]&&S.peers[k].fs;const gname=GUILDS[k].name;if(!fs)return false;
-  const detail=`${gname} · ${nick||''} (${email})`;
-  try{if(on)await setDoc(fdoc(fs,'admins',email),{nick,addedAt:Date.now(),perms:perms||Object.fromEntries(PERMS.map(([p])=>[p,true]))});else await deleteDoc(fdoc(fs,'admins',email));
-    try{await setDoc(fdoc(fcol(fs,'logs')),{type:'act',area:'운영진',what:on?'운영진 등록':'운영진 해제',detail:`${nick||''} (${email})${cur?'':' · '+(GUILD?GUILD.name:'')+' 문파에서 설정'}`,by:myName(),email:(S.authUser&&S.authUser.email)||'',at:Date.now()})}catch(_){}
-    toast(on?`${gname} 운영진으로 등록했어요`:`${gname} 운영진에서 해제했어요`);
-    if(!cur)writeLog({type:'act',area:'운영진',what:on?'다른 문파 운영진 등록':'다른 문파 운영진 해제',detail});return true}
-  catch(e){console.error(e);toast(`${gname} 운영진을 바꾸지 못했어요. ${gname} 문파장 계정인지 확인해 주세요`);return false}}
-async function peerSetPerm(k,email,nick,perms){
-  const cur=k===GKEY;const fs=cur?S.fs:S.peers[k]&&S.peers[k].fs;const gname=GUILDS[k].name;if(!fs)return false;
-  const txt=PERMS.filter(([p])=>perms[p]).map(([,l])=>l).join('·')||'권한 없음';
-  try{await updateDoc(fdoc(fs,'admins',email),{perms});
-    try{await setDoc(fdoc(fcol(fs,'logs')),{type:'act',area:'운영진',what:'운영진 권한 변경',detail:`${nick||''} (${email}) → ${txt}`,by:myName(),email:(S.authUser&&S.authUser.email)||'',at:Date.now()})}catch(_){}
-    toast(`${gname} · ${nick||email} 권한: ${txt}`);return true}
-  catch(e){console.error(e);toast('권한을 바꾸지 못했어요');return false}}
+function gaLists(){const keys=Object.keys(GUILDS),L={};L[GKEY]=S.admins;for(const k of keys)if(k!==GKEY)L[k]=S.peers[k]&&S.peers[k].owner?S.peers[k].admins:null;return L}
+const allPerms=()=>Object.fromEntries(PERMS.map(([p])=>[p,true]));
 function renderGuildAdmins(){
   const keys=Object.keys(GUILDS);if(keys.length<2||!S.isOwner)return '';
-  const lists={};lists[GKEY]=S.admins;for(const k of keys)if(k!==GKEY)lists[k]=S.peers[k]&&S.peers[k].owner?S.peers[k].admins:null;
-  const emails=new Map();for(const k of keys)for(const a of lists[k]||[])if(!emails.has(a.id)||!emails.get(a.id))emails.set(a.id,a.nick||'');
+  const lists=gaLists();
+  const emails=new Map();for(const k of keys)for(const a of lists[k]||[])if(!emails.get(a.id))emails.set(a.id,a.nick||'');
   const rows=[...emails.entries()].sort((a,b)=>nameCmp(a[1],b[1],'ko'));
-  const head=keys.map(k=>{const P=S.peers[k];let st='';
-    if(k!==GKEY){if(!P||!P.known)st='<span class="hint">연결 중…</span>';else if(!P.user)st=`<button class="btn small" data-action="peerLogin" data-g="${k}">로그인해서 연결</button>`;
-      else if(!P.owner)st=`<span class="ga-warn" title="${esc(P.user.email||'')}">문파장 아님</span><button class="btn small" data-action="peerLogin" data-g="${k}">다른 계정</button>`}
-    return `<th><div class="ga-h"><b>${esc(GUILDS[k].name)}</b>${k===GKEY?'<span class="hint">지금 문파</span>':''}${st}</div></th>`}).join('');
-  const cell=(k,email,nick)=>{const L=lists[k];if(!L)return '<td class="ga-c"><span class="dash">–</span></td>';const on=L.some(a=>a.id===email),cf=S.confirm==='ga:'+k+':'+email;
-    if(cf)return `<td class="ga-c"><button class="btn small danger" data-action="gaSet" data-g="${k}" data-email="${esc(email)}" data-nick="${esc(nick)}" data-on="0">해제</button><button class="btn small" data-action="cancel">취소</button></td>`;
-    const A=L.find(a=>a.id===email),pm=on?(permsOf(A)||Object.fromEntries(PERMS.map(([p])=>[p,true]))):null;
-    const chips=on?`<div class="ga-pm">${PERMS.map(([p,l,d])=>`<button class="ga-p${pm[p]?' on':''}" data-action="gaPerm" data-g="${k}" data-email="${esc(email)}" data-nick="${esc(nick)}" data-p="${p}" aria-pressed="${pm[p]}" title="${esc(d)}">${pm[p]?'✓ ':''}${l}</button>`).join('')}</div>`:'';
-    return `<td class="ga-c"><button class="ga-tg${on?' on':''}" data-action="${on?'gaAsk':'gaSet'}" data-g="${k}" data-email="${esc(email)}" data-nick="${esc(nick)}" data-on="1" aria-pressed="${on}" aria-label="${esc(GUILDS[k].name)} 운영진 ${on?'해제':'등록'}">${on?'✓ 운영진':'＋ 등록'}</button>${chips}</td>`};
-  const body=rows.map(([em,nk])=>`<tr><td><b>${esc(nk||'(닉네임 없음)')}</b><div class="hint">${esc(em)}</div></td>${keys.map(k=>cell(k,em,nk)).join('')}</tr>`).join('');
-  const add=`<div class="ga-add"><label class="f">구글 이메일<input type="text" id="gaEmail" inputmode="email" autocomplete="off" placeholder="example@gmail.com"></label><label class="f">게임 닉네임<input type="text" id="gaNick" maxlength="24" placeholder="예: 청풍"></label>
-    <div class="ga-chk"><span class="hint">문파</span>${keys.map(k=>`<label class="chk"><input type="checkbox" id="gaC-${k}"${k===GKEY?' checked':''}${lists[k]?'':' disabled'}> ${esc(GUILDS[k].name)}</label>`).join('')}</div><button class="btn primary" data-action="gaAdd">등록</button>
-    <div class="ga-chk ga-pchk"><span class="hint">권한</span>${PERMS.map(([p,l,d])=>`<label class="chk" title="${esc(d)}"><input type="checkbox" id="gaP-${p}" checked> ${l}</label>`).join('')}</div></div>`;
-  return `<div class="panel ga"><h2>문파별 운영진 <span class="hint">문파장만 보여요</span></h2>
-    <p class="hint">운영진마다 어느 문파를 관리할지, 그 문파에서 무엇을 할 수 있는지 정해요. 권한 칸(출석 체크·공지·명단·경고·정산)을 눌러 켜고 꺼요. 설정·콘텐츠, 운영진 관리, 복원, 기록 삭제·취소는 admin만 할 수 있어요. 두 문파 모두 체크하면 [문파 바꾸기]로 오가며 둘 다 관리해요. 다른 문파는 그 문파 문파장 구글 계정으로 한 번 연결하면 이 기기에서 기억해요.</p>
-    ${add}<div class="scroll"><table class="ga-t"><thead><tr><th>운영진</th>${head}</tr></thead><tbody>${body||`<tr><td colspan="${keys.length+1}" class="hint">아직 등록된 운영진이 없어요.</td></tr>`}</tbody></table></div></div>`;
+  // 연결 상태
+  const conn=keys.filter(k=>k!==GKEY).map(k=>{const P=S.peers[k];
+    if(!P||!P.known)return `<span class="ga-cn"><b>${esc(GUILDS[k].name)}</b> 연결 중…</span>`;
+    if(!P.user)return `<span class="ga-cn"><b>${esc(GUILDS[k].name)}</b> 연결 안 됨 <button class="btn small" data-action="peerLogin" data-g="${k}">로그인해서 연결</button></span>`;
+    if(!P.owner)return `<span class="ga-cn"><b>${esc(GUILDS[k].name)}</b> <span class="ga-warn">${esc(P.user.email||'')}는 admin 계정이 아니에요</span> <button class="btn small" data-action="peerLogin" data-g="${k}">다른 계정</button></span>`;
+    return `<span class="ga-cn ok"><b>${esc(GUILDS[k].name)}</b> 연결됨</span>`}).join('');
+  // 목록
+  const list=rows.map(([em,nk])=>{const tags=keys.map(k=>{const L=lists[k];if(!L)return '';const A=L.find(a=>a.id===em);if(!A)return '';const pm=permsOf(A)||allPerms(),n=PERMS.filter(([p])=>pm[p]).length;
+      return `<span class="ga-gt" title="${esc(PERMS.filter(([p])=>pm[p]).map(x=>x[1]).join(' · ')||'권한 없음')}">${esc(GUILDS[k].name)} <small>${n}/${PERMS.length}</small></span>`}).join('');
+    return `<button class="ga-it${S.gaSel===em?' on':''}" data-action="gaPick" data-email="${esc(em)}" aria-pressed="${S.gaSel===em}"><span class="ga-n"><b>${esc(nk||'(닉네임 없음)')}</b><span class="hint">${esc(em)}</span></span><span class="ga-tags">${tags||'<span class="hint">문파 없음</span>'}</span></button>`}).join('');
+  // 편집 칸
+  let ed='';
+  if(S.gaSel&&(S.gaSel==='new'||emails.has(S.gaSel))){const isNew=S.gaSel==='new',em=isNew?'':S.gaSel,nk=isNew?'':emails.get(em)||'';
+    const secs=keys.map(k=>{const L=lists[k],A=L&&!isNew?L.find(a=>a.id===em):null,on=isNew?k===GKEY:!!A,pm=A?(permsOf(A)||allPerms()):isNew?Object.fromEntries(PERMS.map(([p])=>[p,p!=='manage'])):allPerms();
+      if(!L)return `<div class="ga-sec off"><div class="ga-sh"><b>${esc(GUILDS[k].name)}</b><span class="hint">연결해야 바꿀 수 있어요</span></div></div>`;
+      return `<div class="ga-sec"><label class="ga-sh"><input type="checkbox" id="gaOn-${k}-${S.gaVer|0}"${on?' checked':''}> <b>${esc(GUILDS[k].name)} 운영진</b>${k===GKEY?' <span class="hint">지금 문파</span>':''}</label>
+        <div class="ga-pl">${PERMS.map(([p,l,d])=>`<label class="ga-pc"><input type="checkbox" id="gaP-${k}-${p}-${S.gaVer|0}"${pm[p]?' checked':''}><span><b>${l}</b><small>${esc(d)}</small></span></label>`).join('')}</div></div>`}).join('');
+    const cf=S.confirm==='gaDel:'+em;
+    ed=`<div class="ga-ed"><div class="spread"><h3>${isNew?'운영진 추가':esc(nk||em)}</h3><button class="btn small" data-action="gaPick" data-email="">닫기</button></div>
+      <div class="formgrid ga-f"><label class="f">구글 이메일<input type="text" id="gaEmail-${S.gaVer|0}" inputmode="email" autocomplete="off" placeholder="example@gmail.com" value="${esc(em)}"${isNew?'':' readonly'}></label>
+        <label class="f">게임 닉네임<input type="text" id="gaNick-${S.gaVer|0}" maxlength="24" placeholder="예: 청풍" value="${esc(nk)}"></label></div>
+      ${secs}
+      <div class="row ga-btns">${!isNew?(cf?`<button class="btn danger" data-action="gaDelYes" data-email="${esc(em)}">정말 모든 문파에서 해제</button><button class="btn" data-action="cancel">취소</button>`:`<button class="btn danger" data-action="gaDelAsk" data-email="${esc(em)}">운영진 해제</button>`):''}<span class="grow"></span><button class="btn primary" data-action="gaSave">${isNew?'등록':'저장'}</button></div></div>`}
+  return `<div class="panel ga"><div class="spread"><h2>문파별 운영진 <span class="hint">admin만 보여요</span></h2><button class="btn small primary" data-action="gaPick" data-email="new">＋ 운영진 추가</button></div>
+    <p class="hint">운영진을 누르면 오른쪽에서 맡을 문파와 권한을 정해요. 설정·콘텐츠, 운영진 관리, 복원, 기록 삭제·취소는 admin만 할 수 있어요.</p>
+    ${conn?`<div class="ga-conn">${conn}</div>`:''}
+    <div class="ga-wrap"><div class="ga-list">${list||'<p class="hint">아직 등록된 운영진이 없어요. [＋ 운영진 추가]를 눌러 주세요.</p>'}</div>${ed||'<div class="ga-ed empty-ed"><p class="hint">왼쪽에서 운영진을 고르거나 [＋ 운영진 추가]를 눌러 주세요.</p></div>'}</div></div>`;
 }
+async function gaWrite(k,email,data,what,detail){const cur=k===GKEY,fs=cur?S.fs:S.peers[k]&&S.peers[k].fs;if(!fs)return false;
+  try{if(data===null)await deleteDoc(fdoc(fs,'admins',email));else if(data.addedAt)await setDoc(fdoc(fs,'admins',email),data);else await updateDoc(fdoc(fs,'admins',email),data);
+    try{await setDoc(fdoc(fcol(fs,'logs')),{type:'act',area:'운영진',what,detail,by:myName(),email:(S.authUser&&S.authUser.email)||'',at:Date.now()})}catch(_){}
+    return true}catch(e){console.error(e);toast(`${GUILDS[k].name}에 저장하지 못했어요. admin 계정인지 확인해 주세요`);return false}}
+async function gaSave(){
+  const isNew=S.gaSel==='new',email=(($('#gaEmail-'+(S.gaVer|0))||{}).value||'').trim().toLowerCase(),nick=(($('#gaNick-'+(S.gaVer|0))||{}).value||'').trim().slice(0,24);
+  if(!/^[^\s@\/]+@[^\s@\/]+\.[^\s@\/]+$/.test(email)){toast('이메일 형식을 확인해 주세요');return}if(!nick){toast('게임 닉네임을 입력해 주세요');return}
+  const lists=gaLists();const plan=[];
+  for(const k of Object.keys(GUILDS)){const L=lists[k];if(!L)continue;const box=$('#gaOn-'+k+'-'+(S.gaVer|0));if(!box)continue;
+    const on=box.checked,A=L.find(a=>a.id===email),perms=Object.fromEntries(PERMS.map(([p])=>[p,!!$(`#gaP-${k}-${p}-${S.gaVer|0}`)?.checked]));
+    const txt=PERMS.filter(([p])=>perms[p]).map(x=>x[1]).join('·')||'권한 없음';
+    if(on&&!A)plan.push([k,{nick,perms,addedAt:Date.now()},'운영진 등록',`${nick} (${email}) · ${txt}`]);
+    else if(on&&A){const old=permsOf(A)||allPerms();if((A.nick||'')!==nick||PERMS.some(([p])=>old[p]!==perms[p]))plan.push([k,{nick,perms},'운영진 권한 변경',`${nick} (${email}) → ${txt}`])}
+    else if(!on&&A)plan.push([k,null,'운영진 해제',`${nick} (${email})`])}
+  if(!plan.length){toast(isNew?'등록할 문파를 하나 이상 골라 주세요':'바뀐 내용이 없어요');return}
+  if(isNew&&!plan.some(x=>x[1])){toast('등록할 문파를 하나 이상 골라 주세요');return}
+  let ok=true;for(const [k,d,w,dt] of plan)ok=(await gaWrite(k,email,d,w,dt))&&ok;
+  if(ok){toast(isNew?'운영진으로 등록했어요':'저장했어요');S.gaSel=plan.some(x=>x[1])?email:null}
+  if(S.authUser&&email===(S.authUser.email||'').toLowerCase())S.myNick=nick;
+  render();
+}
+async function gaDelete(email){const lists=gaLists();let ok=true,n=0;
+  for(const k of Object.keys(GUILDS)){const L=lists[k];if(!L)continue;const A=L.find(a=>a.id===email);if(!A)continue;n++;ok=(await gaWrite(k,email,null,'운영진 해제',`${A.nick||''} (${email})`))&&ok}
+  if(ok&&n)toast('운영진에서 해제했어요');S.confirm=null;S.gaSel=null;render()}
 function renderAdmins(){
-  let out=renderGuildAdmins();
-  if(S.isOwner&&!out){
+  const ga=renderGuildAdmins();let out='';
+  if(S.isOwner&&!ga){
     const rows=S.admins.map(a=>`<div class="medit"><span class="grow">${esc(a.nick||'')} <span class="hint">${esc(a.id)}</span></span>${S.confirm==='a:'+a.id?`<button class="btn small danger" data-action="delAdmin" data-email="${esc(a.id)}">정말 해제</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small danger" data-action="askDelA" data-email="${esc(a.id)}">운영진 해제</button>`}</div>`).join('');
     out+=`<div class="panel"><h2>운영진 관리 <span class="hint">문파장만 보여요</span></h2>
       <p class="hint">운영진의 구글 이메일과 게임 닉네임을 등록하면, 그 계정으로 로그인했을 때 체크와 수정을 할 수 있어요. 체크 기록에는 닉네임이 표시돼요.</p>
@@ -2463,11 +2513,11 @@ function renderAdmins(){
       <div>${rows||'<p class="hint">아직 등록된 운영진이 없어요. 본인 닉네임도 표시하려면 자기 이메일을 등록하세요.</p>'}</div></div>`;
   }
   if(S.authUser){
-    out+=`<div class="panel"><h2>내 계정</h2><p class="hint">처음 설정할 때 이 UID를 Firestore 보안 규칙의 OWNER_UID 자리에 넣으면 문파장 권한이 생겨요.</p>
+    out+=`<div class="panel"><h2>내 계정</h2><p class="hint">처음 설정할 때 이 UID를 Firestore 보안 규칙의 ownerUid 자리에 넣으면 admin 권한이 생겨요.</p>
       <div class="row"><span class="hint">${esc(S.authUser.email||'')}</span></div>
       <div class="row"><span class="code">${esc(S.authUser.uid)}</span><button class="btn small" data-action="copyUid">UID 복사</button></div></div>`;
   }
-  return out?`<div class="${S.isOwner&&S.authUser?'team-top':'col'}">${out}</div>`:'';
+  return ga||out?`${ga}${out?`<div class="${S.isOwner&&S.authUser&&!ga?'team-top':'col'}">${out}</div>`:''}`:'';
 }
 
 async function saveRoles(list,moves,msg,log){
@@ -3434,15 +3484,10 @@ document.addEventListener('click',e=>{
   if(a==='logout'){signOut(S.auth);return}
   if(a==='copyUid'){if(S.authUser)copyText(S.authUser.uid,'UID를 복사했어요');return}
   if(a==='peerLogin'){peerLogin(b.dataset.g);return}
-  if(a==='gaPerm'){const k=b.dataset.g,em=b.dataset.email,P=k===GKEY?S.admins:(S.peers[k]&&S.peers[k].admins)||[];const A=P.find(x=>x.id===em);if(!A)return;
-    const pm=permsOf(A)||Object.fromEntries(PERMS.map(([p])=>[p,true]));pm[b.dataset.p]=!pm[b.dataset.p];b.disabled=true;peerSetPerm(k,em,b.dataset.nick,pm).then(()=>render());return}
-  if(a==='gaAsk'){S.confirm='ga:'+b.dataset.g+':'+b.dataset.email;render();return}
-  if(a==='gaSet'){const on=b.dataset.on==='1';S.confirm=null;b.disabled=true;peerSetAdmin(b.dataset.g,b.dataset.email,b.dataset.nick,on).then(()=>render());return}
-  if(a==='gaAdd'){const email=($('#gaEmail').value||'').trim().toLowerCase(),nick=($('#gaNick').value||'').trim().slice(0,24);
-    if(!/^[^\s@\/]+@[^\s@\/]+\.[^\s@\/]+$/.test(email)){toast('이메일 형식을 확인해 주세요');return}if(!nick){toast('게임 닉네임을 입력해 주세요');return}
-    const ks=Object.keys(GUILDS).filter(k=>{const c=$('#gaC-'+k);return c&&c.checked&&!c.disabled});if(!ks.length){toast('관리할 문파를 하나 이상 골라 주세요');return}
-    const perms=Object.fromEntries(PERMS.map(([p])=>[p,!!$('#gaP-'+p)?.checked]));
-    (async()=>{let ok=true;for(const k of ks)ok=(await peerSetAdmin(k,email,nick,true,perms))&&ok;if(ok){$('#gaEmail').value='';$('#gaNick').value=''}if(S.authUser&&email===(S.authUser.email||'').toLowerCase()&&ks.includes(GKEY))S.myNick=nick;render()})();return}
+  if(a==='gaPick'){const em=b.dataset.email||null;S.gaSel=S.gaSel===em&&em!=='new'?null:em;S.gaVer=(S.gaVer|0)+1;S.confirm=null;render();if(S.gaSel==='new')$('#gaEmail-'+S.gaVer)?.focus();return}
+  if(a==='gaSave'){b.disabled=true;gaSave().finally(()=>{b.disabled=false});return}
+  if(a==='gaDelAsk'){S.confirm='gaDel:'+b.dataset.email;render();return}
+  if(a==='gaDelYes'){b.disabled=true;gaDelete(b.dataset.email);return}
   if(a==='addAdmin'){const email=$('#adEmail').value.trim().toLowerCase();const nick=$('#adNick').value.trim().slice(0,24);
     if(!/^[^\s@\/]+@[^\s@\/]+\.[^\s@\/]+$/.test(email)){toast('이메일 형식을 확인해 주세요');return}
     if(!nick){toast('게임 닉네임을 입력해 주세요');return}
