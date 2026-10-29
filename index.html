@@ -1328,6 +1328,12 @@ tr.stale td{opacity:.55}tr.stale td:first-child{opacity:1}
 .rc-l{fill:none;stroke:var(--c);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}.rc-p{fill:var(--surface);stroke:var(--c);stroke-width:2.5}
 .rc-last{font-size:11.5px;font-weight:800;fill:var(--c)}
 .rc-sum{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13.5px}.rc-s{display:inline-flex;align-items:center;gap:6px}.rc-s i{width:10px;height:10px;border-radius:50%;background:var(--c)}
+
+.mv-btns{display:flex;flex-wrap:wrap;gap:8px}
+.mv-b{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:140px;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.mv-b:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,var(--surface))}
+.mv-b.g{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}.mv-b b{font-size:15px}.mv-b small{font-size:12px;color:var(--muted)}
+.mv-b.etc{border-style:dashed}.mv-b.etc.on{border-color:var(--accent)}
 </style>
 </head>
 <body>
@@ -1567,7 +1573,7 @@ function countSession(s,mid){let o=0,e=0,x=0;for(const [id,m] of mid){if(!eligib
 function periodFrom(){return S.period==='all'?null:addDays(weekStart(todayStr()),-7*(+S.period-1))}
 function periodLabel(){const f=periodFrom();if(!f)return '전체 기간';return S.period==='52'?`최근 1년 (${f.slice(2).replace(/-/g,'.')}~${md(todayStr())})`:`최근 ${S.period}주 (${md(f)}~${md(todayStr())})`}
 function nameOf(v){return v?String(v):''}
-const FEATS=[['buy','구매 우선권','문파 상점 구매 포인트·순번 (홈 TOP 5, 월간 정산, 내 출석, 관리 메뉴, 첫 구매 배지)'],['power','전투력 · 주력 도술','문파원 전투력·도술 기록, 통계의 목록, 내 출석 표시'],['care','챙겨야 할 문파원','운영진 홈에 연속 불참·경고 위험·휴식 종료·신입 알림'],['rank','랭크 결과 추이','통계 → 추이 탭의 랭크 그래프'],['weekly','주간 요약 복사','주간 일정 팝업의 카톡용 요약 복사'],['move','문파 이동 연동','이동 처리할 때 다른 문파 명단에 바로 추가 (admin)']];
+const FEATS=[['buy','구매 우선권','문파 상점 구매 포인트·순번 (홈 TOP 5, 월간 정산, 내 출석, 관리 메뉴, 첫 구매 배지)'],['power','전투력 · 주력 도술','문파원 전투력·도술 기록, 통계의 목록, 내 출석 표시'],['care','챙겨야 할 문파원','통계 → 문파원별, 관리 → 문파원 명단에 연속 불참·경고 위험·휴식 종료·신입 알림 (운영진·admin만)'],['rank','랭크 결과 추이','통계 → 추이 탭의 랭크 그래프'],['weekly','주간 요약 복사','주간 일정 팝업의 카톡용 요약 복사'],['move','문파 이동 연동','이동 처리할 때 다른 문파 명단에 바로 추가 (admin)']];
 function feat(k){const f=S.config.features;return !(f&&typeof f==='object'&&f[k]===false)}
 const SKILLS=['절명','연타','강타','파멸','저격','척살','제압','기만','헌신','강인','기동','주술'];
 const powOf=m=>typeof m.power==='number'&&isFinite(m.power)&&m.power>0?m.power:null;
@@ -1865,9 +1871,9 @@ function careList(){
     if(m.joinedAt&&m.joinedAt>=addDays(gd,-14)&&(!r||!r.O)&&r&&r.need)it.push(['nt','신입 · 아직 참여 없음',1]);
     if(it.length)out.push({m,it})}
   out.sort((a,b)=>Math.max(...b.it.map(x=>x[2]))-Math.max(...a.it.map(x=>x[2]))||nameCmp(a.m.name,b.m.name,'ko'));return out}
-function renderCare(){if(!S.canWrite||!feat('care'))return '';const L=careList();
+function renderCare(){if(!S.canWrite||S.demo||!feat('care'))return '';const L=careList();
   const all=S.careAll,show=all?L:L.slice(0,8);
-  return `<div class="panel care"><div class="spread"><h2>챙겨야 할 문파원 <span class="hint">운영진만 보여요</span></h2><span class="hint">${L.length}명</span></div>
+  return `<div class="panel care"><div class="spread"><h2>챙겨야 할 문파원 <span class="hint">운영진 · admin만 보여요</span></h2><span class="hint">${L.length}명</span></div>
     ${L.length?`<div class="care-list">${show.map(x=>`<div class="care-it">${nmLink(x.m)}<span class="grow"></span>${x.it.map(([c,t])=>`<span class="ms ${c}">${esc(t)}</span>`).join('')}</div>`).join('')}</div>${L.length>8?`<button class="btn small" data-action="careAll">${all?'접기':`${L.length-8}명 더 보기`}</button>`:''}`:'<p class="hint">지금은 챙길 문파원이 없어요 👍</p>'}
     <p class="hint">연속 불참 ${streakMin()}회 이상 · 이번 달 경고 기준 미달/근접 · 일주일 안에 휴식이 끝나는 사람 · 2주 안에 들어와 아직 참여가 없는 신입</p></div>`}
 function renderHome(){
@@ -1922,7 +1928,7 @@ function renderHome(){
   let alerts='';
   if(S.canWrite){const from=monthAdd(mon,-1)+'-01';const unc=S.sessions.filter(s=>s.date>=from&&s.date<t&&!isLocked(s.date)&&act.some(m=>eligible(m,s)&&!validMark(marksOf(s)[m.id])));
     alerts=`${lockNote()}${backupNote()}${unc.length?`<div class="lockbar"><span>체크가 덜 끝난 회차가 <b>${unc.length}개</b> 있어요.</span><span class="grow"></span><button class="btn small primary" data-action="homeUnc">확인하러 가기</button></div>`:''}`}
-  return `<div class="col">${roNote()}${blockNote()}${alerts}<div class="home-r1">${hero}${notice}</div><div class="home-r2${feat('buy')?'':' c2'}">${topP}${feat('buy')?topB:''}${topG}</div>${tiles}${renderCare()}</div>`;
+  return `<div class="col">${roNote()}${blockNote()}${alerts}<div class="home-r1">${hero}${notice}</div><div class="home-r2${feat('buy')?'':' c2'}">${topP}${feat('buy')?topB:''}${topG}</div>${tiles}</div>`;
 }
 function renderCheck(){
   if(!S.ready) return loading;
@@ -2254,7 +2260,7 @@ function statMembers(st){
       <div class="nm"><span class="t">${adm?nmLink(r.m):esc(r.m.name)}${tags}</span><span class="sub">${per.join(' · ')||'기록 없음'}</span>${adm&&S.notes[r.m.id]?.text?`<span class="sub">메모: ${esc(S.notes[r.m.id].text)}</span>`:''}</div>
       <div class="rt"><div class="top">${rateBar(r.rate)}<span class="pc">${pct(r.rate)}</span></div><span class="cnt"><span class="c-o">참여 ${r.O}</span> · <span class="c-a">사유 면제 ${r.E}</span> · <span class="c-x">불참 ${r.absent}</span>${r.XA?` (면제 초과 공지 ${r.XA} 포함)`:''}</span></div>
       <div class="pt"><b>${r.P}</b> <span>점</span></div></div>`}).join('');
-  return `<div class="panel"><div class="spread"><h2>문파원별 출석률${S.cfilter==='all'?'':' · '+esc(CMAP[S.cfilter]?.name||'')}</h2>
+  return `${renderCare()}<div class="panel"><div class="spread"><h2>문파원별 출석률${S.cfilter==='all'?'':' · '+esc(CMAP[S.cfilter]?.name||'')}</h2>
       <div class="row"><input type="search" id="statSearch" data-keep="0" data-action="ssearch" placeholder="닉네임 검색" value="${esc(S.ssearch)}" aria-label="닉네임 검색">
       <select id="statSort" data-keep="0" data-action="ssort" aria-label="정렬">${[['rate','출석률 순'],['main','메인 출석률 순'],['pts','포인트 순'],['name','가나다순 (한글 먼저)'],['nameEn','ABC순 (영어 먼저)']].map(([v,l])=>`<option value="${v}"${S.ssort===v?' selected':''}>${l}</option>`).join('')}</select></div></div>
     ${notes([`이름 아래는 <b>${mainLabel()} 출석률</b>과 콘텐츠별 참여/기록 횟수예요`,'<b>사유 면제</b>는 한도 안의 사전공지예요. 한도를 넘은 사전공지는 불참에 들어가요','<b>판정 보류</b>인 문파원은 순위 맨 아래에 있어요'])}
@@ -2410,8 +2416,13 @@ function renderMemberAdmin(){
       <label class="f full">사유 (선택, 링크를 가진 누구나 볼 수 있어요)<input type="text" id="bkNote" maxlength="40" placeholder="예: 개인 사정"></label></div>
       <div class="row"><button class="btn small primary" data-action="mBulkYes" data-k="leave">선택한 ${selA.length}명에게 휴식 등록</button><button class="btn small" data-action="mBulk" data-k="">취소</button></div></div>`
     :K==='out'&&selA.length?`<div class="confirm">${nm(selA)} · <b>${selA.length}명</b>을 탈퇴 처리할까요? 명단과 통계에서 빠지고 기록은 남아요. <button class="btn small danger" data-action="mBulkYes" data-k="out">탈퇴 처리</button><button class="btn small" data-action="mBulk" data-k="">취소</button></div>`
-    :K==='move'&&selA.length?`<div class="inline-form"><span class="sec-title">이동 처리 · ${selA.length}명</span><p class="hint">${nm(selA)}</p><label class="f">이동한 곳 (선택)<input type="text" id="bkMove" maxlength="30" placeholder="예: 묘룡2 학살 문파"></label>${feat('move')&&S.isOwner?Object.keys(GUILDS).filter(k=>k!==GKEY).map(k=>{const P=S.peers[k],ok=P&&P.owner;return `<label class="chk"><input type="checkbox" id="bkPeer-${k}" data-keep="0"${ok?' checked':' disabled'}> ${esc(GUILDS[k].name)} 문파 명단에도 바로 추가${ok?'':' <span class="hint">(운영진 · 백업 → 문파별 운영진에서 먼저 연결해 주세요)</span>'}</label>`}).join(''):''}
-      <div class="row"><button class="btn small primary" data-action="mBulkYes" data-k="move">선택한 ${selA.length}명 이동 처리</button><button class="btn small" data-action="mBulk" data-k="">취소</button><span class="hint">명단과 통계에서 빠지고, 기록은 남아요</span></div></div>`
+    :K==='move'&&selA.length?`<div class="inline-form"><span class="sec-title">이동 처리 · ${selA.length}명</span><p class="hint">${nm(selA)}</p>
+      <span class="hint">어디로 옮기나요? 누르면 바로 이동 처리돼요.</span>
+      <div class="mv-btns">${moveTargets().map(t=>{let sub='';if(t.g){const ok=feat('move')&&S.isOwner&&S.peers[t.g]&&S.peers[t.g].owner;sub=ok?'명단에 바로 추가':feat('move')&&S.isOwner?'연결 안 됨 · 이동 기록만':'이동 기록만'}
+        return `<button class="mv-b${t.g?' g':''}" data-action="mBulkYes" data-k="move" data-to="${esc(t.name)}" data-g="${t.g||''}"><b>${esc(t.name)}</b>${sub?`<small>${sub}</small>`:''}</button>`}).join('')}
+        <button class="mv-b etc${S.mvEtc?' on':''}" data-action="mvEtc"><b>기타</b><small>직접 입력</small></button></div>
+      ${S.mvEtc?`<div class="row"><input type="text" id="bkMove" maxlength="30" placeholder="예: 묘룡2 학살 문파" style="flex:1;min-width:180px"><button class="btn small primary" data-action="mBulkYes" data-k="move" data-etc="1">이동 처리</button></div>`:''}
+      <div class="row"><button class="btn small" data-action="mBulk" data-k="">취소</button><span class="hint">명단과 통계에서 빠지고, 기록은 남아요 · 이동할 문파 목록은 관리 → 설정 · 콘텐츠에서 추가해요</span></div></div>`
     :K==='back'&&selO.length?`<div class="confirm">${nm(selO)} · <b>${selO.length}명</b>을 복귀시킬까요? <button class="btn small primary" data-action="mBulkYes" data-k="back">복귀</button><button class="btn small" data-action="mBulk" data-k="">취소</button></div>`
     :K==='del'?`<div class="confirm">${nm(sel)} · <b>${sel.length}명</b>을 명단에서 지울까요? 지금까지의 출석 기록도 통계에서 빠져요. 기록을 남기려면 '탈퇴'를 쓰세요. <button class="btn small danger" data-action="mBulkYes" data-k="del">${sel.length}명 삭제</button><button class="btn small" data-action="mBulk" data-k="">취소</button></div>`:'';
   const part=(n)=>n!==sel.length&&n?' '+n:'';
@@ -2419,7 +2430,7 @@ function renderMemberAdmin(){
   const bulk=sel.length?`<div class="bulkwrap"><div class="bulkbar"><span class="bsel"><b class="num">${sel.length}</b>명 선택</span><button class="btn small" data-action="mSelNone">선택 해제</button><span class="grow"></span>
       <div class="bgroup" role="group" aria-label="선택한 문파원 처리">${bb('leave',['☾','휴식'],selA.length,!selA.length)}${bb('out',['↩','탈퇴'],selA.length,!selA.length)}${bb('move',['➜','이동'],selA.length,!selA.length)}${selO.length?bb('back',['↺','복귀'],selO.length,false):''}${bb('del',['✕','삭제'],sel.length,false,' danger')}</div></div>${bulkForm}</div>`:'';
   const mc=mtCur('mem',['list','add'],'list');
-  return `<div class="col mt-host">${mtBar('mem',[['list',`명단 ${F==='active'?cnt.active:list.length}`],['add','추가 · 도움말']],mc)}
+  return `<div class="col mt-host">${renderCare()}${mtBar('mem',[['list',`명단 ${F==='active'?cnt.active:list.length}`],['add','추가 · 도움말']],mc)}
     <div class="panel"${msA(mc,'add')}><h2>문파원 추가</h2>
       <div class="addrow"><label class="f grow">닉네임 (여러 명은 줄바꿈이나 쉼표로 구분)<textarea id="addNames" rows="2" placeholder="예: 묘룡, 청풍&#10;흑월"></textarea></label>
         <label class="f">가입일 (비우면 모든 회차)<input type="date" id="addJoin"></label>
@@ -2454,6 +2465,7 @@ function renderSettings(){
         <label class="f">문파 이름<input type="text" id="cfgGuild" maxlength="30" placeholder="예: 학살" value="${esc(C.guild||'')}"></label>
         <label class="f">문파 한자 (도장·배경 무늬, 1~4글자)<input type="text" id="cfgHanja" maxlength="4" placeholder="예: ${esc((GUILD&&GUILD.hanja)||'虐殺')}" value="${esc(C.hanja||'')}"></label>
         <label class="f">문파 한마디 (홈 맨 위 문파 칸에 보여요)<input type="text" id="cfgMotto" maxlength="40" placeholder="예: 함께 강해지는 학살" value="${esc(C.motto||'')}"></label>
+        <label class="f full">이동할 문파 목록 <span class="hint">(문파원 명단 → 이동에 버튼으로 나와요 · 한 줄에 하나 · ${Object.keys(GUILDS).filter(k=>k!==GKEY).map(k=>esc(GUILDS[k].name)).join('·')||'연결된 문파'}는 자동)</span><textarea id="cfgMoveT" rows="3" maxlength="400" placeholder="예: 묘룡2 학살 문파&#10;묘룡3 초살 문파">${esc((Array.isArray(C.moveTargets)?C.moveTargets:[]).join('\n'))}</textarea></label>
         <label class="f">주 시작 요일<select id="cfgWeek">${DAYS.map((d,i)=>`<option value="${i}"${+C.weekStart===i?' selected':''}>${d}요일</option>`).join('')}</select></label></div>
         ${notes(['<b>문파 이름</b>은 머리말과 카톡 공지 문구에 들어가요','<b>주 시작 요일</b>은 랭킹이 초기화되는 요일로 맞추세요. 주간 통계와 주 1회 콘텐츠가 이 기준으로 나뉘어요'])}</div>
       <div class="cfg-group"${msA(sc,'base')}><h3>출석률 계산</h3><div class="fg3">
@@ -2576,6 +2588,8 @@ function setupPeers(){
         P.un=fsnap(fcol(P.fs,'admins'),x=>{P.admins=x.docs.map(d=>({id:d.id,...d.data()}));render()},()=>{})}catch(_){P.owner=false}}
       P.known=true;render()})}
 }
+function moveTargets(){const out=Object.keys(GUILDS).filter(k=>k!==GKEY).map(k=>({g:k,name:GUILDS[k].name+' 문파'}));const seen=new Set(out.map(x=>x.name));
+  for(const t of (Array.isArray(S.config.moveTargets)?S.config.moveTargets:[])){const n=String(t||'').trim().slice(0,30);if(n&&!seen.has(n)){seen.add(n);out.push({name:n})}}return out}
 async function peerAddMembers(g,list){const P=S.peers[g];const res={add:0,back:0,skip:0};if(!P||!P.fs)return res;const t=todayStr(),from=GUILD?GUILD.name:'';
   for(const m of list){const q=await getDocs(query(fcol(P.fs,'members'),fWhere('name','==',m.name)));const ex=q.docs[0];
     const extra={};if(powOf(m)){extra.power=m.power;extra.powerAt=m.powerAt||''}if(Array.isArray(m.skills)&&m.skills.length)extra.skills=m.skills;
@@ -3589,7 +3603,8 @@ document.addEventListener('click',e=>{
   if(a==='mSelAll'){const q=S.mSearch.trim().toLowerCase(),F=S.mFilter;const vis=S.members.filter(m=>(F==='all'||mStatus(m)===F)&&(!q||String(m.name).toLowerCase().includes(q)));
     const all=vis.length&&vis.every(m=>S.msel.has(m.id));S.msel=all?new Set():new Set(vis.map(m=>m.id));if(!S.msel.size)S.mbulk=null;render();return}
   if(a==='mSelNone'){S.msel=new Set();S.mbulk=null;render();return}
-  if(a==='mBulk'){const k=b.dataset.k||null;S.mbulk=S.mbulk===k?null:k;render();if(S.mbulk==='move')$('#bkMove')?.focus();return}
+  if(a==='mBulk'){const k=b.dataset.k||null;S.mbulk=S.mbulk===k?null:k;S.mvEtc=false;render();return}
+  if(a==='mvEtc'){S.mvEtc=!S.mvEtc;render();if(S.mvEtc)$('#bkMove')?.focus();return}
   if(a==='mBulkYes'){const k=b.dataset.k,q=S.mSearch.trim().toLowerCase(),F=S.mFilter;
     const sel=S.members.filter(m=>S.msel.has(m.id)&&(F==='all'||mStatus(m)===F)&&(!q||String(m.name).toLowerCase().includes(q)));
     const A=sel.filter(m=>m.active!==false),O=sel.filter(m=>m.active===false);
@@ -3600,8 +3615,8 @@ document.addEventListener('click',e=>{
       if(isLocked(from)||(to&&isLocked(to))){toast('마감된 달이 걸린 휴식은 넣을 수 없어요');return}
       guard(async()=>{for(const m of A)await S.db.doc('members/'+m.id).update({leaves:[...(m.leaves||[]),{from,to,note}]})},`${A.length}명에게 휴식을 등록했어요`,{area:'문파원',what:'휴식 등록',detail:`${names(A)} ${from}~${to||'미정'}`}).then(done);return}
     if(k==='out'){if(!A.length)return;guard(async()=>{for(const m of A)await S.db.doc('members/'+m.id).update({active:false,moved:false,movedTo:'',leftAt:todayStr()})},`${A.length}명을 탈퇴 처리했어요`,{area:'문파원',what:'탈퇴 처리',detail:names(A)}).then(done);return}
-    if(k==='move'){if(!A.length)return;const pmsg=[];const peers=feat('move')&&S.isOwner?Object.keys(GUILDS).filter(g=>g!==GKEY&&$('#bkPeer-'+g)?.checked&&S.peers[g]&&S.peers[g].owner):[];
-      const to=($('#bkMove')?.value||'').trim().slice(0,30)||(peers.length?peers.map(g=>GUILDS[g].name+' 문파').join(', '):'');
+    if(k==='move'){if(!A.length)return;const pmsg=[];const g0=b.dataset.g||'';const peers=g0&&GUILDS[g0]&&feat('move')&&S.isOwner&&S.peers[g0]&&S.peers[g0].owner?[g0]:[];
+      const to=(b.dataset.etc?($('#bkMove')?.value||''):(b.dataset.to||'')).trim().slice(0,30);if(b.dataset.etc&&!to){toast('이동한 곳을 적어 주세요');return}S.mvEtc=false;
       guard(async()=>{for(const m of A)await S.db.doc('members/'+m.id).update({active:false,moved:true,movedTo:to,movedAt:todayStr()});
         for(const g of peers){const r=await peerAddMembers(g,A);pmsg.push(`${GUILDS[g].name} 명단에 새로 ${r.add}명${r.back?` · 다시 활동 ${r.back}명`:''}${r.skip?` · 이미 있음 ${r.skip}명`:''}`)}},null,{area:'문파원',what:'이동 처리',detail:`${names(A)}${to?' → '+to:''}`}).then(ok=>{if(ok)toast(`${A.length}명을 이동 처리했어요${pmsg.length?' · '+pmsg.join(' · '):''}`);done(ok)});return}
     if(k==='back'){if(!O.length)return;guard(async()=>{for(const m of O)await S.db.doc('members/'+m.id).update({active:true,moved:false})},`${O.length}명이 복귀했어요`,{area:'문파원',what:'복귀',detail:O.map(m=>m.name+(m.moved?' (이동에서)':' (탈퇴에서)')).join(', ').slice(0,300)}).then(done);return}
@@ -3614,13 +3629,13 @@ document.addEventListener('click',e=>{
   if(a==='rejoin'){const m=S.members.find(x=>x.id===b.dataset.mid);if(m)guard(()=>S.db.doc('members/'+m.id).update({active:true,moved:false}),`${m.name} 님이 복귀했어요`,{area:'문파원',what:'복귀',detail:`${m.name}${m.moved?' (이동에서)':' (탈퇴에서)'}`});return}
   if(a==='addMembers'){addMembers();return}
   if(a==='saveCfg'){
-    const guild=$('#cfgGuild').value.trim().slice(0,30),motto=($('#cfgMotto')?.value||'').trim().slice(0,40),hanja=Array.from(($('#cfgHanja')?.value||'').replace(/\s/g,'')).slice(0,4).join('');
+    const guild=$('#cfgGuild').value.trim().slice(0,30),motto=($('#cfgMotto')?.value||'').trim().slice(0,40),hanja=Array.from(($('#cfgHanja')?.value||'').replace(/\s/g,'')).slice(0,4).join(''),moveTargets=[...new Set(($('#cfgMoveT')?.value||'').split(/\r?\n/).map(x=>x.trim().slice(0,30)).filter(Boolean))].slice(0,10);
     let sk=Math.round(+$('#cfgStreak').value);if(!(sk>=2&&sk<=50))sk=3;
     const iv=(id,d,lo,hi)=>{const v=Math.round(+$(id).value);return v>=lo&&v<=hi?v:d};
     const excuseLimit_=iv('#cfgExLim',2,0,31),minJudge_=iv('#cfgMinJ',4,1,100),warnRate=iv('#cfgWRate',50,0,100),warnPts=iv('#cfgWPts',10,0,10000),expelCount=iv('#cfgExN',2,1,20),expelMonths=iv('#cfgExM',3,0,36);
     const warnBasis=$('#cfgWBasis').value==='points'?'points':'rate',warnScope=$('#cfgWScope').value==='main'?'main':'all';
     const weekStart=Math.min(6,Math.max(0,+$('#cfgWeek').value||0));
-    guard(()=>saveConfig({guild,motto,hanja,streak:sk,weekStart,excuseLimit:excuseLimit_,minJudge:minJudge_,warnBasis,warnScope,warnRate,warnPts,expelCount,expelMonths}),'설정을 저장했어요',{area:'설정',what:'설정 저장',detail:`면제 ${excuseLimit_}회 · 판정 ${minJudge_}회 · 경고 ${warnBasis==='points'?warnPts+'점':warnRate+'%'} · 추방 ${expelCount}회/${expelMonths}개월`});return}
+    guard(()=>saveConfig({guild,motto,hanja,moveTargets,streak:sk,weekStart,excuseLimit:excuseLimit_,minJudge:minJudge_,warnBasis,warnScope,warnRate,warnPts,expelCount,expelMonths}),'설정을 저장했어요',{area:'설정',what:'설정 저장',detail:`면제 ${excuseLimit_}회 · 판정 ${minJudge_}회 · 경고 ${warnBasis==='points'?warnPts+'점':warnRate+'%'} · 추방 ${expelCount}회/${expelMonths}개월`});return}
   if(a==='login'){
     if(inKakao){copyText(location.href,'주소를 복사했어요. 크롬이나 사파리에 붙여 넣어 열어 주세요');return}
     const pv=new GoogleAuthProvider();pv.setCustomParameters({prompt:'select_account'});
