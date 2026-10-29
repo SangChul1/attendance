@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
+<script>(function(){try{var q=new URLSearchParams(location.search).get('g'),m={"학살":"haksal","초살":"chosal"},k=q?(m[q]||q):localStorage.getItem('att.guild');if(k)document.documentElement.setAttribute('data-guild',k)}catch(e){}})();</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>도깨비 문파 출석부</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1177,9 +1178,60 @@ button.wt-it{cursor:pointer}button.wt-it:hover{border-color:var(--cc,var(--accen
 .ga-warn{font-size:12px;font-weight:700;color:var(--bad,#c0392b)}
 @media (max-width:820px){.ga-add{grid-template-columns:minmax(0,1fr)}.ga-chk{padding-bottom:0}}
 nav.tabs[hidden]{display:none}
+
+/* ===== 초살 문파 색: 달빛 남보라 (학살은 청록·금) ===== */
+:root[data-guild="chosal"]{--bg:#efedf5;--surface:#fdfcff;--sunken:#f4f2f9;--line:#ddd8ea;--ink:#1d1b2b;--muted:#625e75;
+  --accent:#5a46a6;--accent-soft:#e4def6;--accent-ink:#ffffff;--thead:#f1eefa;
+  --gold:#9a6fd0;--gold-soft:#ece3fa;--hero1:#2a2166;--hero2:#4b3c9f;--hero3:#6e3f74;
+  --hero-shadow:0 12px 30px -18px rgba(40,26,100,.75);
+  --card-shadow:0 1px 2px rgba(40,30,80,.05),0 12px 28px -22px rgba(40,30,80,.45);
+  --page-bg:radial-gradient(1100px 520px at 8% -12%,rgba(90,70,166,.12),transparent 62%),radial-gradient(900px 480px at 102% -6%,rgba(178,90,150,.09),transparent 60%),linear-gradient(180deg,#f3f0f9 0%,#eeedf5 100%);
+  --pat:rgba(90,70,166,.045);
+  --g1a:#5b45a8;--g1b:#2c1f5e;--g2a:#2a6f9c;--g2b:#1a3c68;}
+:root[data-guild="chosal"][data-theme="dark"]{--bg:#0f0d19;--surface:#181528;--sunken:#131022;--line:#2d2848;--ink:#e9e7f3;--muted:#9e99b6;
+  --accent:#a08df2;--accent-soft:#27204b;--accent-ink:#130d30;--thead:#1d1935;
+  --gold:#c9a8ff;--gold-soft:#2d2448;--hero1:#1a1442;--hero2:#302572;--hero3:#4a2852;
+  --hero-shadow:0 14px 34px -18px rgba(0,0,0,.9),inset 0 0 0 1px rgba(160,141,242,.2);
+  --card-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 16px 34px -24px rgba(0,0,0,.95);
+  --page-bg:radial-gradient(1100px 560px at 10% -14%,rgba(160,141,242,.14),transparent 62%),radial-gradient(900px 520px at 100% -8%,rgba(200,110,170,.08),transparent 60%),linear-gradient(180deg,#110e1e 0%,#0c0a15 100%);
+  --pat:rgba(201,168,255,.045);
+  --g1a:#44337f;--g1b:#1d1442;--g2a:#1f527a;--g2b:#122a48;}
+@media (prefers-color-scheme: dark){:root[data-guild="chosal"]:not([data-theme="light"]){--bg:#0f0d19;--surface:#181528;--sunken:#131022;--line:#2d2848;--ink:#e9e7f3;--muted:#9e99b6;
+  --accent:#a08df2;--accent-soft:#27204b;--accent-ink:#130d30;--thead:#1d1935;
+  --gold:#c9a8ff;--gold-soft:#2d2448;--hero1:#1a1442;--hero2:#302572;--hero3:#4a2852;
+  --hero-shadow:0 14px 34px -18px rgba(0,0,0,.9),inset 0 0 0 1px rgba(160,141,242,.2);
+  --card-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 16px 34px -24px rgba(0,0,0,.95);
+  --page-bg:radial-gradient(1100px 560px at 10% -14%,rgba(160,141,242,.14),transparent 62%),radial-gradient(900px 520px at 100% -8%,rgba(200,110,170,.08),transparent 60%),linear-gradient(180deg,#110e1e 0%,#0c0a15 100%);
+  --pat:rgba(201,168,255,.045);
+  --g1a:#44337f;--g1b:#1d1442;--g2a:#1f527a;--g2b:#122a48;}}
+
+/* ================= 초살 문파 색 (남색·보라 밤하늘) ================= */
+:root[data-guild="chosal"]{--bg:#eeedf5;--surface:#fdfcff;--sunken:#f3f2f9;--line:#dcd9ea;--ink:#1d1d2e;--muted:#5f5d74;
+  --accent:#4f4bb0;--accent-soft:#e1e0f4;--accent-ink:#ffffff;--seal:#a23a6e;--seal-soft:#f5dde9;
+  --hero1:#25285e;--hero2:#423c9a;--hero3:#6a3a6e;--hero-shadow:0 12px 30px -18px rgba(30,28,80,.75);
+  --card-shadow:0 1px 2px rgba(30,28,70,.05),0 12px 28px -22px rgba(30,28,70,.45);
+  --page-bg:radial-gradient(1100px 520px at 8% -12%,rgba(79,75,176,.12),transparent 62%),radial-gradient(900px 480px at 102% -6%,rgba(162,58,110,.08),transparent 60%),linear-gradient(180deg,#f3f1f8 0%,#eeedf5 100%);
+  --pat:rgba(79,75,176,.045);--thead:#eeedf8;
+  --g1a:#4a4fb0;--g1b:#262a6a;--g2a:#1f7f8f;--g2b:#174a6a;--g3a:#c08325;--g3b:#8a4a22;--g4a:#a33a78;--g4b:#4e1a4a;}
+@media (prefers-color-scheme: dark){:root[data-guild="chosal"]:not([data-theme="light"]){--bg:#0d0d18;--surface:#161628;--sunken:#11111f;--line:#2a2a45;--ink:#e6e5f2;--muted:#9a98b5;
+  --accent:#8f8bf0;--accent-soft:#25234a;--accent-ink:#0d0b2a;--seal:#e0709f;--seal-soft:#3d1c2d;
+  --hero1:#141433;--hero2:#2b2766;--hero3:#4a2649;--hero-shadow:0 14px 34px -18px rgba(0,0,0,.9),inset 0 0 0 1px rgba(143,139,240,.18);
+  --card-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 16px 34px -24px rgba(0,0,0,.95);
+  --page-bg:radial-gradient(1200px 600px at 8% -16%,rgba(143,139,240,.14),transparent 62%),radial-gradient(900px 520px at 100% -8%,rgba(224,112,159,.08),transparent 60%),linear-gradient(180deg,#0d0d18 0%,#0b0b14 100%);
+  --pat:rgba(143,139,240,.05);--thead:#1d1c36;
+  --g1a:#33378a;--g1b:#17193f;--g2a:#17606c;--g2b:#0f3348;--g3a:#94631c;--g3b:#5e3216;--g4a:#7d2b5c;--g4b:#36122f;}}
+:root[data-guild="chosal"][data-theme="dark"]{--bg:#0d0d18;--surface:#161628;--sunken:#11111f;--line:#2a2a45;--ink:#e6e5f2;--muted:#9a98b5;
+  --accent:#8f8bf0;--accent-soft:#25234a;--accent-ink:#0d0b2a;--seal:#e0709f;--seal-soft:#3d1c2d;
+  --hero1:#141433;--hero2:#2b2766;--hero3:#4a2649;--hero-shadow:0 14px 34px -18px rgba(0,0,0,.9),inset 0 0 0 1px rgba(143,139,240,.18);
+  --card-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 16px 34px -24px rgba(0,0,0,.95);
+  --page-bg:radial-gradient(1200px 600px at 8% -16%,rgba(143,139,240,.14),transparent 62%),radial-gradient(900px 520px at 100% -8%,rgba(224,112,159,.08),transparent 60%),linear-gradient(180deg,#0d0d18 0%,#0b0b14 100%);
+  --pat:rgba(143,139,240,.05);--thead:#1d1c36;
+  --g1a:#33378a;--g1b:#17193f;--g2a:#17606c;--g2b:#0f3348;--g3a:#94631c;--g3b:#5e3216;--g4a:#7d2b5c;--g4b:#36122f;}
+:root[data-guild="chosal"] .ibtn{color:#25285e}
 </style>
 </head>
 <body>
+<script>(function(){try{var q=new URLSearchParams(location.search).get('g'),m={'학살':'haksal','초살':'chosal'};var k=q?(m[q]||q):localStorage.getItem('att.guild');if(k)document.documentElement.setAttribute('data-guild',k)}catch(e){}})();</script>
 <div class="wrap">
   <header class="top">
     <div class="brand">
@@ -1290,7 +1342,9 @@ const GKEY=(()=>{const q=new URLSearchParams(location.search).get('g');let k=nul
   try{const v=localStorage.getItem('att.guild');if(v&&GUILDS[v])return v}catch(_){}
   return Object.keys(GUILDS).length===1?Object.keys(GUILDS)[0]:'';})();
 const GUILD=GKEY?GUILDS[GKEY]:null;
+if(GKEY)document.documentElement.setAttribute('data-guild',GKEY);else document.documentElement.removeAttribute('data-guild');
 const FIREBASE_CONFIG=GUILD?GUILD.config:{};
+if(GKEY)document.documentElement.setAttribute('data-guild',GKEY);else document.documentElement.removeAttribute('data-guild');
 
 (function(){
 /* ---------- 콘텐츠: 설정 > 콘텐츠에서 추가·수정 ---------- */
@@ -1413,7 +1467,7 @@ function countSession(s,mid){let o=0,e=0,x=0;for(const [id,m] of mid){if(!eligib
 function periodFrom(){return S.period==='all'?null:addDays(weekStart(todayStr()),-7*(+S.period-1))}
 function periodLabel(){const f=periodFrom();if(!f)return '전체 기간';return S.period==='52'?`최근 1년 (${f.slice(2).replace(/-/g,'.')}~${md(todayStr())})`:`최근 ${S.period}주 (${md(f)}~${md(todayStr())})`}
 function nameOf(v){return v?String(v):''}
-function myName(){return S.myNick||(S.isOwner?'문파장':'운영진')}
+function myName(){return S.myNick||(S.isOwner?'admin':'운영진')}
 
 /* ---------- render ---------- */
 let composing=false,needRender=false;
@@ -1479,7 +1533,7 @@ function roNote(){if(S.canWrite)return '';
 const inKakao=/KAKAOTALK/i.test(navigator.userAgent);
 function renderAuth(){const el=$('#authbar');if(!el)return;
   if(S.setup||!S.auth){el.innerHTML='';return}
-  el.innerHTML=S.authUser?`<span class="authwho">${esc(S.myNick||S.authUser.email||'')}${S.isOwner?' · 문파장':S.canWrite?' · 운영진':''}</span><button class="btn small" data-action="logout">로그아웃</button>`
+  el.innerHTML=S.authUser?`<span class="authwho">${esc(S.myNick||S.authUser.email||'')}${S.isOwner?' · admin':S.canWrite?' · 운영진':''}</span><button class="btn small" data-action="logout">로그아웃</button>`
     :`<button class="btn small" data-action="login">운영진 로그인</button>`}
 
 
