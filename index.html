@@ -1228,6 +1228,39 @@ nav.tabs[hidden]{display:none}
   --pat:rgba(143,139,240,.05);--thead:#1d1c36;
   --g1a:#33378a;--g1b:#17193f;--g2a:#17606c;--g2b:#0f3348;--g3a:#94631c;--g3b:#5e3216;--g4a:#7d2b5c;--g4b:#36122f;}
 :root[data-guild="chosal"] .ibtn{color:#25285e}
+
+.ga-pm{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin-top:6px;max-width:260px;margin-left:auto;margin-right:auto}
+.ga-p{padding:2px 9px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.ga-p.on{border-color:color-mix(in srgb,var(--accent) 50%,var(--line));background:color-mix(in srgb,var(--accent) 14%,var(--surface));color:var(--ink)}
+.ga-p:hover{border-color:var(--accent)}
+.ga-add{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto auto}
+.ga-pchk{grid-column:1/-1;flex-wrap:wrap}
+
+/* ================= 학살 문파 색 (진홍·먹색) ================= */
+:root[data-guild="haksal"]{--bg:#f3eeea;--surface:#fffcfa;--sunken:#f7f1ec;--line:#e6d9d3;--ink:#241618;--muted:#6b5a5a;
+  --accent:#a3202e;--accent-soft:#f6dfe0;--accent-ink:#ffffff;--seal:#8f1622;--seal-soft:#f6dcdd;
+  --hero1:#4a0c16;--hero2:#7a1420;--hero3:#2a0a10;--hero-shadow:0 12px 30px -18px rgba(70,10,18,.75);
+  --card-shadow:0 1px 2px rgba(70,20,20,.05),0 12px 28px -22px rgba(70,20,20,.45);
+  --page-bg:radial-gradient(1100px 520px at 8% -12%,rgba(163,32,46,.11),transparent 62%),radial-gradient(900px 480px at 102% -6%,rgba(176,130,31,.10),transparent 60%),linear-gradient(180deg,#f6f1ec 0%,#f2ede8 100%);
+  --pat:rgba(163,32,46,.045);--thead:#f8eceb;
+  --g1a:#8a1a26;--g1b:#3a0a12;--g2a:#3a3438;--g2b:#16121a;--g3a:#b07a1e;--g3b:#6a3e10;--g4a:#6a2a5a;--g4b:#2a1028;}
+@media (prefers-color-scheme: dark){:root[data-guild="haksal"]:not([data-theme="light"]){--bg:#110b0c;--surface:#1c1214;--sunken:#160e10;--line:#3a2326;--ink:#efe4e4;--muted:#a8959a;
+  --accent:#e0525f;--accent-soft:#3a1519;--accent-ink:#1a0507;--seal:#e0525f;--seal-soft:#3d1c1f;
+  --hero1:#2a070c;--hero2:#4f0d16;--hero3:#1a0a0c;--hero-shadow:0 14px 34px -18px rgba(0,0,0,.9),inset 0 0 0 1px rgba(224,82,95,.2);
+  --card-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 16px 34px -24px rgba(0,0,0,.95);
+  --page-bg:radial-gradient(1200px 600px at 8% -16%,rgba(224,82,95,.13),transparent 62%),radial-gradient(900px 520px at 100% -8%,rgba(226,183,101,.08),transparent 60%),linear-gradient(180deg,#110b0c 0%,#0e090a 100%);
+  --pat:rgba(224,82,95,.05);--thead:#24161a;
+  --g1a:#6a1320;--g1b:#2a070d;--g2a:#2a2427;--g2b:#110d10;--g3a:#8a5e17;--g3b:#4a2c0e;--g4a:#4f1f45;--g4b:#1f0b1c;}}
+:root[data-guild="haksal"][data-theme="dark"]{--bg:#110b0c;--surface:#1c1214;--sunken:#160e10;--line:#3a2326;--ink:#efe4e4;--muted:#a8959a;
+  --accent:#e0525f;--accent-soft:#3a1519;--accent-ink:#1a0507;--seal:#e0525f;--seal-soft:#3d1c1f;
+  --hero1:#2a070c;--hero2:#4f0d16;--hero3:#1a0a0c;--hero-shadow:0 14px 34px -18px rgba(0,0,0,.9),inset 0 0 0 1px rgba(224,82,95,.2);
+  --card-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 16px 34px -24px rgba(0,0,0,.95);
+  --page-bg:radial-gradient(1200px 600px at 8% -16%,rgba(224,82,95,.13),transparent 62%),radial-gradient(900px 520px at 100% -8%,rgba(226,183,101,.08),transparent 60%),linear-gradient(180deg,#110b0c 0%,#0e090a 100%);
+  --pat:rgba(224,82,95,.05);--thead:#24161a;
+  --g1a:#6a1320;--g1b:#2a070d;--g2a:#2a2427;--g2b:#110d10;--g3a:#8a5e17;--g3b:#4a2c0e;--g4a:#4f1f45;--g4b:#1f0b1c;}
+:root[data-guild="haksal"] .ibtn{color:#4a0c16}
+/* 진홍 머리글 위 도장은 먹색 바탕 + 금 글씨 */
+:root[data-guild="haksal"] header.top .seal{background:#140608;color:#ecc77d;box-shadow:inset 0 0 0 2px rgba(236,199,125,.55),inset 0 0 0 4px #140608,inset 0 0 0 5px rgba(236,199,125,.3),0 4px 12px -4px rgba(0,0,0,.6)}
 </style>
 </head>
 <body>
@@ -1467,6 +1500,9 @@ function countSession(s,mid){let o=0,e=0,x=0;for(const [id,m] of mid){if(!eligib
 function periodFrom(){return S.period==='all'?null:addDays(weekStart(todayStr()),-7*(+S.period-1))}
 function periodLabel(){const f=periodFrom();if(!f)return '전체 기간';return S.period==='52'?`최근 1년 (${f.slice(2).replace(/-/g,'.')}~${md(todayStr())})`:`최근 ${S.period}주 (${md(f)}~${md(todayStr())})`}
 function nameOf(v){return v?String(v):''}
+const PERMS=[['check','출석 체크','회차 만들기·체크·삭제'],['notice','공지','문파 공지 쓰기·고치기'],['members','명단','문파원 추가·휴식·메모'],['manage','경고·정산','경고·월 마감·지급·구매 기록']];
+function permsOf(d){if(!d||typeof d.perms!=='object'||!d.perms)return null;const o={};for(const [k] of PERMS)o[k]=d.perms[k]===true;return o}
+function can(p){return S.isOwner||(S.canWrite&&(!S.perms||S.perms[p]===true))}
 function myName(){return S.myNick||(S.isOwner?'admin':'운영진')}
 
 /* ---------- render ---------- */
@@ -1672,7 +1708,7 @@ function noticeForm(n){
     <p class="hint">링크를 가진 누구나 볼 수 있어요 · 내용 2000자까지</p></div>`}
 function renderNoticeView(){
   const L=noticeList(),i=L.findIndex(n=>n.id===S.nView);if(i<0){S.nView=null;return ''}
-  const n=L[i],adm=S.canWrite,isNew=n.at&&Date.now()-n.at<7*864e5;
+  const n=L[i],adm=can('notice'),isNew=n.at&&Date.now()-n.at<7*864e5;
   const d=n.at?new Date(n.at+9*3600e3).toISOString().slice(0,10):'';
   const prev=L[i-1],next=L[i+1];
   return `<div class="overlay nv-ov" data-action="nViewClose"><div class="panel nv" role="dialog" aria-modal="true" aria-label="공지 보기">
@@ -1685,7 +1721,7 @@ function renderNoticeView(){
       <button class="btn small primary" data-action="nViewClose">닫기</button></div></div></div>`;
 }
 function renderNotices(){
-  const adm=S.canWrite,L=noticeList(),now=Date.now(),isNew=n=>n.at&&now-n.at<7*864e5;
+  const adm=can('notice'),L=noticeList(),now=Date.now(),isNew=n=>n.at&&now-n.at<7*864e5;
   const pin=L.find(n=>n.pinned),rest=L.filter(n=>n!==pin),PER=7,pages=Math.max(1,Math.ceil(rest.length/PER));if(!(S.nPage>=0))S.nPage=0;if(S.nPage>pages-1)S.nPage=pages-1;const shown=rest.slice(S.nPage*PER,S.nPage*PER+PER);
   const acts=n=>adm?`<span class="nacts">${S.nDel===n.id?`<button class="btn small danger" data-action="nDelYes" data-id="${esc(n.id)}">정말 삭제</button><button class="btn small" data-action="nDel" data-id="">취소</button>`:`<button class="btn small" data-action="nEditOpen" data-id="${esc(n.id)}">수정</button>${n.legacy?'':`<button class="btn small" data-action="nPinT" data-id="${esc(n.id)}">${n.pinned?'고정 해제':'고정'}</button><button class="btn small" data-action="nDel" data-id="${esc(n.id)}">삭제</button>`}`}</span>`:'';
   const meta=n=>`<span class="hint num">${n.by?esc(n.by)+' · ':''}${n.at?ntime(n.at):''}</span>`;
@@ -1794,7 +1830,7 @@ function renderCheck(){
   const today=gameDay(), d=dow(today);
   const members=activeMembers(S.members);
   const sessions=[...S.sessions].sort(sessionSort);
-  const weekP=S.canWrite?renderWeek(members):'';
+  const weekP=can('check')?renderWeek(members):'';
   let sessPg='';S.pgVisSess=null;
   let list='';
   if(!sessions.length) list='<div class="empty"><h3>아직 기록된 회차가 없어요</h3><p class="hint">위에서 오늘 진행한 콘텐츠를 누르면 회차가 만들어지고 바로 체크할 수 있어요.</p></div>';
@@ -1808,17 +1844,17 @@ function renderCheck(){
     ${S.confirm==='bulkDel'?`<div class="confirm">선택한 ${selN}개 회차와 체크 기록을 지울까요? 지운 회차는 관리 → 운영진 · 백업의 '삭제된 회차'에서 되살릴 수 있어요. <button class="btn small danger" data-action="bulkDelYes">삭제</button><button class="btn small" data-action="cancel">취소</button></div>`
       :`<div class="row"><button class="btn small danger" data-action="bulkDelAsk"${selN?'':' disabled'}>선택한 ${selN}개 삭제</button><button class="btn small" data-action="selExit">취소</button></div>`}`:'';
   const uncFrom=monthAdd(today.slice(0,7),-1)+'-01';
-  const unc=S.canWrite&&members.length?S.sessions.filter(s=>s.date>=uncFrom&&s.date<today&&!isLocked(s.date)).map(s=>{const mk=marksOf(s);return {s,n:members.filter(m=>eligible(m,s)&&!validMark(mk[m.id])).length}}).filter(x=>x.n>0).sort((a,b)=>sessionSort(a.s,b.s)):[];
+  const unc=can('check')&&members.length?S.sessions.filter(s=>s.date>=uncFrom&&s.date<today&&!isLocked(s.date)).map(s=>{const mk=marksOf(s);return {s,n:members.filter(m=>eligible(m,s)&&!validMark(mk[m.id])).length}}).filter(x=>x.n>0).sort((a,b)=>sessionSort(a.s,b.s)):[];
   const uncP=unc.length?`<div class="panel"><div class="spread"><h2>체크가 덜 끝난 회차</h2><span class="pill-low">${unc.length}개</span></div>
       <div class="row">${unc.slice(0,8).map(x=>`<button class="btn small" data-action="openUnc" data-sid="${x.s.id}">${mdd(x.s.date)} ${esc(cshort(x.s.content))}${x.s.extra?' (추가)':''} · 미체크 ${x.n}명</button>`).join('')}</div>
       ${unc.length>8?`<p class="hint">외 ${unc.length-8}개 더 있어요. 회차 기록에서 확인해 주세요.</p>`:''}
       ${notes(['지난달과 이번 달 회차 중 체크 안 된 문파원이 있는 회차예요. 오늘 회차와 마감된 달은 빠져요','누르면 그 회차가 <b>미체크만</b> 보기로 열려요'])}</div>`:'';
   const openS=S.sessions.find(x=>x.id===S.openSid);
-  const ckKeys=[...(S.canWrite?['week']:[]),'sheet','list'];let cc=mtCur('check',ckKeys,S.canWrite?'week':'list');if(cc==='sheet'&&!openS)cc=S.canWrite?'week':'list';
+  const ckKeys=[...(can('check')?['week']:[]),'sheet','list'];let cc=mtCur('check',ckKeys,can('check')?'week':'list');if(cc==='sheet'&&!openS)cc=S.canWrite?'week':'list';
   const openUn=openS?(()=>{const mk=marksOf(openS);return members.filter(m=>eligible(m,openS)&&!validMark(mk[m.id])).length})():0;
-  const ckBar=mtBar('check',[...(S.canWrite?[['week','주간 일정']]:[]),['sheet',openS?`체크 · ${esc(cshort(openS.content))}${openS.extra?'(추가)':''} ${md(openS.date)}${openUn?` <span class="xb">${openUn}</span>`:''}`:'체크'],['list',`회차 기록${unc.length?` <span class="xb">${unc.length}</span>`:''}`]],cc);
+  const ckBar=mtBar('check',[...(can('check')?[['week','주간 일정']]:[]),['sheet',openS?`체크 · ${esc(cshort(openS.content))}${openS.extra?'(추가)':''} ${md(openS.date)}${openUn?` <span class="xb">${openUn}</span>`:''}`:'체크'],['list',`회차 기록${unc.length?` <span class="xb">${unc.length}</span>`:''}`]],cc);
   return `${roNote()}${blockNote()}<div class="col mt-host">${lockNote()}${ckBar}<div${msA(cc,'week')}>${weekP}</div><div class="check-below${openS?' has-open':''}"><div class="col"${msA(cc,'list')}>
-    <div class="panel"><div class="spread"><h2>회차 기록</h2>${S.canWrite&&sessions.length&&!S.selMode?'<button class="btn small" data-action="selMode">삭제</button>':''}</div>${selBar}<div class="slist">${list}</div>${sessPg}</div>
+    <div class="panel"><div class="spread"><h2>회차 기록</h2>${can('check')&&sessions.length&&!S.selMode?'<button class="btn small" data-action="selMode">삭제</button>':''}</div>${selBar}<div class="slist">${list}</div>${sessPg}</div>
     ${uncP}</div>
     <div class="col sheet-col" id="sheetCol"${msA(cc,'sheet')}>${renderSheet(members)}</div></div></div>`;
 }
@@ -1867,7 +1903,7 @@ function renderSheet(members){
     :`<div class="panel"><div class="empty"><h3>문파원 명단이 비어 있어요</h3><p class="hint">관리 → 문파원 명단에서 닉네임을 먼저 추가해 주세요.</p>${S.canWrite?'<button class="btn primary" data-action="gotoMembers">문파원 추가하러 가기</button>':''}</div></div>`;
   const mk=marksOf(s);const c=CMAP[s.content];const by=s.marksBy||{};
   const cnt={O:0,A:0,X:0,N:0};members.forEach(m=>cnt[validMark(mk[m.id])?mk[m.id]:'N']++);
-  const lk=isLocked(s.date),can=S.canWrite&&!lk,dis=can?'':' disabled';
+  const lk=isLocked(s.date),canE=can('check')&&!lk,dis=canE?'':' disabled';
   const leaveNames=activeMembers(S.members).filter(m=>onLeave(m,s.date)).map(m=>m.name);
   const q=S.search.trim().toLowerCase();
   const shown=members.filter(m=>(!q||String(m.name).toLowerCase().includes(q))&&(!S.onlyUnchecked||!validMark(mk[m.id])));
@@ -1878,7 +1914,7 @@ function renderSheet(members){
   const allChanged=allConf?members.filter(m=>validMark(mk[m.id])&&mk[m.id]!==allConf).length:0;
   const conf2=allConf?`<div class="confirm">이미 체크된 ${allChanged}명도 모두 ${allConf==='O'?'참여로':'불참으로'} 바꿀까요? <button class="btn small danger" data-action="bulkAllYes" data-sid="${s.id}" data-v="${allConf}">모두 바꾸기</button><button class="btn small" data-action="cancel">취소</button></div>`:'';
   const conf=conf2||(S.confirm==='s:'+s.id?`<div class="confirm">이 회차와 체크 기록을 모두 지울까요? 되돌릴 수 없어요. <button class="btn small danger" data-action="delSession" data-sid="${s.id}">삭제</button><button class="btn small" data-action="cancel">취소</button></div>`:'');
-  const editing=S.editSid===s.id&&can;
+  const editing=S.editSid===s.id&&canE;
   const edit=editing?`<div class="formgrid">
       <label class="f">날짜<input type="date" id="eDate" data-keep="0" value="${esc(s.date)}"></label>
       <label class="f">콘텐츠<select id="eContent" data-keep="0">${CONTENTS.filter(x=>x.on||x.k===s.content).map(x=>`<option value="${x.k}"${x.k===s.content?' selected':''}>${esc(x.name)}</option>`).join('')}</select></label>
@@ -1895,11 +1931,11 @@ function renderSheet(members){
     ${lk?`<div class="lockbar on">${monLabel(s.date.slice(0,7))} 정산이 마감돼서 수정할 수 없어요. 문파장이 마감을 풀면 고칠 수 있어요.</div>`:''}
     <div class="counts num"><span class="c-o">참여 <b>${cnt.O}</b></span><span class="c-a">사전공지 <b>${cnt.A}</b></span><span class="c-x">불참 <b>${cnt.X}</b></span><span class="c-n">미체크 <b>${cnt.N}</b></span></div>
     <div class="row">
-      ${can?`<button class="btn small" data-action="bulkAll" data-sid="${s.id}" data-v="O"${cnt.O===members.length?' disabled':''}>전원 참여</button><button class="btn small" data-action="bulkAll" data-sid="${s.id}" data-v="X"${cnt.X===members.length?' disabled':''}>전원 불참</button><button class="btn small" data-action="bulk" data-sid="${s.id}" data-v="O"${cnt.N?'':' disabled'}>미체크만 참여</button><button class="btn small" data-action="bulk" data-sid="${s.id}" data-v="X"${cnt.N?'':' disabled'}>미체크만 불참</button>`:''}
+      ${canE?`<button class="btn small" data-action="bulkAll" data-sid="${s.id}" data-v="O"${cnt.O===members.length?' disabled':''}>전원 참여</button><button class="btn small" data-action="bulkAll" data-sid="${s.id}" data-v="X"${cnt.X===members.length?' disabled':''}>전원 불참</button><button class="btn small" data-action="bulk" data-sid="${s.id}" data-v="O"${cnt.N?'':' disabled'}>미체크만 참여</button><button class="btn small" data-action="bulk" data-sid="${s.id}" data-v="X"${cnt.N?'':' disabled'}>미체크만 불참</button>`:''}
       <button class="btn small" data-action="copySession" data-sid="${s.id}">카톡용 복사</button>
       <span class="grow"></span>
       ${S.canWrite?`<button class="btn small" data-action="hist" data-sid="${s.id}" aria-pressed="${!!(S.hist&&S.hist.sid===s.id)}">변경 이력</button>`:''}
-      ${can&&!editing?`<button class="btn small" data-action="edit" data-sid="${s.id}">회차 수정 · 메모</button><button class="btn small danger" data-action="askDel" data-sid="${s.id}">삭제</button>`:''}
+      ${canE&&!editing?`<button class="btn small" data-action="edit" data-sid="${s.id}">회차 수정 · 메모</button><button class="btn small danger" data-action="askDel" data-sid="${s.id}">삭제</button>`:''}
     </div>
     ${conf}
     ${S.canWrite&&S.hist&&S.hist.sid===s.id?renderHist():''}
@@ -2123,7 +2159,9 @@ function csvText(opt){
 function renderAdmin(){
   if(!S.ready||!S.authKnown) return loading;
   if(!S.canWrite) return `<div class="col">${roNote()}${renderAdmins()}</div>`;
-  const tabs=[['warn','경고 · 추방'],['members','문파원 명단'],['pay','지급 기록'],['buy','구매 포인트'],['cfg','설정 · 콘텐츠'],['team','운영진 · 백업'],['logs','변경 기록']];
+  const TP={warn:'manage',members:'members',pay:'manage',buy:'manage',cfg:'owner'};
+  const tabs=[['warn','경고 · 추방'],['members','문파원 명단'],['pay','지급 기록'],['buy','구매 포인트'],['cfg','설정 · 콘텐츠'],['team','운영진 · 백업'],['logs','변경 기록']].filter(([k])=>!TP[k]||(TP[k]==='owner'?S.isOwner:can(TP[k])));
+  if(!tabs.some(t=>t[0]===S.atab))S.atab=tabs[0][0];
   const sub=`<div class="subtabs" role="tablist">${tabs.map(([k,l])=>`<button role="tab" data-action="atab" data-k="${k}" aria-selected="${S.atab===k}">${l}</button>`).join('')}</div>`;
   const body=S.atab==='members'?renderMemberAdmin():S.atab==='pay'?renderPayLog():S.atab==='buy'?renderBuy():S.atab==='logs'?renderLogs():S.atab==='cfg'?renderSettings():S.atab==='team'?`${renderAdmins()}${renderBackup()}${renderDeleted()}`:renderWarn();
   return `<div class="col">${blockNote()}${lockNote()}${backupNote()}${sub}${lastNote(S.atab)}${body}</div>`;
@@ -2376,14 +2414,21 @@ function setupPeers(){
 }
 async function peerLogin(k){const P=S.peers[k];if(!P||!P.auth)return;const pv=new GoogleAuthProvider();pv.setCustomParameters({prompt:'select_account'});
   try{await signInWithPopup(P.auth,pv)}catch(e){const c=e&&e.code;if(c==='auth/unauthorized-domain')toast(`${P.name} Firebase 승인된 도메인에 이 사이트 주소를 추가해 주세요`);else if(c!=='auth/popup-closed-by-user'&&c!=='auth/cancelled-popup-request'){console.error(e);toast('로그인하지 못했어요. 팝업 차단을 확인해 주세요')}}}
-async function peerSetAdmin(k,email,nick,on){
+async function peerSetAdmin(k,email,nick,on,perms){
   const cur=k===GKEY;const fs=cur?S.fs:S.peers[k]&&S.peers[k].fs;const gname=GUILDS[k].name;if(!fs)return false;
   const detail=`${gname} · ${nick||''} (${email})`;
-  try{if(on)await setDoc(fdoc(fs,'admins',email),{nick,addedAt:Date.now()});else await deleteDoc(fdoc(fs,'admins',email));
+  try{if(on)await setDoc(fdoc(fs,'admins',email),{nick,addedAt:Date.now(),perms:perms||Object.fromEntries(PERMS.map(([p])=>[p,true]))});else await deleteDoc(fdoc(fs,'admins',email));
     try{await setDoc(fdoc(fcol(fs,'logs')),{type:'act',area:'운영진',what:on?'운영진 등록':'운영진 해제',detail:`${nick||''} (${email})${cur?'':' · '+(GUILD?GUILD.name:'')+' 문파에서 설정'}`,by:myName(),email:(S.authUser&&S.authUser.email)||'',at:Date.now()})}catch(_){}
     toast(on?`${gname} 운영진으로 등록했어요`:`${gname} 운영진에서 해제했어요`);
     if(!cur)writeLog({type:'act',area:'운영진',what:on?'다른 문파 운영진 등록':'다른 문파 운영진 해제',detail});return true}
   catch(e){console.error(e);toast(`${gname} 운영진을 바꾸지 못했어요. ${gname} 문파장 계정인지 확인해 주세요`);return false}}
+async function peerSetPerm(k,email,nick,perms){
+  const cur=k===GKEY;const fs=cur?S.fs:S.peers[k]&&S.peers[k].fs;const gname=GUILDS[k].name;if(!fs)return false;
+  const txt=PERMS.filter(([p])=>perms[p]).map(([,l])=>l).join('·')||'권한 없음';
+  try{await updateDoc(fdoc(fs,'admins',email),{perms});
+    try{await setDoc(fdoc(fcol(fs,'logs')),{type:'act',area:'운영진',what:'운영진 권한 변경',detail:`${nick||''} (${email}) → ${txt}`,by:myName(),email:(S.authUser&&S.authUser.email)||'',at:Date.now()})}catch(_){}
+    toast(`${gname} · ${nick||email} 권한: ${txt}`);return true}
+  catch(e){console.error(e);toast('권한을 바꾸지 못했어요');return false}}
 function renderGuildAdmins(){
   const keys=Object.keys(GUILDS);if(keys.length<2||!S.isOwner)return '';
   const lists={};lists[GKEY]=S.admins;for(const k of keys)if(k!==GKEY)lists[k]=S.peers[k]&&S.peers[k].owner?S.peers[k].admins:null;
@@ -2395,12 +2440,15 @@ function renderGuildAdmins(){
     return `<th><div class="ga-h"><b>${esc(GUILDS[k].name)}</b>${k===GKEY?'<span class="hint">지금 문파</span>':''}${st}</div></th>`}).join('');
   const cell=(k,email,nick)=>{const L=lists[k];if(!L)return '<td class="ga-c"><span class="dash">–</span></td>';const on=L.some(a=>a.id===email),cf=S.confirm==='ga:'+k+':'+email;
     if(cf)return `<td class="ga-c"><button class="btn small danger" data-action="gaSet" data-g="${k}" data-email="${esc(email)}" data-nick="${esc(nick)}" data-on="0">해제</button><button class="btn small" data-action="cancel">취소</button></td>`;
-    return `<td class="ga-c"><button class="ga-tg${on?' on':''}" data-action="${on?'gaAsk':'gaSet'}" data-g="${k}" data-email="${esc(email)}" data-nick="${esc(nick)}" data-on="1" aria-pressed="${on}" aria-label="${esc(GUILDS[k].name)} 운영진 ${on?'해제':'등록'}">${on?'✓ 운영진':'＋ 등록'}</button></td>`};
+    const A=L.find(a=>a.id===email),pm=on?(permsOf(A)||Object.fromEntries(PERMS.map(([p])=>[p,true]))):null;
+    const chips=on?`<div class="ga-pm">${PERMS.map(([p,l,d])=>`<button class="ga-p${pm[p]?' on':''}" data-action="gaPerm" data-g="${k}" data-email="${esc(email)}" data-nick="${esc(nick)}" data-p="${p}" aria-pressed="${pm[p]}" title="${esc(d)}">${pm[p]?'✓ ':''}${l}</button>`).join('')}</div>`:'';
+    return `<td class="ga-c"><button class="ga-tg${on?' on':''}" data-action="${on?'gaAsk':'gaSet'}" data-g="${k}" data-email="${esc(email)}" data-nick="${esc(nick)}" data-on="1" aria-pressed="${on}" aria-label="${esc(GUILDS[k].name)} 운영진 ${on?'해제':'등록'}">${on?'✓ 운영진':'＋ 등록'}</button>${chips}</td>`};
   const body=rows.map(([em,nk])=>`<tr><td><b>${esc(nk||'(닉네임 없음)')}</b><div class="hint">${esc(em)}</div></td>${keys.map(k=>cell(k,em,nk)).join('')}</tr>`).join('');
   const add=`<div class="ga-add"><label class="f">구글 이메일<input type="text" id="gaEmail" inputmode="email" autocomplete="off" placeholder="example@gmail.com"></label><label class="f">게임 닉네임<input type="text" id="gaNick" maxlength="24" placeholder="예: 청풍"></label>
-    <div class="ga-chk">${keys.map(k=>`<label class="chk"><input type="checkbox" id="gaC-${k}"${k===GKEY?' checked':''}${lists[k]?'':' disabled'}> ${esc(GUILDS[k].name)}</label>`).join('')}</div><button class="btn primary" data-action="gaAdd">등록</button></div>`;
+    <div class="ga-chk"><span class="hint">문파</span>${keys.map(k=>`<label class="chk"><input type="checkbox" id="gaC-${k}"${k===GKEY?' checked':''}${lists[k]?'':' disabled'}> ${esc(GUILDS[k].name)}</label>`).join('')}</div><button class="btn primary" data-action="gaAdd">등록</button>
+    <div class="ga-chk ga-pchk"><span class="hint">권한</span>${PERMS.map(([p,l,d])=>`<label class="chk" title="${esc(d)}"><input type="checkbox" id="gaP-${p}" checked> ${l}</label>`).join('')}</div></div>`;
   return `<div class="panel ga"><h2>문파별 운영진 <span class="hint">문파장만 보여요</span></h2>
-    <p class="hint">운영진마다 어느 문파를 관리할지 정해요. 두 문파 모두 체크하면 [문파 바꾸기]로 오가며 둘 다 관리해요. 다른 문파는 그 문파 문파장 구글 계정으로 한 번 연결하면 이 기기에서 기억해요.</p>
+    <p class="hint">운영진마다 어느 문파를 관리할지, 그 문파에서 무엇을 할 수 있는지 정해요. 권한 칸(출석 체크·공지·명단·경고·정산)을 눌러 켜고 꺼요. 설정·콘텐츠, 운영진 관리, 복원, 기록 삭제·취소는 admin만 할 수 있어요. 두 문파 모두 체크하면 [문파 바꾸기]로 오가며 둘 다 관리해요. 다른 문파는 그 문파 문파장 구글 계정으로 한 번 연결하면 이 기기에서 기억해요.</p>
     ${add}<div class="scroll"><table class="ga-t"><thead><tr><th>운영진</th>${head}</tr></thead><tbody>${body||`<tr><td colspan="${keys.length+1}" class="hint">아직 등록된 운영진이 없어요.</td></tr>`}</tbody></table></div></div>`;
 }
 function renderAdmins(){
@@ -2527,7 +2575,7 @@ function renderSettle(){
     <td><b>${r.P}</b>${p?dl(r.P,p.P,x=>Math.round(x)):''}</td><td>${ring(r.rate)}${pct(r.rate)}${p&&!r.hold&&!p.hold?dl(r.rate,p.rate,x=>Math.round(x*100)):''}</td><td>${r.O}/${r.need}</td><td class="c-a">${r.E}</td><td class="c-x">${r.absent}</td><td>${r.B||'<span class="dash">–</span>'}</td></tr>`}).join('');
   const lk=S.locks[ms.mon];
   const lockBar=lk?`<div class="lockbar on"><b>마감됨</b><span>${esc(lk.by||'')} · ${lk.at?hm(lk.at):''}</span><span class="grow"></span>${S.isOwner?(S.confirm==='unlock:'+ms.mon?`<button class="btn small danger" data-action="unlock" data-mon="${ms.mon}">정말 마감 풀기</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small" data-action="askUnlock" data-mon="${ms.mon}">마감 풀기</button>`):''}</div>`
-    :adm&&ms.done?`<div class="lockbar"><span>이 달 정산이 끝났으면 마감하세요. 마감하면 이 달 출석 체크를 고칠 수 없어요.</span><span class="grow"></span>${S.confirm==='lock:'+ms.mon?`<button class="btn small primary" data-action="lock" data-mon="${ms.mon}">정말 마감</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small" data-action="askLock" data-mon="${ms.mon}">이 달 마감하기</button>`}</div>`:'';
+    :can('manage')&&ms.done?`<div class="lockbar"><span>이 달 정산이 끝났으면 마감하세요. 마감하면 이 달 출석 체크를 고칠 수 없어요.</span><span class="grow"></span>${S.confirm==='lock:'+ms.mon?`<button class="btn small primary" data-action="lock" data-mon="${ms.mon}">정말 마감</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small" data-action="askLock" data-mon="${ms.mon}">이 달 마감하기</button>`}</div>`:'';
   const head=`<div class="panel tint-w"><div class="spread"><h2>${monLabel(ms.mon)} 정산</h2><div class="row">
       <select id="fMonth" data-keep="0" data-action="month" aria-label="정산할 달">${ml.map(m=>`<option value="${m}"${m===ms.mon?' selected':''}>${monLabel(m)}${S.locks[m]?' · 마감':''}</option>`).join('')}</select>
       <button class="btn small" data-action="copyMonth">카톡용 복사</button></div></div>
@@ -2920,7 +2968,7 @@ function renderBuy(){
   const histP=`<div class="panel"><div class="spread"><h2>구매 내역</h2><button class="btn small" data-action="buyCsv"${hist.length?'':' disabled'}>CSV 내보내기</button></div>
     ${hist.length?`<div class="scroll"><table><thead><tr><th>날짜</th><th>닉네임</th><th>아이템</th><th>금액</th><th>기록</th><th></th></tr></thead><tbody>${hist.slice(HP.a,HP.b).map(p=>`<tr><td class="num">${esc(p.date)}</td><td>${esc(memberName(p.mid)||p.name)}</td><td>${esc(p.item)}</td><td>${p.price?won(p.price):'–'}</td><td>${esc(p.by||'')}</td><td>${S.isOwner?(S.confirm==='buyDel:'+p.id?`<button class="btn small danger" data-action="buyDel" data-id="${esc(p.id)}">정말 삭제</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small" data-action="askBuyDel" data-id="${esc(p.id)}">삭제</button>`):''}</td></tr>`).join('')}</tbody></table></div>${HP.html}`:'<p class="hint">아직 구매 기록이 없어요.</p>'}
     <p class="hint">구매 내역은 문파원도 볼 수 있어요 (내 출석의 구매 포인트 계산에 쓰여요). 잘못 남긴 기록은 문파장이 지울 수 있어요.</p></div>`;
-  const cfg=`<div class="panel"><div class="spread"><h2>구매 우선권 기준</h2><button class="btn primary small" data-action="buySave">기준 저장</button></div>
+  const cfg=`<div class="panel"><div class="spread"><h2>구매 우선권 기준</h2>${S.isOwner?'<button class="btn primary small" data-action="buySave">기준 저장</button>':'<span class="hint">기준은 admin만 바꿀 수 있어요</span>'}</div>
     <div class="fg2"><label class="f">최근 포인트 기간 (일)<input type="number" id="buyDays" data-keep="0" min="1" max="365" step="1" value="${C.days}"></label>
       <label class="f">최근 포인트 최소 (점)<input type="number" id="buyMin" data-keep="0" min="0" max="1000" step="1" value="${C.min}"></label>
       <label class="f">구매 후 대기 (일, 0 = 없음)<input type="number" id="buyLock" data-keep="0" min="0" max="365" step="1" value="${C.lock}"></label>
@@ -2939,7 +2987,7 @@ function buyCsv(){
     setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}catch(e){console.error(e);toast('파일을 만들지 못했어요')}
 }
 function renderSettleBuy(){
-  const B=buyStats(),adm=S.canWrite&&!S.demo;if(!B.rows.length)return '<div class="panel"><p class="hint">활동 중인 문파원이 없어요.</p></div>';
+  const B=buyStats(),adm=can('manage')&&!S.demo;if(!B.rows.length)return '<div class="panel"><p class="hint">활동 중인 문파원이 없어요.</p></div>';
   const all=[...B.ok,...B.no];
   const G={rank:r=>r.why?1e6:r.rank,name:r=>r.m.name,P:r=>r.P,R:r=>r.R,lb:r=>r.lb||'',st:r=>r.why?1:0};
   const rows=applySort('bt',all,G).map(r=>`<tr${r.why?' class="off"':''}><td>${r.why?'–':rankMark(r.rank)}</td><td style="text-align:left">${nmLink(r.m)}</td><td><b>${r.P}</b></td><td>${r.R}</td><td>${r.lb?mdd(r.lb):'–'}</td><td style="text-align:left;white-space:normal">${r.why?`<span class="hint">대기 · ${esc(r.why)}</span>`:r.tie?'<span class="tag no">동점 · 뽑기</span>':'<span class="tag ok">우선권</span>'}</td></tr>`).join('');
@@ -3204,7 +3252,7 @@ async function guard(fn,okMsg,log){
   if(S.demo){toast('예시 데이터를 보는 중이라 저장할 수 없어요. 예시를 닫고 다시 해 주세요');return false}
   if(!S.db){toast('저장소에 연결되지 않았어요');return false}
   try{await fn();if(okMsg)toast(okMsg);if(log)writeLog({type:'act',...log});return true}catch(e){
-    if(e&&e.code==='invalid_argument'){toast('저장 권한이 없어요. 운영진 등록과 Firestore 규칙이 최신인지 확인해 주세요');console.warn(e);return false}
+    if(e&&e.code==='invalid_argument'){toast(S.isOwner?'저장 권한이 없어요. Firestore 규칙이 최신인지 확인해 주세요':'이 작업은 권한이 없어요. admin에게 권한을 요청해 주세요');console.warn(e);return false}
     if(e&&e.code==='quota_exceeded'){toast('오늘 무료 사용량을 다 썼어요. 오후 4~5시쯤 초기화된 뒤 다시 시도해 주세요');return false}
     toast('저장하지 못했어요. 잠시 후 다시 시도해 주세요');console.error(e);return false}
 }
@@ -3386,12 +3434,15 @@ document.addEventListener('click',e=>{
   if(a==='logout'){signOut(S.auth);return}
   if(a==='copyUid'){if(S.authUser)copyText(S.authUser.uid,'UID를 복사했어요');return}
   if(a==='peerLogin'){peerLogin(b.dataset.g);return}
+  if(a==='gaPerm'){const k=b.dataset.g,em=b.dataset.email,P=k===GKEY?S.admins:(S.peers[k]&&S.peers[k].admins)||[];const A=P.find(x=>x.id===em);if(!A)return;
+    const pm=permsOf(A)||Object.fromEntries(PERMS.map(([p])=>[p,true]));pm[b.dataset.p]=!pm[b.dataset.p];b.disabled=true;peerSetPerm(k,em,b.dataset.nick,pm).then(()=>render());return}
   if(a==='gaAsk'){S.confirm='ga:'+b.dataset.g+':'+b.dataset.email;render();return}
   if(a==='gaSet'){const on=b.dataset.on==='1';S.confirm=null;b.disabled=true;peerSetAdmin(b.dataset.g,b.dataset.email,b.dataset.nick,on).then(()=>render());return}
   if(a==='gaAdd'){const email=($('#gaEmail').value||'').trim().toLowerCase(),nick=($('#gaNick').value||'').trim().slice(0,24);
     if(!/^[^\s@\/]+@[^\s@\/]+\.[^\s@\/]+$/.test(email)){toast('이메일 형식을 확인해 주세요');return}if(!nick){toast('게임 닉네임을 입력해 주세요');return}
     const ks=Object.keys(GUILDS).filter(k=>{const c=$('#gaC-'+k);return c&&c.checked&&!c.disabled});if(!ks.length){toast('관리할 문파를 하나 이상 골라 주세요');return}
-    (async()=>{let ok=true;for(const k of ks)ok=(await peerSetAdmin(k,email,nick,true))&&ok;if(ok){$('#gaEmail').value='';$('#gaNick').value=''}if(S.authUser&&email===(S.authUser.email||'').toLowerCase()&&ks.includes(GKEY))S.myNick=nick;render()})();return}
+    const perms=Object.fromEntries(PERMS.map(([p])=>[p,!!$('#gaP-'+p)?.checked]));
+    (async()=>{let ok=true;for(const k of ks)ok=(await peerSetAdmin(k,email,nick,true,perms))&&ok;if(ok){$('#gaEmail').value='';$('#gaNick').value=''}if(S.authUser&&email===(S.authUser.email||'').toLowerCase()&&ks.includes(GKEY))S.myNick=nick;render()})();return}
   if(a==='addAdmin'){const email=$('#adEmail').value.trim().toLowerCase();const nick=$('#adNick').value.trim().slice(0,24);
     if(!/^[^\s@\/]+@[^\s@\/]+\.[^\s@\/]+$/.test(email)){toast('이메일 형식을 확인해 주세요');return}
     if(!nick){toast('게임 닉네임을 입력해 주세요');return}
@@ -3647,11 +3698,11 @@ setInterval(()=>{if(S.tab==='home'&&document.visibilityState==='visible'&&!S.nEd
   let unAdmins=null,unWarn=null,unNotes=null,unRw=null,unLogs=null;
   onAuthStateChanged(S.auth,async u=>{
     S.authKnown=false;
-    S.authUser=u;S.canWrite=false;S.payOpen=null;S.man=null;S.leaveFor=null;S.noteFor=null;S.cdraft=null;S.isOwner=false;S.myNick='';S.admins=[];if(unAdmins){unAdmins();unAdmins=null}
+    S.authUser=u;S.canWrite=false;S.payOpen=null;S.man=null;S.leaveFor=null;S.noteFor=null;S.cdraft=null;S.isOwner=false;S.myNick='';S.perms=null;S.admins=[];if(unAdmins){unAdmins();unAdmins=null}
     if(unWarn){unWarn();unWarn=null}if(unNotes){unNotes();unNotes=null}if(unRw){unRw();unRw=null}if(unLogs){unLogs();unLogs=null}S.logs=[];S.plogs=null;S.notes={};S.rewards=[];S.warnings=[];S.warnBlocked=false;S.logBlocked=false;S.hist=null;S.delLogs=null;S.dist=null;
     if(u){
       const email=(u.email||'').toLowerCase();
-      try{const x=await getDoc(fdoc(S.fs,'admins',email));if(x.exists()){S.canWrite=true;S.myNick=x.data().nick||''}}catch(_){}
+      try{const x=await getDoc(fdoc(S.fs,'admins',email));if(x.exists()){S.canWrite=true;S.myNick=x.data().nick||'';S.perms=permsOf(x.data())}}catch(_){}
       try{await getDocs(query(fcol(S.fs,'admins'),fLimit(1)));S.isOwner=true;S.canWrite=true;setupPeers();
         unAdmins=fsnap(fcol(S.fs,'admins'),x=>{S.admins=x.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>nameCmp(a.nick,b.nick,'ko'));render()},()=>{})}catch(_){}
       if(S.canWrite){const blk=e=>{console.warn(e);S.warnBlocked=true;render()};
