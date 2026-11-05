@@ -1169,12 +1169,6 @@ button.wt-it{cursor:pointer}button.wt-it:hover{border-color:var(--cc,var(--accen
 /* 문파별 운영진 */
 .ga-add{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto auto;gap:10px;align-items:end}
 .ga-chk{display:flex;gap:12px;align-items:center;padding-bottom:8px;white-space:nowrap}
-.ga-t th,.ga-t td{vertical-align:middle}
-.ga-h{display:flex;flex-direction:column;align-items:center;gap:4px}
-.ga-c{text-align:center;white-space:nowrap}
-.ga-tg{min-width:96px;padding:6px 12px;border-radius:999px;border:1px dashed var(--line);background:transparent;color:var(--muted);font:inherit;font-size:13.5px;font-weight:700;cursor:pointer}
-.ga-tg:hover{border-color:var(--accent);color:var(--accent)}
-.ga-tg.on{border-style:solid;border-color:color-mix(in srgb,var(--accent) 55%,var(--line));background:color-mix(in srgb,var(--accent) 12%,var(--surface));color:var(--ink)}
 .ga-warn{font-size:12px;font-weight:700;color:var(--bad,#c0392b)}
 @media (max-width:820px){.ga-add{grid-template-columns:minmax(0,1fr)}.ga-chk{padding-bottom:0}}
 nav.tabs[hidden]{display:none}
@@ -1229,10 +1223,6 @@ nav.tabs[hidden]{display:none}
   --g1a:#33378a;--g1b:#17193f;--g2a:#17606c;--g2b:#0f3348;--g3a:#94631c;--g3b:#5e3216;--g4a:#7d2b5c;--g4b:#36122f;}
 :root[data-guild="chosal"] .ibtn{color:#25285e}
 
-.ga-pm{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin-top:6px;max-width:260px;margin-left:auto;margin-right:auto}
-.ga-p{padding:2px 9px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);font:inherit;font-size:12px;font-weight:700;cursor:pointer}
-.ga-p.on{border-color:color-mix(in srgb,var(--accent) 50%,var(--line));background:color-mix(in srgb,var(--accent) 14%,var(--surface));color:var(--ink)}
-.ga-p:hover{border-color:var(--accent)}
 .ga-add{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto auto}
 .ga-pchk{grid-column:1/-1;flex-wrap:wrap}
 
@@ -1360,6 +1350,26 @@ tr.stale td{opacity:.55}tr.stale td:first-child{opacity:1}
 .mt-sum td{border-bottom:2px solid var(--line);background:var(--thead)}
 .mt-t thead tr.mt-sum td{position:sticky;top:38px;z-index:1}
 .mt-t tr>:first-child{position:sticky;left:0;z-index:2;background:var(--surface)}.mt-t thead tr>:first-child,.mt-sum>:first-child{background:var(--thead)}
+
+/* 학살: 강조(진홍)와 경고·불참(주홍) 구분 */
+:root[data-guild="haksal"]{--seal:#d4380d;--seal-soft:#fde4d8}
+@media (prefers-color-scheme: dark){:root[data-guild="haksal"]:not([data-theme="light"]){--seal:#ff7a45;--seal-soft:#3d2116}}
+:root[data-guild="haksal"][data-theme="dark"]{--seal:#ff7a45;--seal-soft:#3d2116}
+.pill-low::before,.pill-streak::before,.ms.bad::before{content:'⚠ ';font-weight:700}
+
+/* 관리 탭 묶음 */
+.subtabs.agrp button{font-size:15.5px;font-weight:700}
+.subtabs.asub{background:transparent;border:0;padding:0;gap:6px;margin-top:-6px}
+.subtabs.asub button{flex:0 0 auto;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:14px;background:var(--surface)}
+.subtabs.asub button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);box-shadow:none}
+
+/* 설명 접기 */
+.notes-d{margin:2px 0}
+.notes-d>summary{display:inline-flex;align-items:center;gap:6px;cursor:pointer;list-style:none;font-size:13px;font-weight:600;color:var(--muted);padding:3px 10px 3px 4px;border-radius:999px;user-select:none}
+.notes-d>summary::-webkit-details-marker{display:none}
+.notes-d>summary:hover{color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,transparent)}
+.notes-d .ni{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font:italic 800 12px/1 Georgia,serif}
+.notes-d[open]>summary{color:var(--ink)}
 </style>
 </head>
 <body>
@@ -1653,7 +1663,7 @@ function fitSettle(){const g=document.querySelector('.settle-grid');if(!g)return
   if(d)g.style.gridTemplateColumns=`minmax(0,${L.offsetWidth+d+1}px) minmax(300px,1fr)`}
 window.addEventListener('resize',()=>{if(S.tab==='settle')fitSettle()});
 const loading='<div class="panel"><div class="empty"><h3>출석부를 불러오는 중</h3></div></div>';
-const notes=items=>`<ol class="notes">${items.filter(Boolean).map(t=>`<li>${t}</li>`).join('')}</ol>`;
+const notes=items=>{const L=items.filter(Boolean);return L.length?`<details class="notes-d"><summary><span class="ni" aria-hidden="true">i</span>설명 보기</summary><ol class="notes">${L.map(t=>`<li>${t}</li>`).join('')}</ol></details>`:''};
 function ruleItems(){return [`<b>출석률</b> = 참여 ÷ (참여 + 불참)`,excuseText(),'<b>추가 진행</b> 회차는 출석률에서 빠지고 보너스 포인트만 붙어요',`정규 회차가 <b>${minJudge()}회 미만</b>이면 판정 보류`]}
 const TAB_ICON={
   home:'<svg viewBox="0 0 24 24"><path d="M3.8 10.6 12 4l8.2 6.6"/><path d="M6 9.2v10.3h12V9.2"/><path d="M10 19.5v-5.2h4v5.2"/></svg>',
@@ -1670,7 +1680,7 @@ function renderNav(){
 }
 function blockNote(){return S.canWrite&&(S.logBlocked||S.warnBlocked)?'<div class="readonly-note" style="color:var(--seal)">변경 이력이나 경고 기록이 저장되지 않고 있어요. Firebase의 Firestore 규칙을 새 버전으로 바꿔 주세요.</div>':''}
 function roNote(){if(S.canWrite)return '';
-  if(S.authUser)return `<div class="readonly-note">${esc(S.authUser.email||'')} 계정은 운영진으로 등록되지 않았어요. 문파장에게 이 이메일로 운영진 등록을 요청해 주세요.</div>`;
+  if(S.authUser)return `<div class="readonly-note">${esc(S.authUser.email||'')} 계정은 운영진으로 등록되지 않았어요. admin에게 이 이메일로 운영진 등록을 요청해 주세요.</div>`;
   return '<div class="readonly-note">보기 전용 화면이에요. 운영진은 오른쪽 위 <b>운영진 로그인</b>으로 들어와 주세요.</div>'}
 const inKakao=/KAKAOTALK/i.test(navigator.userAgent);
 function renderAuth(){const el=$('#authbar');if(!el)return;
@@ -1764,7 +1774,7 @@ function badgesOf(z,C){
   let r3=0,b3=0,d3='',prev='';for(const k of Object.keys(z.wkAll).filter(doneWk).sort()){const A=z.wkAll[k];const okW=A.n>0&&A.o===A.n;r3=okW?(prev&&addDays(prev,7)===k?r3+1:1):0;prev=okW?k:'';if(r3>b3)b3=r3;if(r3>=3&&!d3)d3=addDays(k,6)}
   ach('wk3','🔁','3주 연속 전 회차','3주 연속으로 그 주 정규 회차를 모두 참여했어요',d3,[Math.min(b3,3),3]);
   let rx=0,bx=0,dx='';for(const k of Object.keys(z.wkX).sort()){const X=z.wkX[k];if(!doneWk(k)&&!X.o)continue;rx=X.o?rx+1:0;if(rx>bx)bx=rx;if(rx>=5&&!dx)dx=X.d}
-  ach('xreg','🏮','화요일 단골','추가 진행이 열린 주에 5주 연속 참여했어요',dx,[Math.min(bx,5),5]);
+  ach('xreg','🏮','랭킹전 단골','랭킹전 추가 진행이 열린 주에 5주 연속 참여했어요',dx,[Math.min(bx,5),5]);
   ach('polite','📢','예의 바른 사람','못 올 때 사전공지를 5번 했어요',z.pol>=5?'달성':'',[Math.min(z.pol,5),5]);
   ach('back','🔙','돌아온 문파원','휴식이 끝난 뒤 첫 정규 회차에 바로 참여했어요',z.back?'달성':'');
   let pp='';for(let i=1;i<perfM.length;i++)if(monthAdd(perfM[i-1],1)===perfM[i]){pp=perfM[i];break}
@@ -1938,7 +1948,6 @@ function renderHome(){
     <div class="tile"><span class="hti" aria-hidden="true">📈</span><span class="l">${+mon.slice(5)}월 평균 출석률</span><span class="v">${pct(avg)}</span><span class="l">이번 주 진행 ${wkDone}회</span></div>
     <div class="tile"><span class="hti" aria-hidden="true">🏅</span><span class="l">개근 후보</span><span class="v">${perf.length}<small>명</small></span><span class="l">지금까지 정규 회차 모두 참여</span></div></div>`;
   const notice=renderNotices(N);
-  const week=`<div class="panel tint-a"><div class="spread"><h2>이번 주 일정 <span class="hint num">${md(W.ws)}(월) ~ ${md(W.we)}(일)</span></h2>${S.canWrite?'<button class="btn small" data-action="tab" data-tab="check">출석 체크로</button>':''}</div>${W.html}</div>`;
   const pad=n=>Array.from({length:Math.max(0,5-n)},(_,i)=>`<div class="it ph">${rankMark(n+i+1)}<span class="n">–</span><b class="num"></b></div>`).join('');
   const topP=`<div class="panel h5p tint-w"><div class="h5s"><div class="spread"><h2>${+mon.slice(5)}월 포인트 TOP 5</h2><button class="btn small" data-action="tab" data-tab="settle">월간 정산</button></div>
     <div class="hrank">${top.map((r,i)=>`<div class="it">${rankMark(i+1)}<span class="n">${esc(r.m.name)}${r.perfect?' <span class="pill-perfect">개근</span>':''}</span><b class="num">${r.P}<small>점</small></b></div>`).join('')}${pad(top.length)}</div>
@@ -2046,7 +2055,7 @@ function renderSheet(members){
   const shown=members.filter(m=>(!q||String(m.name).toLowerCase().includes(q))&&(!S.onlyUnchecked||!validMark(mk[m.id])));
   const rows=shown.map(m=>{const v=mk[m.id]||'';const b=by[m.id];
     return `<div class="mrow"><div class="nm" title="${esc(m.name)}${b&&b.at&&validMark(v)?` · 마지막 체크: ${b.by?esc(nameOf(b.by))+' ':''}${hm(b.at)}`:''}">${avatar(m)}<span class="mn">${esc(m.name)}</span>${m.role&&m.role!==baseRole()?`<span class="tag">${esc(m.role)}</span>`:''}${b&&b.at&&validMark(v)?`<span class="by num" title="마지막으로 체크한 운영진">${b.by?esc(nameOf(b.by))+' · ':''}${hm(b.at)}</span>`:''}</div>
-      <div class="seg" role="group" aria-label="${esc(m.name)} 출석">${[['O','참여'],['A','사유'],['X','불참']].map(([k,l])=>`<button data-action="mark" data-sid="${s.id}" data-mid="${m.id}" data-v="${k}" aria-pressed="${v===k}"${k==='A'?' title="사유 있는 불참 (사전공지) · 한 달 면제 횟수 안에서는 불참으로 안 쳐요"':''}${dis}>${l}</button>`).join('')}</div></div>`}).join('');
+      <div class="seg" role="group" aria-label="${esc(m.name)} 출석">${[['O','참여'],['A','사전공지'],['X','불참']].map(([k,l])=>`<button data-action="mark" data-sid="${s.id}" data-mid="${m.id}" data-v="${k}" aria-pressed="${v===k}"${k==='A'?' title="사유 있는 불참 (사전공지) · 한 달 면제 횟수 안에서는 불참으로 안 쳐요"':''}${dis}>${l}</button>`).join('')}</div></div>`}).join('');
   const allConf=S.confirm&&S.confirm.startsWith('all:'+s.id+':')?S.confirm.slice(-1):null;
   const allChanged=allConf?members.filter(m=>validMark(mk[m.id])&&mk[m.id]!==allConf).length:0;
   const conf2=allConf?`<div class="confirm">이미 체크된 ${allChanged}명도 모두 ${allConf==='O'?'참여로':'불참으로'} 바꿀까요? <button class="btn small danger" data-action="bulkAllYes" data-sid="${s.id}" data-v="${allConf}">모두 바꾸기</button><button class="btn small" data-action="cancel">취소</button></div>`:'';
@@ -2066,7 +2075,7 @@ function renderSheet(members){
     ${!editing&&(s.content===extraCfg().content||s.rank)&&s.date<=gameDay()?`<div class="rk-in"><b>🏆 랭킹 결과</b>${canE?`<input type="text" id="rkIn-${s.id}" data-keep="0" maxlength="30" placeholder="예: 3위" value="${esc(s.rank||'')}"><button class="btn small primary" data-action="rkSave" data-sid="${s.id}">${s.rank?'고치기':'저장'}</button>`:`<span>${s.rank?esc(s.rank):'<span class="hint">아직 안 적었어요</span>'}</span>`}<span class="hint">"3위"처럼 적으면 통계 → 랭크 추이에 그려져요</span></div>`:''}
     ${edit||(s.note?`<div class="notebox">${esc(s.note)}</div>`:'')}
     ${s.date>gameDay()?'<div class="lockbar">아직 진행 전인 회차예요. 미리 사전공지를 체크해 둘 수 있고, 그날이 지나야 통계에 들어가요.</div>':''}
-    ${lk?`<div class="lockbar on">${monLabel(s.date.slice(0,7))} 정산이 마감돼서 수정할 수 없어요. 문파장이 마감을 풀면 고칠 수 있어요.</div>`:''}
+    ${lk?`<div class="lockbar on">${monLabel(s.date.slice(0,7))} 정산이 마감돼서 수정할 수 없어요. admin이 마감을 풀면 고칠 수 있어요.</div>`:''}
     <div class="counts num"><span class="c-o">참여 <b>${cnt.O}</b></span><span class="c-a">사전공지 <b>${cnt.A}</b></span><span class="c-x">불참 <b>${cnt.X}</b></span><span class="c-n">미체크 <b>${cnt.N}</b></span></div>
     <div class="row">
       ${canE?`<button class="btn small" data-action="bulkAll" data-sid="${s.id}" data-v="O"${cnt.O===members.length?' disabled':''}>전원 참여</button><button class="btn small" data-action="bulkAll" data-sid="${s.id}" data-v="X"${cnt.X===members.length?' disabled':''}>전원 불참</button><button class="btn small" data-action="bulk" data-sid="${s.id}" data-v="O"${cnt.N?'':' disabled'}>미체크만 참여</button><button class="btn small" data-action="bulk" data-sid="${s.id}" data-v="X"${cnt.N?'':' disabled'}>미체크만 불참</button>`:''}
@@ -2322,17 +2331,17 @@ function statMembers(st){
   const list=rows.map(r=>{
     const per=CONTENTS.map(c=>{const b=r.byC[c.k];const t=b.O+b.E+b.X;if(!t)return '';const rr=b.O/t;
         const dots=t<=8?Array.from({length:t},(_,i)=>`<i class="${i<b.O?'o':i<b.O+b.E?'e':'x'}"></i>`).join(''):`<span class="mbar"><i style="width:${Math.round(rr*100)}%"></i></span>`;
-        return `<span class="cc ${rr>=.7?'hi':rr>=.4?'md':'lo'}" ${ck(c.k)} title="${esc(c.name)}: 참여 ${b.O} · 사유 ${b.E} · 불참 ${b.X}"><b>${esc(c.short)}</b><span class="dots">${dots}</span><em class="num">${b.O}/${t}</em></span>`}).filter(Boolean);
+        return `<span class="cc ${rr>=.7?'hi':rr>=.4?'md':'lo'}" ${ck(c.k)} title="${esc(c.name)}: 참여 ${b.O} · 사전공지(면제) ${b.E} · 불참 ${b.X}"><b>${esc(c.short)}</b><span class="dots">${dots}</span><em class="num">${b.O}/${t}</em></span>`}).filter(Boolean);
     if(r.B)per.push(`<span class="cc xt" title="추가 진행 참여 (출석률 제외)"><b>추가</b><em class="num">${r.B}회</em></span>`);
     const tags=(r.hold?`<span class="tag" title="정규 ${st.mj}회 이상 기록돼야 판정해요">판정 보류 (기록 ${r.T}/${st.mj}회)</span>`:'')+(adm&&r.low?'<span class="pill-low">저조</span>':'')+(adm&&r.streakHit?`<span class="pill-streak">연속 불참 ${r.streak}</span>`:'')+(adm&&warnCount(r.m.id)?`<span class="tag">경고 ${warnCount(r.m.id)}</span>`:'');
     return `<div class="rk${adm&&r.low?' low':''}"><span class="no">${r.no}</span>
       <div class="nm"><span class="t">${adm?nmLink(r.m):esc(r.m.name)}${tags}</span><span class="sub ccs">${per.join('')||'기록 없음'}</span>${adm&&S.notes[r.m.id]?.text?`<span class="sub">메모: ${esc(S.notes[r.m.id].text)}</span>`:''}</div>
-      <div class="rt"><div class="top">${rateBar(r.rate)}<span class="pc">${pct(r.rate)}</span></div><span class="cnt"><span class="c-o">참여 ${r.O}</span> · <span class="c-a">사유 면제 ${r.E}</span> · <span class="c-x">불참 ${r.absent}</span>${r.XA?` (면제 초과 공지 ${r.XA} 포함)`:''}</span></div>
+      <div class="rt"><div class="top">${rateBar(r.rate)}<span class="pc">${pct(r.rate)}</span></div><span class="cnt"><span class="c-o">참여 ${r.O}</span> · <span class="c-a">사전공지(면제) ${r.E}</span> · <span class="c-x">불참 ${r.absent}</span>${r.XA?` (사전공지 초과 ${r.XA}회는 불참)`:''}</span></div>
       <div class="pt"><span class="pv"><b>${r.P}</b> <span>점</span></span>${buyM&&buyM.has(r.m.id)?`<small class="bp" title="구매 포인트 (마지막 구매 다음 날부터)">구매 ${buyM.get(r.m.id)}점</small>`:''}</div></div>`}).join('');
   return `${renderCare()}<div class="panel"><div class="spread"><h2>문파원별 출석률${S.cfilter==='all'?'':' · '+esc(CMAP[S.cfilter]?.name||'')}</h2>
       <div class="row"><input type="search" id="statSearch" data-keep="0" data-action="ssearch" placeholder="닉네임 검색" value="${esc(S.ssearch)}" aria-label="닉네임 검색">
       <select id="statSort" data-keep="0" data-action="ssort" aria-label="정렬">${[['rate','출석률 순'],['main','메인 출석률 순'],['pts','포인트 순'],['name','가나다순 (한글 먼저)'],['nameEn','ABC순 (영어 먼저)']].map(([v,l])=>`<option value="${v}"${S.ssort===v?' selected':''}>${l}</option>`).join('')}</select></div></div>
-    ${notes([`이름 아래 칸은 콘텐츠별 참여/기록 횟수예요. 점 하나가 한 회차예요 (<span class="c-o">●</span> 참여 · <span class="c-a">●</span> 사유 면제 · <span class="c-x">●</span> 불참). 칸 색은 참여율이에요`,feat('buy')?'오른쪽 점수는 <b>출석 포인트</b>(기간 안), 아래 작은 글씨는 <b>구매 포인트</b>(지금 기준)예요':'','<b>사유 면제</b>는 한도 안의 사전공지예요. 한도를 넘은 사전공지는 불참에 들어가요','<b>판정 보류</b>인 문파원은 순위 맨 아래에 있어요'])}
+    ${notes([`이름 아래 칸은 콘텐츠별 참여/기록 횟수예요. 점 하나가 한 회차예요 (<span class="c-o">●</span> 참여 · <span class="c-a">●</span> 사전공지(면제) · <span class="c-x">●</span> 불참). 칸 색은 참여율이에요`,feat('buy')?'오른쪽 점수는 <b>출석 포인트</b>(기간 안), 아래 작은 글씨는 <b>구매 포인트</b>(지금 기준)예요':'','<b>사전공지(면제)</b>는 한 달 한도 안의 사전공지예요. 한도를 넘은 사전공지는 불참으로 세요','<b>판정 보류</b>인 문파원은 순위 맨 아래에 있어요'])}
     <div class="rk2" style="--rows:${Math.max(1,Math.ceil(rows.length/2))}">${list||'<p class="hint">조건에 맞는 문파원이 없어요.</p>'}</div></div>`;
 }
 function rankChart(rk,numOf){
@@ -2397,7 +2406,9 @@ function renderAdmin(){
   const TP={warn:'manage',members:'members',pay:'manage',buy:'manage',power:'members',cfg:'owner'};
   const tabs=[['warn','경고 · 추방'],['members','문파원 명단'],['pay','지급 기록'],['buy','구매 포인트'],['power','전투력 · 도술'],['cfg','설정 · 콘텐츠'],['team','운영진 · 백업'],['logs','변경 기록']].filter(([k])=>!TP[k]||(TP[k]==='owner'?S.isOwner:can(TP[k]))).filter(([k])=>(k!=='buy'||feat('buy'))&&(k!=='power'||feat('power')));
   if(!tabs.some(t=>t[0]===S.atab))S.atab=tabs[0][0];
-  const sub=`<div class="subtabs" role="tablist">${tabs.map(([k,l])=>`<button role="tab" data-action="atab" data-k="${k}" aria-selected="${S.atab===k}">${l}</button>`).join('')}</div>`;
+  const GR=[['mem','👥 문파원',['members','power','warn']],['pay','💰 정산',['pay','buy']],['ops','⚙ 운영',['cfg','team','logs']]].map(([g,l,ks])=>[g,l,ks.filter(k=>tabs.some(t=>t[0]===k))]).filter(x=>x[2].length);
+  const cg=GR.find(x=>x[2].includes(S.atab))||GR[0];
+  const sub=`<div class="subtabs agrp" role="tablist">${GR.map(([g,l,ks])=>`<button role="tab" data-action="atab" data-k="${ks.includes(S.atab)?S.atab:ks[0]}" data-g="${g}" aria-selected="${cg[0]===g}">${l}</button>`).join('')}</div>${cg[2].length>1?`<div class="subtabs asub" role="tablist">${cg[2].map(k=>{const l=tabs.find(t=>t[0]===k)[1];return `<button role="tab" data-action="atab" data-k="${k}" aria-selected="${S.atab===k}">${l}</button>`}).join('')}</div>`:''}`;
   const body=S.atab==='power'?renderPowerAdmin():S.atab==='members'?renderMemberAdmin():S.atab==='pay'?renderPayLog():S.atab==='buy'?renderBuy():S.atab==='logs'?renderLogs():S.atab==='cfg'?renderSettings():S.atab==='team'?`${renderAdmins()}${renderBackup()}${renderDeleted()}`:renderWarn();
   return `<div class="col">${blockNote()}${lockNote()}${backupNote()}${sub}${lastNote(S.atab)}${body}</div>`;
 }
@@ -2640,8 +2651,8 @@ function renderJson(){
     else body=`${(J.gkey&&J.gkey!==GKEY)||(!J.gkey&&J.guild&&S.config.guild&&J.guild!==S.config.guild)?`<div class="confirm">⚠ 다른 문파(${esc(J.guild||J.gkey)}) 백업이에요. 지금 문파(${esc(S.config.guild||'')})에 복원하면 기록이 섞여요. 맞는지 꼭 확인해 주세요.</div>`:''}<div class="notebox">${J.exportedAt?`${hm(J.exportedAt)}에 받은 백업${J.guild?` · ${esc(J.guild)}`:''}\n`:''}${J.cols.map(c=>`${L[c]} ${J.plan[c].all}건 중 새로 추가 ${J.plan[c].add.length}건`).join('\n')}</div>
       <label class="chk"><input type="checkbox" id="jCfg" data-keep="0"> 설정(콘텐츠·포인트·기준)도 백업 내용으로 바꾸기</label>
       ${J.running?`<p class="hint">복원하는 중… ${J.done}/${J.total}</p>`:`<div class="row"><button class="btn primary" data-action="jRun"${J.total||J.config?'':' disabled'}>없는 것만 복원</button><button class="btn" data-action="jClear">취소</button></div>`}`}
-  return `<div class="panel"><h2>복원</h2>${notes(['<b>완전 백업</b>으로 받은 JSON 파일을 골라 기록을 되살려요','<b>문파장만</b> 할 수 있어요. 이미 있는 기록은 그대로 두고, <b>없는 것만</b> 다시 만들어요','설정까지 바꿀지는 파일을 고른 뒤 정할 수 있어요'])}
-    ${S.isOwner?`<label class="f">복원할 백업 파일 (.json)<input type="file" id="jsonFile" data-keep="0" accept=".json,application/json" data-action="jsonFile"></label>${body}`:'<p class="hint">복원은 문파장 계정에서 할 수 있어요.</p>'}</div>`;
+  return `<div class="panel"><h2>복원</h2>${notes(['<b>완전 백업</b>으로 받은 JSON 파일을 골라 기록을 되살려요','<b>admin만</b> 할 수 있어요. 이미 있는 기록은 그대로 두고, <b>없는 것만</b> 다시 만들어요','설정까지 바꿀지는 파일을 고른 뒤 정할 수 있어요'])}
+    ${S.isOwner?`<label class="f">복원할 백업 파일 (.json)<input type="file" id="jsonFile" data-keep="0" accept=".json,application/json" data-action="jsonFile"></label>${body}`:'<p class="hint">복원은 admin 계정에서 할 수 있어요.</p>'}</div>`;
 }
 function renderBackup(){
   const lb=S.config.lastBackup&&S.config.lastBackup.at?`마지막 백업: ${hm(S.config.lastBackup.at)} · ${esc(S.config.lastBackup.by||'')} (${backupDays()}일 전)`:'아직 백업한 적이 없어요';
@@ -2650,7 +2661,7 @@ function renderBackup(){
     <p class="hint">${lb}</p></div>${renderJson()}${renderImport()}</div>`;
 }
 
-/* ---------- 문파별 운영진 (문파장 전용: 다른 문파 Firebase에도 연결) ---------- */
+/* ---------- 문파별 운영진 (admin 전용: 다른 문파 Firebase에도 연결) ---------- */
 S.peers={};
 function setupPeers(){
   for(const [k,g] of Object.entries(GUILDS)){if(k===GKEY||S.peers[k])continue;
@@ -2735,7 +2746,7 @@ function renderAdmins(){
   const ga=renderGuildAdmins();let out='';
   if(S.isOwner&&!ga){
     const rows=S.admins.map(a=>`<div class="medit"><span class="grow">${esc(a.nick||'')} <span class="hint">${esc(a.id)}</span></span>${S.confirm==='a:'+a.id?`<button class="btn small danger" data-action="delAdmin" data-email="${esc(a.id)}">정말 해제</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small danger" data-action="askDelA" data-email="${esc(a.id)}">운영진 해제</button>`}</div>`).join('');
-    out+=`<div class="panel"><h2>운영진 관리 <span class="hint">문파장만 보여요</span></h2>
+    out+=`<div class="panel"><h2>운영진 관리 <span class="hint">admin만 보여요</span></h2>
       <p class="hint">운영진의 구글 이메일과 게임 닉네임을 등록하면, 그 계정으로 로그인했을 때 체크와 수정을 할 수 있어요. 체크 기록에는 닉네임이 표시돼요.</p>
       <div class="formgrid"><label class="f">구글 이메일<input type="text" id="adEmail" inputmode="email" autocomplete="off" placeholder="example@gmail.com"></label>
       <label class="f">게임 닉네임<input type="text" id="adNick" maxlength="24" placeholder="예: 청풍"></label>
@@ -2826,7 +2837,7 @@ ${feat('buy')?`<div class="tile"><span class="l">구매 포인트</span><span cl
       <div class="tile${unpaid?' alert':''}"><span class="l">미지급</span><span class="v">${unpaid}</span><span class="l">건</span></div>
       <div class="tile"><span class="l">구매</span><span class="v">${PU.length}</span><span class="l">${PU[0]?'마지막 '+mdd(PU[0].date):'없음'}</span></div></div>
     <h3>월별 기록 (최근 ${mons.length}개월)</h3>
-    <div class="scroll"><table><thead><tr><th style="text-align:left">달</th><th>포인트</th><th>출석률</th><th>참여/정규</th><th>사유 면제</th><th>불참</th><th>추가</th><th style="text-align:left">판정</th></tr></thead><tbody>
+    <div class="scroll"><table><thead><tr><th style="text-align:left">달</th><th>포인트</th><th>출석률</th><th>참여/정규</th><th>사전공지(면제)</th><th>불참</th><th>추가</th><th style="text-align:left">판정</th></tr></thead><tbody>
       ${mrows.map(({mo,r})=>r?`<tr><td style="text-align:left">${monLabel(mo)}${S.locks[mo]?' <span class="tag">마감</span>':''}</td><td><b>${r.P}</b></td><td>${pct(r.rate)}</td><td>${r.O}/${r.need}</td><td class="c-a">${r.E}</td><td class="c-x">${r.absent}</td><td>${r.B||'–'}</td><td style="text-align:left">${r.perfect?'<span class="pill-perfect">개근</span>':''}${r.hold?'<span class="tag">판정 보류</span>':''}${r.fail?`<span class="pill-low">기준 미달 ${valText(r)}</span>`:''}</td></tr>`:`<tr class="off"><td style="text-align:left">${monLabel(mo)}</td><td colspan="7" class="dash">기록 없음</td></tr>`).join('')}</tbody></table></div>
     <h3>경고 ${W.length}건</h3>
     ${W.length?`<div class="attnlist">${W.map(w=>`<div class="it"><span class="tag">${monLabel(w.month)}</span><span>${esc(w.reason)}</span><span class="hint">${esc(w.by||'')} · ${w.at?hm(w.at):''}</span></div>`).join('')}</div>`:'<p class="hint">경고 기록이 없어요.</p>'}
@@ -2868,7 +2879,7 @@ function renderSettle(){
     ${ms.done?'':'<p class="hint">진행 중인 달이라 지금까지 기준이에요.</p>'}${lockBar}</div>`;
   const table=`<div class="panel"><h2>포인트 · 개근</h2>
     ${perf.length?`<div class="attn">${perf.map(r=>`<span class="who">${esc(r.m.name)}<span class="pill-perfect">개근</span></span>`).join('')}</div>`:'<p class="hint">이 달 개근자는 아직 없어요.</p>'}
-    <div class="scroll"><table><thead><tr>${sortTh('st','rank','순위 · 닉네임',true)}${sortTh('st','P','포인트')}${sortTh('st','rate','출석률')}${sortTh('st','O','참여/정규')}${sortTh('st','E','사유 면제')}${sortTh('st','X','불참')}${sortTh('st','B','추가')}</tr></thead><tbody>${rows||'<tr><td colspan="7" class="dash">기록 없음</td></tr>'}</tbody></table></div>
+    <div class="scroll"><table><thead><tr>${sortTh('st','rank','순위 · 닉네임',true)}${sortTh('st','P','포인트')}${sortTh('st','rate','출석률')}${sortTh('st','O','참여/정규')}${sortTh('st','E','사전공지(면제)')}${sortTh('st','X','불참')}${sortTh('st','B','추가')}</tr></thead><tbody>${rows||'<tr><td colspan="7" class="dash">기록 없음</td></tr>'}</tbody></table></div>
     ${notes([`<b>▲▼</b>는 지난달(${monLabel(prev.mon)})과 비교한 변화예요. 출석률은 %p 단위예요`,`<b>포인트</b> = 참여 1회당 ${activeContents().map(c=>esc(c.short)+' '+pts(c.k)).join(' · ')} · 추가 진행 ${pts('bonus')}`,'<b>개근</b> = 그 달 정규 회차를 모두 참여. 면제된 사전공지는 괜찮고, 체크 안 된 회차가 있으면 개근이 아니에요',adm?`<b>경고 기준</b>: ${critText()} · 정규 ${minJudge()}회 미만은 판정 보류`:''])}</div>`;
   const lt=S.leftTab==='buy'&&feat('buy')?'buy':'table';
   const ltabs=cls=>!feat('buy')?'':`<div class="subtabs ${cls}" role="tablist"><button role="tab" data-action="leftTab" data-k="table" aria-selected="${lt==='table'}">포인트 · 개근</button><button role="tab" data-action="leftTab" data-k="buy" aria-selected="${lt==='buy'}">구매 포인트 · 우선권</button></div>`;
@@ -3149,7 +3160,7 @@ function renderWarn(){
     <div class="panel"><div class="spread"><h2>연속 불참</h2><span class="hint">현재 ${sk}회 이상</span></div>${streaks.length?`<div class="attnlist">${stHtml}</div>`:'<p class="hint">해당하는 문파원이 없어요.</p>'}</div>
     <div class="panel"><div class="spread"><h2>추방 후보</h2><span class="hint">${W.expelM?`최근 ${W.expelM}개월`:'전체 기간'} 경고 ${W.expelN}회 이상</span></div>${ex.length?`<div class="attnlist">${exHtml}</div>`:'<p class="hint">해당하는 문파원이 없어요.</p>'}<p class="hint">추방은 운영진이 직접 결정해요. 이 목록은 근거 자료예요.</p></div>
   </div>
-  <div class="panel"><h2>경고 이력</h2><p class="hint">운영진만 볼 수 있어요.${S.isOwner?' 잘못 기록한 경고는 문파장이 취소할 수 있어요.':''}</p>
+  <div class="panel"><h2>경고 이력</h2><p class="hint">운영진만 볼 수 있어요.${S.isOwner?' 잘못 기록한 경고는 admin이 취소할 수 있어요.':''}</p>
     <div class="scroll"><table><thead><tr><th>달</th><th>닉네임</th><th>사유</th><th>기록</th><th>시각</th><th></th></tr></thead><tbody>${hist||'<tr><td colspan="6" class="dash">기록된 경고가 없어요</td></tr>'}</tbody></table></div>${WP.html}</div>
 `;
 }
@@ -3193,13 +3204,13 @@ function buyCfg(){const b=S.config.buy||{};return {days:num(b.days,28,1,365),min
 function buyList(){return S.demo?demoData().purchases:S.purchases}
 function lastBuy(mid){let d='';for(const p of buyList())if(p.mid===mid&&p.date>d)d=p.date;return d}
 function ensureAll(){
-  if(S.demo||!S.db||!S.cutoff||S.olderRange==='all'||S.olderLoading||S.olderFail)return;
+  if(S.demo||!S.db||!S.cutoff||S.olderRange==='all'||S.olderRange==='sum'||S.olderLoading||S.olderFail)return;
   S.olderLoading=true;
-  loadOlderAll().catch(e=>{console.error(e);S.olderFail=true;toast('전체 기록을 불러오지 못했어요. 새로고침해 주세요')}).finally(()=>{S.olderLoading=false;EFF=null;render()});
+  loadOlderSum().catch(e=>{console.error(e);S.olderFail=true;toast('전체 기록을 불러오지 못했어요. 새로고침해 주세요')}).finally(()=>{S.olderLoading=false;EFF=null;render()});
 }
 function buyStats(){
   const C=buyCfg(),t=gameDay(),recFrom=addDays(t,-(C.days-1)),cur=t.slice(0,7),prev=monthAdd(cur,-1);
-  const partial=!S.demo&&!!S.db&&S.olderRange!=='all'&&!S.olderFail;if(partial)setTimeout(ensureAll,0);
+  const partial=!S.demo&&!!S.db&&S.olderRange!=='all'&&S.olderRange!=='sum'&&!S.olderFail;if(partial)setTimeout(ensureAll,0);
   const {members,sessions}=data();
   const rows=activeMembers(members).map(m=>{const lb=lastBuy(m.id);let P=0,Rc=0;
     for(const s of sessions){if(s.date>t||!eligible(m,s)||effOf(s,m.id)!=='O')continue;const p=sessPts(s);
@@ -3247,7 +3258,7 @@ function renderBuy(){
   const HP=pager('buyh',hist.length,15);
   const histP=`<div class="panel"><div class="spread"><h2>구매 내역</h2><button class="btn small" data-action="buyCsv"${hist.length?'':' disabled'}>CSV 내보내기</button></div>
     ${hist.length?`<div class="scroll"><table><thead><tr><th>날짜</th><th>닉네임</th><th>아이템</th><th>금액</th><th>기록</th><th></th></tr></thead><tbody>${hist.slice(HP.a,HP.b).map(p=>`<tr><td class="num">${esc(p.date)}</td><td>${esc(memberName(p.mid)||p.name)}</td><td>${esc(p.item)}</td><td>${p.price?won(p.price):'–'}</td><td>${esc(p.by||'')}</td><td>${S.isOwner?(S.confirm==='buyDel:'+p.id?`<button class="btn small danger" data-action="buyDel" data-id="${esc(p.id)}">정말 삭제</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small" data-action="askBuyDel" data-id="${esc(p.id)}">삭제</button>`):''}</td></tr>`).join('')}</tbody></table></div>${HP.html}`:'<p class="hint">아직 구매 기록이 없어요.</p>'}
-    <p class="hint">구매 내역은 문파원도 볼 수 있어요 (내 출석의 구매 포인트 계산에 쓰여요). 잘못 남긴 기록은 문파장이 지울 수 있어요.</p></div>`;
+    <p class="hint">구매 내역은 문파원도 볼 수 있어요 (내 출석의 구매 포인트 계산에 쓰여요). 잘못 남긴 기록은 admin이 지울 수 있어요.</p></div>`;
   const cfg=`<div class="panel"><div class="spread"><h2>구매 우선권 기준</h2>${S.isOwner?'<button class="btn primary small" data-action="buySave">기준 저장</button>':'<span class="hint">기준은 admin만 바꿀 수 있어요</span>'}</div>
     <div class="fg2"><label class="f">최근 포인트 기간 (일)<input type="number" id="buyDays" data-keep="0" min="1" max="365" step="1" value="${C.days}"></label>
       <label class="f">최근 포인트 최소 (점)<input type="number" id="buyMin" data-keep="0" min="0" max="1000" step="1" value="${C.min}"></label>
@@ -3461,8 +3472,39 @@ function parseCsv(t){t=t.replace(/^﻿/,'');const rows=[];let row=[],cur='',q=fa
   if(cur||row.length){row.push(cur);rows.push(row)}
   return rows.filter(r=>r.some(x=>x.trim()));
 }
+
+/* ---------- 월 요약: 마감한 달은 회차를 한 장으로 묶어 저장 → 오래된 달은 요약 1장만 읽음 ---------- */
+const SUMF=['date','content','extra','marks','rank','note','createdAt','createdBy'];
+async function rawMonth(mon){const a=mon+'-01',b=monthAdd(mon,1)+'-01';const snap=await S.db.collection('sessions').where('date','>=',a).where('date','<',b).get();
+  return snap.docs.map(d=>normS({id:d.id,...d.data()})).filter(s=>s.date&&s.content&&s.date>=a&&s.date<b)}
+async function makeSummary(mon,list){try{const ss=(list||await rawMonth(mon)).filter(s=>s.date.slice(0,7)===mon);
+    const sessions=ss.map(s=>{const o={id:s.id};for(const k of SUMF)if(s[k]!==undefined)o[k]=s[k];return o});
+    await S.db.doc('summaries/'+mon).set({mon,v:1,n:sessions.length,at:Date.now(),by:myName(),sessions});return true}catch(e){console.warn('summary',mon,e);return false}}
+async function loadOlderSum(){
+  if(S.olderRange==='all'||S.olderRange==='sum'||!S.db||!S.cutoff)return;
+  const cm=S.cutoff.slice(0,7);let got=new Map(),sumOk=true;
+  try{const q=await S.db.collection('summaries').get();for(const d of q.docs){const x=d.data();if(x&&x.mon&&Array.isArray(x.sessions))got.set(x.mon,x)}}catch(e){sumOk=false;console.warn('summaries',e)}
+  const out=[];for(const [mon,x] of got)if(mon<cm)for(const s of x.sessions)if(s&&s.id&&s.date&&s.content)out.push(normS({...s,_sum:1}));
+  // 요약이 없는 예전 달만 원본으로
+  const fq=await S.db.collection('sessions').where('date','<',S.cutoff).orderBy('date','asc').limit(1).get();
+  const firstD=fq.docs.map(d=>d.data().date).filter(Boolean).sort()[0];const raw=[];
+  if(firstD){let mon=firstD.slice(0,7);const miss=[];while(mon<cm){if(!got.has(mon))miss.push(mon);mon=monthAdd(mon,1)}
+    const runs=[];for(const m of miss){const r=runs[runs.length-1];if(r&&monthAdd(r[1],1)===m)r[1]=m;else runs.push([m,m])}
+    for(const [a,b] of runs){const snap=await S.db.collection('sessions').where('date','>=',a+'-01').where('date','<',monthAdd(b,1)+'-01').get();
+      for(const d of snap.docs){const x=normS({id:d.id,...d.data()});if(x.date&&x.content&&x.date<S.cutoff)raw.push(x)}}}
+  S.older=out.concat(raw);S.olderRange='sum';S.sumMonths=[...got.keys()];S.sumOk=sumOk;
+  sumBackfill();
+}
+/* 마감했는데 요약이 없는 달은 (경고·정산 권한이 있으면) 조용히 만들어 둠 */
+async function sumBackfill(){
+  if(S.sumBusy||!S.sumOk||S.olderRange!=='sum'||!can('manage')||S.demo||!S.db)return;S.sumBusy=true;
+  try{const cur=gameDay().slice(0,7),have=new Set(S.sumMonths||[]);
+    for(const mon of Object.keys(S.locks||{}).sort()){if(mon>=cur||have.has(mon))continue;
+      const list=allSessions().filter(x=>x.date.slice(0,7)===mon&&!x._sum);if(await makeSummary(mon,list.length?list:null)){have.add(mon);(S.sumMonths??=[]).push(mon)}}}
+  finally{S.sumBusy=false}}
 async function loadOlderAll(){
   if(S.olderRange==='all'||!S.db||!S.cutoff)return;
+  S.sumMonths=[];
   const snap=await S.db.collection('sessions').where('date','<',S.cutoff).orderBy('date','desc').get();
   S.older=snap.docs.map(d=>normS({id:d.id,...d.data()})).filter(s=>s.date&&s.content);S.olderRange='all';
 }
@@ -3518,12 +3560,9 @@ function renderImport(){
 async function ensureOlder(){
   if(S.demo||!S.db||!S.cutoff)return;
   const need=S.period==='all'?'all':S.period==='52'?'52':null;if(!need)return;
-  if(S.olderRange==='all'||S.olderRange===need||S.olderLoading)return;
+  if(S.olderRange==='all'||S.olderRange==='sum'||S.olderLoading)return;
   S.olderLoading=true;render();
-  try{let q=S.db.collection('sessions').where('date','<',S.cutoff);
-    if(need==='52')q=q.where('date','>=',addDays(weekStart(todayStr()),-7*51));
-    const snap=await q.orderBy('date','desc').get();
-    S.older=snap.docs.map(d=>normS({id:d.id,...d.data()})).filter(s=>s.date&&s.content);S.olderRange=need;
+  try{await loadOlderSum();EFF=null;
   }catch(e){console.error(e);toast('이전 기록을 불러오지 못했어요. 잠시 후 다시 골라 주세요')}
   S.olderLoading=false;render();
 }
@@ -3706,9 +3745,6 @@ document.addEventListener('click',e=>{
     if(k==='del'){if(!sel.length)return;guard(async()=>{for(const m of sel)await S.db.doc('members/'+m.id).delete()},`${sel.length}명을 명단에서 지웠어요`,{area:'문파원',what:'문파원 삭제',detail:names(sel)}).then(done);return}
     return}
   if(a==='leaveOut'){const m=S.members.find(x=>x.id===b.dataset.mid);if(m)guard(()=>S.db.doc('members/'+m.id).update({active:false,moved:false,movedTo:'',leftAt:todayStr()}),`${m.name} 님을 탈퇴 처리했어요`,{area:'문파원',what:'탈퇴 처리',detail:m.name});return}
-  if(a==='moveAsk'){S.confirm=S.confirm==='mv:'+b.dataset.mid?null:'mv:'+b.dataset.mid;render();$('#mvTo-'+b.dataset.mid)?.focus();return}
-  if(a==='moveYes'){const m=S.members.find(x=>x.id===b.dataset.mid);if(!m)return;const to=($('#mvTo-'+m.id)?.value||'').trim().slice(0,30);S.confirm=null;
-    guard(()=>S.db.doc('members/'+m.id).update({active:false,moved:true,movedTo:to,movedAt:todayStr()}),`${m.name} 님을 이동 처리했어요`,{area:'문파원',what:'이동 처리',detail:`${m.name}${to?' → '+to:''}`});return}
   if(a==='rejoin'){const m=S.members.find(x=>x.id===b.dataset.mid);if(m)guard(()=>S.db.doc('members/'+m.id).update({active:true,moved:false}),`${m.name} 님이 복귀했어요`,{area:'문파원',what:'복귀',detail:`${m.name}${m.moved?' (이동에서)':' (탈퇴에서)'}`});return}
   if(a==='addMembers'){addMembers();return}
   if(a==='saveCfg'){
@@ -3824,11 +3860,11 @@ document.addEventListener('click',e=>{
   if(a==='saveNote'){const mid=b.dataset.mid;const text=($('#note-'+mid).value||'').trim().slice(0,300);
     guard(async()=>{if(text)await S.db.doc('notes/'+mid).set({text,by:myName(),at:Date.now()});else await S.db.doc('notes/'+mid).delete();S.noteFor=null;render()},text?'메모를 저장했어요':'메모를 지웠어요',{area:'문파원',what:text?'운영진 메모 저장':'운영진 메모 삭제',detail:memberName(mid)});return}
   if(a==='askLockNo'){S.confirm='lockN:'+b.dataset.mon;render();return}
-  if(a==='lockNo'){const mon=b.dataset.mon;S.confirm=null;guard(async()=>{await S.db.create('locks/'+mon,{by:myName(),at:Date.now(),noDist:true})},`${monLabel(mon)}을 분배 없이 마감했어요`,{area:'마감',what:'월 마감 (분배 없음)',detail:monLabel(mon)});return}
+  if(a==='lockNo'){const mon=b.dataset.mon;S.confirm=null;guard(async()=>{await S.db.create('locks/'+mon,{by:myName(),at:Date.now(),noDist:true});makeSummary(mon,allSessions().filter(x=>x.date.slice(0,7)===mon&&!x._sum))},`${monLabel(mon)}을 분배 없이 마감했어요`,{area:'마감',what:'월 마감 (분배 없음)',detail:monLabel(mon)});return}
   if(a==='askLock'){S.confirm='lock:'+b.dataset.mon;render();return}
   if(a==='askUnlock'){S.confirm='unlock:'+b.dataset.mon;render();return}
-  if(a==='lock'){const mon=b.dataset.mon;S.confirm=null;guard(async()=>{await S.db.create('locks/'+mon,{by:myName(),at:Date.now()})},`${monLabel(mon)}을 마감했어요`,{area:'마감',what:'월 마감',detail:monLabel(mon)});return}
-  if(a==='unlock'){const mon=b.dataset.mon;S.confirm=null;guard(()=>S.db.doc('locks/'+mon).delete(),'마감을 풀었어요',{area:'마감',what:'마감 풀기',detail:monLabel(mon)});return}
+  if(a==='lock'){const mon=b.dataset.mon;S.confirm=null;guard(async()=>{await S.db.create('locks/'+mon,{by:myName(),at:Date.now()});makeSummary(mon,allSessions().filter(x=>x.date.slice(0,7)===mon&&!x._sum))},`${monLabel(mon)}을 마감했어요`,{area:'마감',what:'월 마감',detail:monLabel(mon)});return}
+  if(a==='unlock'){const mon=b.dataset.mon;S.confirm=null;guard(async()=>{await S.db.doc('locks/'+mon).delete();try{await S.db.doc('summaries/'+mon).delete()}catch(e){console.warn(e)}if(S.olderRange==='sum'&&mon<S.cutoff.slice(0,7)){S.olderRange=null;S.older=[];ensureAll()}},'마감을 풀었어요',{area:'마감',what:'마감 풀기',detail:monLabel(mon)});return}
   if(a==='saveReward'){const D=S.dist;if(!D||D.saved||D.saving)return;
     {const pm=new Map(monthStats(D.mon).rows.map(r=>[r.m.id,r.P]));if(D.items.some(x=>pm.get(x.r.m.id)!==x.r.P)||D.excluded.some(r=>pm.has(r.m.id)&&pm.get(r.m.id)!==r.P)){S.dist=null;render();toast('계산한 뒤 출석 체크가 바뀌었어요. 다시 계산해 주세요');return}}
     D.saving=true;
@@ -4022,7 +4058,7 @@ setInterval(()=>{if(S.tab==='home'&&document.visibilityState==='visible'&&!S.nEd
         unRw=fsnap(fcol(S.fs,'rewards'),x=>{S.rewards=x.docs.map(d=>({id:d.id,...d.data()}));render()},blk);
         unLogs=fsnap(query(fcol(S.fs,'logs'),fOrder('at','desc'),fLimit(300)),x=>{S.logs=x.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.at||0)-(a.at||0));render()},e=>{console.warn(e);S.logBlocked=true;render()})}
     }
-    S.authKnown=true;render();
+    S.authKnown=true;render();if(S.canWrite)setTimeout(sumBackfill,1500);
   });
 })();
 })();
