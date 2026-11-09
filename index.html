@@ -1405,6 +1405,19 @@ del.nstrike{opacity:.5;text-decoration:line-through;text-decoration-thickness:1.
 .ntabs .ndot{position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--seal)}
 .nempty{margin:12px 2px}
 @media (max-width:600px){.ntabs button{font-size:15px;padding:6px 10px}}
+
+/* 공지 사진 */
+.nimg{display:block;margin:10px 0;padding:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--sunken);cursor:zoom-in;max-width:100%}
+.nimg img{display:block;max-width:100%;max-height:520px;height:auto;margin:0 auto}
+.nimg.ld{width:min(100%,360px);height:180px;cursor:default;background:linear-gradient(90deg,var(--sunken),var(--line),var(--sunken));background-size:200% 100%;animation:nimgld 1.2s linear infinite}
+@keyframes nimgld{to{background-position:-200% 0}}
+.nimg-miss{display:inline-block;margin:6px 0;padding:4px 10px;border-radius:8px;background:var(--sunken);color:var(--muted);font-size:13px}
+.nimg-chip{display:inline-block;padding:1px 8px;border-radius:999px;background:var(--sunken);border:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+.nimg-ic{font-size:13px;margin-left:4px}
+.ned-pv .nimg img{max-height:200px}
+.nbig-ov{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.86);display:grid;place-items:center;padding:24px;cursor:zoom-out}
+.nbig-ov img{max-width:100%;max-height:calc(100vh - 48px);border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.nbig-ov .nv-x{position:fixed;top:14px;right:14px}
 </style>
 </head>
 <body>
@@ -1571,7 +1584,7 @@ const roleIdx=r=>{const i=ROLES.indexOf(r);return i<0?ROLES.length:i};
 const DAYS=['일','월','화','수','목','금','토'];
 const CFG0={guild:GUILD?GUILD.name:'',weekStart:1,streak:3,points:{singi:1,mihok:1,rank:1,bonus:1}};
 
-const S={nKind:'notice',nView:null,notices:[],noticeBlocked:false,nEdit:null,nPage:0,nDel:null,demoT:{},manOpen:(()=>{try{return localStorage.getItem('att.manOpen')==='1'}catch(_){return false}})(),msel:new Set(),mbulk:null,noticeEdit:false,rfSug:false,mt:(()=>{try{const v=JSON.parse(localStorage.getItem('att.mt')||'{}');return v&&typeof v==='object'?v:{}}catch(_){return {}}})(),mFilter:'active',detail:null,jimp:null,sorts:{},leftTab:'table',setTab:'table',calcTab:'pay',tierOpen:false,lqDraft:null,xOpen:false,lp:{mode:'month',off:0},plogs:null,lcats:null,lq:'',logs:[],wkOff:0,purchases:[],buyBlocked:false,buyFor:'',olderFail:false,rf:{mon:'all',kind:'all',q:'',unpaid:false},payOpen:null,man:null,db:null,fs:null,auth:null,authUser:null,myNick:'',isOwner:false,admins:[],ready:false,err:false,setup:false,canWrite:false,older:[],olderRange:null,olderLoading:false,cutoff:'',me:'',month:'',imp:null,stab:'sum',ssort:'rate',ssearch:'',warnings:[],warnBlocked:false,logBlocked:false,wmonth:'',dist:null,hist:null,delLogs:null,atab:'warn',sview:'calc',nsort:'role',notes:{},locks:{},rewards:[],leaveFor:null,noteFor:null,cdraft:null,tierDraft:null,pay:null,selMode:false,sel:new Set(),
+const S={nImgCache:{},nEditImg:null,nBig:null,nKind:'notice',nView:null,notices:[],noticeBlocked:false,nEdit:null,nPage:0,nDel:null,demoT:{},manOpen:(()=>{try{return localStorage.getItem('att.manOpen')==='1'}catch(_){return false}})(),msel:new Set(),mbulk:null,noticeEdit:false,rfSug:false,mt:(()=>{try{const v=JSON.parse(localStorage.getItem('att.mt')||'{}');return v&&typeof v==='object'?v:{}}catch(_){return {}}})(),mFilter:'active',detail:null,jimp:null,sorts:{},leftTab:'table',setTab:'table',calcTab:'pay',tierOpen:false,lqDraft:null,xOpen:false,lp:{mode:'month',off:0},plogs:null,lcats:null,lq:'',logs:[],wkOff:0,purchases:[],buyBlocked:false,buyFor:'',olderFail:false,rf:{mon:'all',kind:'all',q:'',unpaid:false},payOpen:null,man:null,db:null,fs:null,auth:null,authUser:null,myNick:'',isOwner:false,admins:[],ready:false,err:false,setup:false,canWrite:false,older:[],olderRange:null,olderLoading:false,cutoff:'',me:'',month:'',imp:null,stab:'sum',ssort:'rate',ssearch:'',warnings:[],warnBlocked:false,logBlocked:false,wmonth:'',dist:null,hist:null,delLogs:null,atab:'warn',sview:'calc',nsort:'role',notes:{},locks:{},rewards:[],leaveFor:null,noteFor:null,cdraft:null,tierDraft:null,pay:null,selMode:false,sel:new Set(),
   members:[],sessions:[],config:{...CFG0},
   tab:'home',openSid:null,editSid:null,period:'4',cfilter:'all',demo:false,confirm:null,showOff:false,
   search:'',onlyUnchecked:false,mSearch:''};
@@ -1879,16 +1892,52 @@ function nStrike(){const ta=$('#nBody');if(!ta)return;let a=ta.selectionStart,z=
     nv=v.slice(0,a)+t+v.slice(z);na=a;nz=a+t.length}
   if(nv.length>2000){toast('2000자를 넘어서 표시할 수 없어요');return}
   ta.value=nv;ta.focus();ta.setSelectionRange(na,nz);nPrevUpd()}
-function nPrevUpd(){const p=$('#nPrev'),ta=$('#nBody');if(p&&ta)p.innerHTML=nFmt(ta.value)||'<span class="hint">내용을 적으면 여기에 보여요</span>'}
-const nFmt=t=>esc(t||'').replace(/~~([\s\S]+?)~~/g,'<del class="nstrike">$1</del>');
+function nImgUsed(){const ta=$('#nBody');return new Set([...((ta&&ta.value)||'').matchAll(/\[사진(\d{1,2})\]/g)].map(m=>m[1])).size}
+function nImgShrink(file){return new Promise((res,rej)=>{const url=URL.createObjectURL(file),im=new Image();
+  im.onload=()=>{URL.revokeObjectURL(url);let max=1280,q=.82,out='';const cv=document.createElement('canvas'),cx=cv.getContext('2d');
+    for(let i=0;i<8;i++){const r=Math.min(1,max/Math.max(im.naturalWidth,im.naturalHeight));cv.width=Math.max(1,Math.round(im.naturalWidth*r));cv.height=Math.max(1,Math.round(im.naturalHeight*r));
+      cx.fillStyle='#fff';cx.fillRect(0,0,cv.width,cv.height);cx.drawImage(im,0,0,cv.width,cv.height);
+      out=cv.toDataURL('image/webp',q);if(!out.startsWith('data:image/webp'))out=cv.toDataURL('image/jpeg',q);
+      if(out.length<=380000)break;if(q>.55)q-=.1;else max=Math.round(max*.8)}
+    out.length<=900000?res(out):rej(new Error('too big'))};
+  im.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('bad image'))};im.src=url})}
+async function nImgAdd(files){const ta=$('#nBody');if(!ta||!S.nEditImg)return;const EI=S.nEditImg;
+  let pos=ta.selectionEnd??ta.value.length,add='';
+  for(const f of files){if(!/^image\//.test(f.type)){toast('사진 파일만 넣을 수 있어요');continue}
+    if(nImgUsed()+add.split('[사진').length-1>=NIMG_MAX){toast(`사진은 공지 하나에 ${NIMG_MAX}장까지예요`);break}
+    try{const d=await nImgShrink(f);const ks=[...Object.keys(EI.map),...Object.keys(EI.draft),...[...ta.value.matchAll(/\[사진(\d{1,2})\]/g)].map(m=>m[1])].map(Number);
+      const k=String(Math.max(0,...ks)+1);EI.draft[k]=d;add+=`[사진${k}]\n`}catch(e){console.warn(e);toast('사진을 읽지 못했어요')}}
+  if(!add)return;const v=ta.value,pre=v.slice(0,pos),post=v.slice(pos);
+  const ins=(pre&&!pre.endsWith('\n')?'\n':'')+add+(post.startsWith('\n')?'':'');
+  if((pre+ins+post).length>2000){toast('내용이 2000자를 넘어요');return}
+  ta.value=pre+ins+post;const c=(pre+ins).length;ta.focus();ta.setSelectionRange(c,c);S.nEditDirty=true;nPrevUpd()}
+function nBigShow(){let o=document.getElementById('nBigOv');if(!S.nBig){if(o)o.remove();return}
+  if(!o){o=document.createElement('div');o.id='nBigOv';o.className='nbig-ov';o.setAttribute('data-action','nBigClose');document.body.appendChild(o)}
+  o.innerHTML=`<img src="${S.nBig}" alt="공지 사진"><button class="nv-x" data-action="nBigClose" aria-label="닫기">✕</button>`}
+function nPrevUpd(){const p=$('#nPrev'),ta=$('#nBody');if(p&&ta)p.innerHTML=nFmt(ta.value,S.nEditImg&&S.nEditImg.map,S.nEditImg&&S.nEditImg.draft)||'<span class="hint">내용을 적으면 여기에 보여요</span>'}
+const NIMG_MAX=4;
+const nImgMap=n=>{const o={};if(n&&Array.isArray(n.imgs))for(const x of n.imgs){const m=/^(\d{1,2}):([\w-]{1,64})$/.exec(String(x));if(m)o[m[1]]=m[2]}return o};
+const nHasImg=n=>Object.keys(nImgMap(n)).length>0;
+function nImgSrc(id){if(!id)return null;const c=S.nImgCache[id];if(c===undefined){S.nImgCache[id]='loading';
+    S.db.doc('nimg/'+id).get().then(d=>{const x=d.exists?d.data():null;S.nImgCache[id]=x&&typeof x.data==='string'&&x.data.startsWith('data:image/')?x.data:'err';render._nh=null;nPrevUpd();render()}).catch(e=>{console.warn(e);S.nImgCache[id]='err';render._nh=null;render()});return 'loading'}
+  return c}
+/* t: 본문, map: {번호: 이미지 id}, draft: {번호: dataURL} (작성 중), mode: 'full' | 'clamp' */
+const nFmt=(t,map,draft,mode)=>{let h=esc(t||'').replace(/~~([\s\S]+?)~~/g,'<del class="nstrike">$1</del>');
+  h=h.replace(/\n?\[사진(\d{1,2})\]\n?/g,(all,k)=>{if(mode==='clamp')return ' <span class="nimg-chip">🖼 사진</span> ';
+    const d=draft&&draft[k],id=map&&map[k],src=d||nImgSrc(id);
+    if(!d&&!id)return `<span class="nimg-miss">[사진${k} 없음]</span>`;
+    if(!src||src==='loading')return '<span class="nimg ld" aria-label="사진 불러오는 중"></span>';
+    if(src==='err')return '<span class="nimg-miss">사진을 불러오지 못했어요</span>';
+    return `<button class="nimg" data-action="nImgBig" data-k="${k}" aria-label="사진 ${k} 크게 보기"><img src="${src}" alt="공지 사진 ${k}" loading="lazy" decoding="async"></button>`});
+  return h};
 function noticeForm(n,kind){const K=NK[n?nKindOf(n):kind||'notice'];
   return `<div class="overlay nv-ov ned-ov"><div class="panel nv ned" role="dialog" aria-modal="true" aria-label="${n?K.one+' 수정':'새 '+K.one}">
     <div class="ned-h"><b>${n?K.one+' 수정':'새 '+K.one}</b><button class="nv-x ned-x" data-action="nCancel" aria-label="닫기">✕</button></div>
     <div class="ned-b nform">
     <input type="text" id="nTitle" data-keep="0" maxlength="60" placeholder="제목 (예: 이번 주 요신 토요일 진행)" value="${esc(n&&n.title||'')}">
-    <div class="ned-tools"><button class="btn small" data-action="nStrike" title="드래그한 부분을 흐리게 + 가로줄 (Ctrl+D). 표시된 곳을 다시 고르고 누르면 풀려요"><del>삭제 표시</del></button><span class="hint">고칠 부분을 드래그하고 누르세요 · Ctrl+D</span></div>
+    <div class="ned-tools"><button class="btn small" data-action="nStrike" title="드래그한 부분을 흐리게 + 가로줄 (Ctrl+D). 표시된 곳을 다시 고르고 누르면 풀려요"><del>삭제 표시</del></button><button class="btn small" data-action="nImgPick" title="사진을 넣을 자리에 커서를 두고 누르세요 (최대 ${NIMG_MAX}장)">🖼 사진 넣기</button><input type="file" id="nImgIn" accept="image/*" multiple hidden><span class="hint">고칠 부분을 드래그하고 [삭제 표시] · Ctrl+D / 커서 자리에 [사진] 들어가요</span></div>
     <textarea id="nBody" data-keep="0" maxlength="2000" rows="9" placeholder="내용">${esc(n&&n.body||'')}</textarea>
-    <div class="ned-pv"><div class="hint">미리보기</div><div class="notice-body" id="nPrev">${nFmt(n&&n.body||'')||'<span class="hint">내용을 적으면 여기에 보여요</span>'}</div></div>
+    <div class="ned-pv"><div class="hint">미리보기</div><div class="notice-body" id="nPrev">${nFmt(n&&n.body||'',nImgMap(n),S.nEditImg&&S.nEditImg.draft)||'<span class="hint">내용을 적으면 여기에 보여요</span>'}</div></div>
     <label class="chk"><input type="checkbox" id="nPin" data-keep="0"${n&&n.pinned?' checked':''}> 📌 고정 ${K.one} (맨 위에 펼쳐서 보여요)</label>
     <p class="hint">링크를 가진 누구나 볼 수 있어요 · 내용 2000자까지</p></div>
     <div class="nv-f"><span class="grow"></span><button class="btn small" data-action="nCancel">취소</button><button class="btn small primary" data-action="nSave" data-id="${esc(n&&n.id||'')}">저장</button></div>
@@ -1905,7 +1954,7 @@ function renderNoticeView(){
     <div class="nv-h"><div class="nv-tags">${n.pinned?`<span class="nbadge">📌 고정 ${K.one}</span>`:`<span class="nbadge gr">${K.one}</span>`}${isNew?'<span class="nnew">NEW</span>':''}</div>
       <h3>${esc(n.title||'문파 '+K.one)}</h3><div class="nv-meta">${n.by?esc(n.by):''}${n.by&&d?' · ':''}${n.at?ntime(n.at):''}${n.editedAt?` · ${esc(n.editedBy||'')} ${ntime(n.editedAt)} 수정`:''}</div>
       <button class="nv-x" data-action="nViewClose" aria-label="닫기">✕</button></div>
-    <div class="nv-body">${nFmt(n.body)||'<span class="hint">내용이 없어요.</span>'}</div>
+    <div class="nv-body">${nFmt(n.body,nImgMap(n))||'<span class="hint">내용이 없어요.</span>'}</div>
     <div class="nv-f">${prev?`<button class="btn small" data-action="nView" data-id="${esc(prev.id)}">‹ 이전</button>`:''}${next?`<button class="btn small" data-action="nView" data-id="${esc(next.id)}">다음 ›</button>`:''}<span class="grow"></span>
       ${adm?(S.nDel===n.id?`<button class="btn small danger" data-action="nDelYes" data-id="${esc(n.id)}">정말 삭제</button><button class="btn small" data-action="nDel" data-id="">취소</button>`:`<button class="btn small" data-action="nEditOpen" data-id="${esc(n.id)}">수정</button>${n.legacy?'':`<button class="btn small" data-action="nPinT" data-id="${esc(n.id)}">${n.pinned?'고정 해제':'고정'}</button><button class="btn small" data-action="nDel" data-id="${esc(n.id)}">삭제</button>`}`):''}
       <button class="btn small primary" data-action="nViewClose">닫기</button></div></div></div>`;
@@ -1918,9 +1967,9 @@ function renderNotices(){
   const meta=n=>`<span class="hint num">${n.by?esc(n.by)+' · ':''}${n.at?ntime(n.at):''}</span>`;
   const long=t=>String(t||'').split('\n').length>4||String(t||'').length>180;
   const pinHtml=pin?(`<div class="npin"><div class="nh"><span class="nbadge">📌 고정</span><button class="nlink" data-action="nView" data-id="${esc(pin.id)}">${esc(pin.title||'문파 '+K.one)}</button>${isNew(pin)?'<span class="nnew">NEW</span>':''}<span class="grow"></span>${meta(pin)}</div>
-      <div class="notice-body clamp">${nFmt(pin.body)}</div><div class="nfoot">${long(pin.body)?`<button class="btn small" data-action="nView" data-id="${esc(pin.id)}">전체 보기</button>`:''}<span class="grow"></span>${acts(pin)}</div></div>`):'';
+      <div class="notice-body clamp">${nFmt(pin.body,null,null,'clamp')}</div><div class="nfoot">${long(pin.body)||nHasImg(pin)?`<button class="btn small" data-action="nView" data-id="${esc(pin.id)}">전체 보기</button>`:''}<span class="grow"></span>${acts(pin)}</div></div>`):'';
   const rows=shown.map(n=>{
-    return `<div class="nrow"><button class="nline" data-action="nView" data-id="${esc(n.id)}">${n.pinned?'<span class="nbadge sm">📌</span>':''}<span class="nt">${esc(n.title||'(제목 없음)')}</span>${isNew(n)?'<span class="nnew">NEW</span>':''}<span class="grow"></span>${meta(n)}<span class="nchev" aria-hidden="true">›</span></button></div>`}).join('');
+    return `<div class="nrow"><button class="nline" data-action="nView" data-id="${esc(n.id)}">${n.pinned?'<span class="nbadge sm">📌</span>':''}<span class="nt">${esc(n.title||'(제목 없음)')}</span>${nHasImg(n)?'<span class="nimg-ic" title="사진 있음">🖼</span>':''}${isNew(n)?'<span class="nnew">NEW</span>':''}<span class="grow"></span>${meta(n)}<span class="nchev" aria-hidden="true">›</span></button></div>`}).join('');
   return `<div class="panel notice"><div class="spread"><div class="ntabs" role="tablist" aria-label="공지 · 규정">${['notice','rule'].map(k=>`<button role="tab" data-action="nKind" data-k="${k}" aria-selected="${nk===k}">${NK[k].tab}${k===other&&dot?'<span class="ndot" aria-label="새 글 있음"></span>':''}</button>`).join('')}</div>${adm?`<button class="btn small primary" data-action="nEditOpen" data-id="new">＋ 새 ${K.one}</button>`:''}</div>
     ${!L.length?`<p class="hint nempty">아직 ${K.one}${nk==='notice'?'가':'이'} 없어요.</p>`:''}
     ${S.noticeBlocked&&adm?'<div class="confirm">공지를 불러올 수 없어요. Firestore 규칙을 새 버전으로 게시해 주세요.</div>':''}
@@ -2690,7 +2739,7 @@ function readContentForm(){
     const p=Math.round(+g('pts').value);
     return {...c,name:g('name').value.trim().slice(0,20),short:g('short').value.trim().slice(0,8),time:g('time').value.trim().slice(0,24),pts:p>=0&&p<=100?p:1,days,extraDays:[],main:g('main').checked,weekly:g('weekly').checked,on:g('on').checked}});
 }
-const JCOLS=['members','sessions','warnings','notes','rewards','purchases','locks','notices'];
+const JCOLS=['members','sessions','warnings','notes','rewards','purchases','locks','notices','nimg'];
 async function exportJson(){
   try{toast('전체 데이터를 모으는 중이에요…');await loadOlderAll();
     const strip=o=>{const {id,...d}=o;return d};
@@ -3725,26 +3774,34 @@ document.addEventListener('click',e=>{
   if(a==='homeUnc'){S.tab='check';remember('tab','check');S.mt.check='list';render();window.scrollTo({top:0});return}
   if(a==='nView'){S.nView=b.dataset.id;S.nDel=null;render();$('#noticebox .nv-x')?.focus();return}
   if(a==='nViewClose'){if(b.classList.contains('overlay')&&e.target!==b)return;S.nView=null;S.nDel=null;render();return}
-  if(a==='nEditOpen'){S.nEdit=b.dataset.id||'new';S.nEditDirty=false;S.nDel=null;render();return}
+  if(a==='nEditOpen'){S.nEdit=b.dataset.id||'new';S.nEditDirty=false;{const o=S.notices.find(x=>x.id===S.nEdit);S.nEditImg={map:{...nImgMap(o)},draft:{}}}S.nDel=null;render();return}
   if(a==='nKind'){S.nKind=b.dataset.k;S.nPage=0;S.nDel=null;render();return}
-  if(a==='nCancel'){S.nEdit=null;render();return}
+  if(a==='nCancel'){S.nEdit=null;S.nEditImg=null;render();return}
   if(a==='nStrike'){nStrike();return}
+  if(a==='nImgPick'){const used=nImgUsed();if(used>=NIMG_MAX){toast(`사진은 공지 하나에 ${NIMG_MAX}장까지예요`);return}$('#nImgIn')?.click();return}
+  if(a==='nImgBig'){const im=b.querySelector('img');if(im){S.nBig=im.src;nBigShow()}return}
+  if(a==='nBigClose'){S.nBig=null;nBigShow();return}
   if(a==='pgGo'){S.pg??={};S.pg[b.dataset.k]=Math.max(0,+b.dataset.p||0);render();const t=b.closest('.panel');if(t&&t.getBoundingClientRect().top<0)t.scrollIntoView({block:'start'});return}
   if(a==='nPage'){S.nPage=Math.max(0,+b.dataset.p||0);render();return}
   if(a==='nDel'){S.nDel=b.dataset.id||null;render();return}
   if(a==='nSave'){const id=b.dataset.id,title=($('#nTitle')?.value||'').trim().slice(0,60),body=($('#nBody')?.value||'').replace(/\s+$/,'').slice(0,2000),pinned=!!$('#nPin')?.checked;
     if(!title&&!body){toast('제목이나 내용을 적어 주세요');return}
     const old=id&&id!=='legacy'?S.notices.find(n=>n.id===id):null;
+    const EI=S.nEditImg||{map:{},draft:{}},usedK=[...new Set([...body.matchAll(/\[사진(\d{1,2})\]/g)].map(m=>m[1]))];
     guard(async()=>{
+      const img={};for(const k of usedK){if(EI.draft[k]){const r=S.db.collection('nimg').doc();await r.set({data:EI.draft[k],by:myName(),at:Date.now()});img[k]=r.id}else if(EI.map[k])img[k]=EI.map[k]}
+      const gone=Object.entries(nImgMap(old)).filter(([k,v])=>img[k]!==v).map(([,v])=>v);
       const kind=old?nKindOf(old):id==='legacy'?'rule':(S.nKind==='rule'?'rule':'notice');
       if(pinned)for(const n of S.notices)if(n.pinned&&n.id!==id&&nKindOf(n)===kind)await S.db.doc('notices/'+n.id).update({pinned:false});
-      if(old)await S.db.doc('notices/'+id).update({title,body,pinned,editedBy:myName(),editedAt:Date.now()});
-      else{await S.db.collection('notices').doc().set({title,body,pinned,kind,by:myName(),at:Date.now()});if(id==='legacy')await saveConfig({notice:{text:'',by:myName(),at:Date.now()}})}
-    },(()=>{const o=NK[old?nKindOf(old):id==='legacy'||S.nKind==='rule'?'rule':'notice'].one;return o+(o==='공지'?'를':'을')+(old?' 고쳤어요':' 올렸어요')})(),{area:'설정',what:old?'공지 수정':'공지 등록',detail:(title||body).slice(0,60)}).then(ok=>{if(ok){S.nEdit=null;render()}});return}
+      const cleanup=async()=>{for(const g of gone){try{await S.db.doc('nimg/'+g).delete()}catch(e){console.warn(e)}}};
+      if(old)await S.db.doc('notices/'+id).update({title,body,pinned,imgs:Object.entries(img).map(([k,v])=>k+':'+v),editedBy:myName(),editedAt:Date.now()});
+      else{await S.db.collection('notices').doc().set({title,body,pinned,kind,imgs:Object.entries(img).map(([k,v])=>k+':'+v),by:myName(),at:Date.now()});if(id==='legacy')await saveConfig({notice:{text:'',by:myName(),at:Date.now()}})}
+      await cleanup();
+    },(()=>{const o=NK[old?nKindOf(old):id==='legacy'||S.nKind==='rule'?'rule':'notice'].one;return o+(o==='공지'?'를':'을')+(old?' 고쳤어요':' 올렸어요')})(),{area:'설정',what:old?'공지 수정':'공지 등록',detail:(title||body).slice(0,60)}).then(ok=>{if(ok){S.nEdit=null;S.nEditImg=null;render()}});return}
   if(a==='nPinT'){const n=S.notices.find(x=>x.id===b.dataset.id);if(!n)return;
     guard(async()=>{if(!n.pinned)for(const x of S.notices)if(x.pinned&&x.id!==n.id&&nKindOf(x)===nKindOf(n))await S.db.doc('notices/'+x.id).update({pinned:false});await S.db.doc('notices/'+n.id).update({pinned:!n.pinned})},n.pinned?'고정을 풀었어요':'고정 공지로 올렸어요',{area:'설정',what:n.pinned?'공지 고정 해제':'공지 고정',detail:(n.title||'').slice(0,60)});return}
   if(a==='nDelYes'){const n=S.notices.find(x=>x.id===b.dataset.id);if(!n)return;S.nDel=null;S.nView=null;
-    guard(()=>S.db.doc('notices/'+n.id).delete(),'공지를 지웠어요',{area:'설정',what:'공지 삭제',detail:(n.title||'').slice(0,60)});return}
+    guard(async()=>{await S.db.doc('notices/'+n.id).delete();for(const g of Object.values(nImgMap(n))){try{await S.db.doc('nimg/'+g).delete()}catch(e){console.warn(e)}}},'공지를 지웠어요',{area:'설정',what:'공지 삭제',detail:(n.title||'').slice(0,60)});return}
   if(a==='manToggle'){S.manOpen=!S.manOpen;try{localStorage.setItem('att.manOpen',S.manOpen?'1':'')}catch(_){}render();return}
   if(a==='rfPick'){S.rf.q=b.dataset.n||'';S.rfSug=false;const i=$('#rfQ');if(i){i.value=S.rf.q;i.blur()}render();return}
   if(a==='bdgTab'){S.bdgTab=b.dataset.k||'all';render();return}
@@ -4023,7 +4080,9 @@ document.addEventListener('input',e=>{
   else if(t.id==='lfQ'){S.lqDraft=t.value}
 });
 document.addEventListener('change',e=>{
-  const t=e.target,a=t.dataset&&t.dataset.action;if(!a)return;
+  const t=e.target,a=t.dataset&&t.dataset.action;
+  if(t.id==='nImgIn'){const fs=[...(t.files||[])];t.value='';if(fs.length)nImgAdd(fs);return}
+  if(!a)return;
   if(a==='period'){S.period=t.value;render();ensureOlder()}
   else if(a==='cfilter'){S.cfilter=t.value;render()}
   else if(a==='me'){if(S.demo)S.meDemo=t.value;else{S.me=t.value;remember('me',S.me)}S.meMon='';S.meDay='';render()}
@@ -4056,6 +4115,7 @@ document.addEventListener('change',e=>{
 document.addEventListener('toggle',e=>{if(e.target&&e.target.id==='tierBox')S.tierOpen=e.target.open},true);
 document.addEventListener('keydown',e=>{
   if(e.target.id==='nBody'&&(e.ctrlKey||e.metaKey)&&!e.shiftKey&&!e.altKey&&(e.key==='d'||e.key==='D')){e.preventDefault();nStrike();return}
+  if(e.key==='Escape'&&S.nBig){S.nBig=null;nBigShow();return}
   if(e.key==='Escape'&&S.nEdit){if(!S.nEditDirty){S.nEdit=null;render()}else toast('저장하거나 취소를 눌러 주세요');return}
   if(e.key==='Enter'&&e.target.id&&e.target.id.startsWith('rkIn-')&&!e.isComposing){e.preventDefault();document.querySelector(`[data-action="rkSave"][data-sid="${e.target.id.slice(5)}"]`)?.click()}
   if(e.key==='Enter'&&e.target.dataset&&e.target.dataset.action==='pwIn'&&!e.isComposing){e.preventDefault();const i=+e.target.dataset.i;const nx=document.querySelector(`[data-action="pwIn"][data-i="${i+1}"]`);e.target.blur();if(nx){nx.focus();nx.select&&nx.select()}}
