@@ -1397,6 +1397,14 @@ tr.stale td{opacity:.55}tr.stale td:first-child{opacity:1}
 .ned-tools del{text-decoration-thickness:2px}
 .ned-pv .notice-body{max-height:220px;overflow:auto;margin-top:4px}
 del.nstrike{opacity:.5;text-decoration:line-through;text-decoration-thickness:1.5px;text-decoration-color:currentColor}
+
+/* 공지 · 규정 탭 */
+.ntabs{display:flex;gap:4px;padding:3px;border-radius:12px;background:var(--sunken);border:1px solid var(--line)}
+.ntabs button{position:relative;border:0;background:transparent;font:inherit;font-size:16px;font-weight:700;color:var(--muted);padding:6px 14px;border-radius:9px;cursor:pointer}
+.ntabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.ntabs .ndot{position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--seal)}
+.nempty{margin:12px 2px}
+@media (max-width:600px){.ntabs button{font-size:15px;padding:6px 10px}}
 </style>
 </head>
 <body>
@@ -1563,7 +1571,7 @@ const roleIdx=r=>{const i=ROLES.indexOf(r);return i<0?ROLES.length:i};
 const DAYS=['일','월','화','수','목','금','토'];
 const CFG0={guild:GUILD?GUILD.name:'',weekStart:1,streak:3,points:{singi:1,mihok:1,rank:1,bonus:1}};
 
-const S={nView:null,notices:[],noticeBlocked:false,nEdit:null,nPage:0,nDel:null,demoT:{},manOpen:(()=>{try{return localStorage.getItem('att.manOpen')==='1'}catch(_){return false}})(),msel:new Set(),mbulk:null,noticeEdit:false,rfSug:false,mt:(()=>{try{const v=JSON.parse(localStorage.getItem('att.mt')||'{}');return v&&typeof v==='object'?v:{}}catch(_){return {}}})(),mFilter:'active',detail:null,jimp:null,sorts:{},leftTab:'table',setTab:'table',calcTab:'pay',tierOpen:false,lqDraft:null,xOpen:false,lp:{mode:'month',off:0},plogs:null,lcats:null,lq:'',logs:[],wkOff:0,purchases:[],buyBlocked:false,buyFor:'',olderFail:false,rf:{mon:'all',kind:'all',q:'',unpaid:false},payOpen:null,man:null,db:null,fs:null,auth:null,authUser:null,myNick:'',isOwner:false,admins:[],ready:false,err:false,setup:false,canWrite:false,older:[],olderRange:null,olderLoading:false,cutoff:'',me:'',month:'',imp:null,stab:'sum',ssort:'rate',ssearch:'',warnings:[],warnBlocked:false,logBlocked:false,wmonth:'',dist:null,hist:null,delLogs:null,atab:'warn',sview:'calc',nsort:'role',notes:{},locks:{},rewards:[],leaveFor:null,noteFor:null,cdraft:null,tierDraft:null,pay:null,selMode:false,sel:new Set(),
+const S={nKind:'notice',nView:null,notices:[],noticeBlocked:false,nEdit:null,nPage:0,nDel:null,demoT:{},manOpen:(()=>{try{return localStorage.getItem('att.manOpen')==='1'}catch(_){return false}})(),msel:new Set(),mbulk:null,noticeEdit:false,rfSug:false,mt:(()=>{try{const v=JSON.parse(localStorage.getItem('att.mt')||'{}');return v&&typeof v==='object'?v:{}}catch(_){return {}}})(),mFilter:'active',detail:null,jimp:null,sorts:{},leftTab:'table',setTab:'table',calcTab:'pay',tierOpen:false,lqDraft:null,xOpen:false,lp:{mode:'month',off:0},plogs:null,lcats:null,lq:'',logs:[],wkOff:0,purchases:[],buyBlocked:false,buyFor:'',olderFail:false,rf:{mon:'all',kind:'all',q:'',unpaid:false},payOpen:null,man:null,db:null,fs:null,auth:null,authUser:null,myNick:'',isOwner:false,admins:[],ready:false,err:false,setup:false,canWrite:false,older:[],olderRange:null,olderLoading:false,cutoff:'',me:'',month:'',imp:null,stab:'sum',ssort:'rate',ssearch:'',warnings:[],warnBlocked:false,logBlocked:false,wmonth:'',dist:null,hist:null,delLogs:null,atab:'warn',sview:'calc',nsort:'role',notes:{},locks:{},rewards:[],leaveFor:null,noteFor:null,cdraft:null,tierDraft:null,pay:null,selMode:false,sel:new Set(),
   members:[],sessions:[],config:{...CFG0},
   tab:'home',openSid:null,editSid:null,period:'4',cfilter:'all',demo:false,confirm:null,showOff:false,
   search:'',onlyUnchecked:false,mSearch:''};
@@ -1657,7 +1665,7 @@ const powOf=m=>typeof m.power==='number'&&isFinite(m.power)&&m.power>0?m.power:n
 function fmtPow(v){if(v==null)return '–';if(v>=10000){const e=Math.floor(v/10000),r=Math.round(v%10000);return e+'억'+(r?' '+r.toLocaleString()+'만':'')}return (Math.round(v*10)/10).toLocaleString()+'만'}
 const daysAgo=d=>d?Math.max(0,Math.round((parseD(gameDay())-parseD(d))/864e5)):null;
 function skillChips(list,cls){return (list||[]).filter(x=>SKILLS.includes(x)).map(x=>`<span class="sk${cls?' '+cls:''}">${esc(x)}</span>`).join('')}
-const PERMS=[['check','출석 체크','회차 만들기·체크·삭제'],['notice','공지','문파 공지 쓰기·고치기'],['members','명단','문파원 추가·휴식·메모'],['manage','경고·정산','경고·월 마감·지급·구매 기록']];
+const PERMS=[['check','출석 체크','회차 만들기·체크·삭제'],['notice','공지','문파 공지·규정 쓰기·고치기'],['members','명단','문파원 추가·휴식·메모'],['manage','경고·정산','경고·월 마감·지급·구매 기록']];
 function permsOf(d){if(!d||typeof d.perms!=='object'||!d.perms)return null;const o={};for(const [k] of PERMS)o[k]=d.perms[k]===true;return o}
 function can(p){return S.isOwner||(S.canWrite&&(!S.perms||S.perms[p]===true))}
 function myName(){return S.myNick||(S.isOwner?'admin':'운영진')}
@@ -1853,8 +1861,11 @@ function guildPicker(first){
   return first?`<div class="gp-page"><div class="panel nv gp">${body}</div></div>`:`<div class="overlay nv-ov" data-action="gClose"><div class="panel nv gp" role="dialog" aria-modal="true" aria-label="문파 바꾸기">${body}</div></div>`;
 }
 /* ---------- 문파 공지 (고정 1개 + 최근 목록) ---------- */
-function noticeList(){const N=S.config.notice&&typeof S.config.notice==='object'?S.config.notice:{};
-  const L=S.notices.slice();if(!L.length&&N.text)L.push({id:'legacy',title:'문파 공지',body:N.text,pinned:true,at:N.at||0,by:N.by||'',legacy:true});
+const nKindOf=n=>n&&n.kind==='notice'?'notice':'rule';
+const nNew=n=>{const t=Math.max(n&&n.at||0,n&&n.editedAt||0);return t>0&&Date.now()-t<7*864e5};
+const NK={notice:{tab:'📢 문파 공지',one:'공지',list:'최근 공지'},rule:{tab:'📜 문파 규정',one:'규정',list:'규정 목록'}};
+function noticeList(kind){const N=S.config.notice&&typeof S.config.notice==='object'?S.config.notice:{};
+  let L=S.notices.slice();if(kind)L=L.filter(n=>nKindOf(n)===kind);if((!kind||kind==='rule')&&!S.notices.some(n=>nKindOf(n)==='rule')&&N.text)L.push({id:'legacy',title:'문파 공지',body:N.text,pinned:true,at:N.at||0,by:N.by||'',legacy:true});
   L.sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0)||(b.at||0)-(a.at||0));return L}
 function ntime(ms){const d=new Date(ms),k=new Date(ms+9*3600e3).toISOString();return mdd(k.slice(0,10))+' '+k.slice(11,16)}
 function nStrike(){const ta=$('#nBody');if(!ta)return;let a=ta.selectionStart,z=ta.selectionEnd,v=ta.value;
@@ -1870,28 +1881,29 @@ function nStrike(){const ta=$('#nBody');if(!ta)return;let a=ta.selectionStart,z=
   ta.value=nv;ta.focus();ta.setSelectionRange(na,nz);nPrevUpd()}
 function nPrevUpd(){const p=$('#nPrev'),ta=$('#nBody');if(p&&ta)p.innerHTML=nFmt(ta.value)||'<span class="hint">내용을 적으면 여기에 보여요</span>'}
 const nFmt=t=>esc(t||'').replace(/~~([\s\S]+?)~~/g,'<del class="nstrike">$1</del>');
-function noticeForm(n){
-  return `<div class="overlay nv-ov ned-ov"><div class="panel nv ned" role="dialog" aria-modal="true" aria-label="${n?'공지 수정':'새 공지'}">
-    <div class="ned-h"><b>${n?'공지 수정':'새 공지'}</b><button class="nv-x ned-x" data-action="nCancel" aria-label="닫기">✕</button></div>
+function noticeForm(n,kind){const K=NK[n?nKindOf(n):kind||'notice'];
+  return `<div class="overlay nv-ov ned-ov"><div class="panel nv ned" role="dialog" aria-modal="true" aria-label="${n?K.one+' 수정':'새 '+K.one}">
+    <div class="ned-h"><b>${n?K.one+' 수정':'새 '+K.one}</b><button class="nv-x ned-x" data-action="nCancel" aria-label="닫기">✕</button></div>
     <div class="ned-b nform">
     <input type="text" id="nTitle" data-keep="0" maxlength="60" placeholder="제목 (예: 이번 주 요신 토요일 진행)" value="${esc(n&&n.title||'')}">
     <div class="ned-tools"><button class="btn small" data-action="nStrike" title="드래그한 부분을 흐리게 + 가로줄 (Ctrl+D). 표시된 곳을 다시 고르고 누르면 풀려요"><del>삭제 표시</del></button><span class="hint">고칠 부분을 드래그하고 누르세요 · Ctrl+D</span></div>
     <textarea id="nBody" data-keep="0" maxlength="2000" rows="9" placeholder="내용">${esc(n&&n.body||'')}</textarea>
     <div class="ned-pv"><div class="hint">미리보기</div><div class="notice-body" id="nPrev">${nFmt(n&&n.body||'')||'<span class="hint">내용을 적으면 여기에 보여요</span>'}</div></div>
-    <label class="chk"><input type="checkbox" id="nPin" data-keep="0"${n&&n.pinned?' checked':''}> 📌 고정 공지 (맨 위에 펼쳐서 보여요)</label>
+    <label class="chk"><input type="checkbox" id="nPin" data-keep="0"${n&&n.pinned?' checked':''}> 📌 고정 ${K.one} (맨 위에 펼쳐서 보여요)</label>
     <p class="hint">링크를 가진 누구나 볼 수 있어요 · 내용 2000자까지</p></div>
     <div class="nv-f"><span class="grow"></span><button class="btn small" data-action="nCancel">취소</button><button class="btn small primary" data-action="nSave" data-id="${esc(n&&n.id||'')}">저장</button></div>
   </div></div>`}
-function renderNoticeEdit(){if(!S.nEdit||!can('notice'))return '';if(S.nEdit==='new')return noticeForm(null);
+function renderNoticeEdit(){if(!S.nEdit||!can('notice'))return '';if(S.nEdit==='new')return noticeForm(null,S.nKind==='rule'?'rule':'notice');
   const n=noticeList().find(x=>x.id===S.nEdit);return n?noticeForm(n):''}
 function renderNoticeView(){
-  const L=noticeList(),i=L.findIndex(n=>n.id===S.nView);if(i<0){S.nView=null;return ''}
-  const n=L[i],adm=can('notice'),isNew=n.at&&Date.now()-n.at<7*864e5;
+  const n0=noticeList().find(n=>n.id===S.nView);if(!n0){S.nView=null;return ''}
+  const nk=nKindOf(n0),L=noticeList(nk),i=L.findIndex(n=>n.id===S.nView);
+  const n=L[i],adm=can('notice'),isNew=nNew(n),K=NK[nk];
   const d=n.at?new Date(n.at+9*3600e3).toISOString().slice(0,10):'';
   const prev=L[i-1],next=L[i+1];
-  return `<div class="overlay nv-ov" data-action="nViewClose"><div class="panel nv" role="dialog" aria-modal="true" aria-label="공지 보기">
-    <div class="nv-h"><div class="nv-tags">${n.pinned?'<span class="nbadge">📌 고정 공지</span>':'<span class="nbadge gr">공지</span>'}${isNew?'<span class="nnew">NEW</span>':''}</div>
-      <h3>${esc(n.title||'문파 공지')}</h3><div class="nv-meta">${n.by?esc(n.by):''}${n.by&&d?' · ':''}${n.at?ntime(n.at):''}${n.editedAt?` · ${esc(n.editedBy||'')} ${ntime(n.editedAt)} 수정`:''}</div>
+  return `<div class="overlay nv-ov" data-action="nViewClose"><div class="panel nv" role="dialog" aria-modal="true" aria-label="${K.one} 보기">
+    <div class="nv-h"><div class="nv-tags">${n.pinned?`<span class="nbadge">📌 고정 ${K.one}</span>`:`<span class="nbadge gr">${K.one}</span>`}${isNew?'<span class="nnew">NEW</span>':''}</div>
+      <h3>${esc(n.title||'문파 '+K.one)}</h3><div class="nv-meta">${n.by?esc(n.by):''}${n.by&&d?' · ':''}${n.at?ntime(n.at):''}${n.editedAt?` · ${esc(n.editedBy||'')} ${ntime(n.editedAt)} 수정`:''}</div>
       <button class="nv-x" data-action="nViewClose" aria-label="닫기">✕</button></div>
     <div class="nv-body">${nFmt(n.body)||'<span class="hint">내용이 없어요.</span>'}</div>
     <div class="nv-f">${prev?`<button class="btn small" data-action="nView" data-id="${esc(prev.id)}">‹ 이전</button>`:''}${next?`<button class="btn small" data-action="nView" data-id="${esc(next.id)}">다음 ›</button>`:''}<span class="grow"></span>
@@ -1899,20 +1911,22 @@ function renderNoticeView(){
       <button class="btn small primary" data-action="nViewClose">닫기</button></div></div></div>`;
 }
 function renderNotices(){
-  const adm=can('notice'),L=noticeList(),now=Date.now(),isNew=n=>n.at&&now-n.at<7*864e5;
+  const nk=S.nKind==='rule'?'rule':'notice',K=NK[nk],adm=can('notice'),L=noticeList(nk),isNew=nNew;
+  const other=nk==='notice'?'rule':'notice',dot=noticeList(other).some(nNew);
   const pin=L.find(n=>n.pinned),rest=L.filter(n=>n!==pin),PER=7,pages=Math.max(1,Math.ceil(rest.length/PER));if(!(S.nPage>=0))S.nPage=0;if(S.nPage>pages-1)S.nPage=pages-1;const shown=rest.slice(S.nPage*PER,S.nPage*PER+PER);
   const acts=n=>adm?`<span class="nacts">${S.nDel===n.id?`<button class="btn small danger" data-action="nDelYes" data-id="${esc(n.id)}">정말 삭제</button><button class="btn small" data-action="nDel" data-id="">취소</button>`:`<button class="btn small" data-action="nEditOpen" data-id="${esc(n.id)}">수정</button>${n.legacy?'':`<button class="btn small" data-action="nPinT" data-id="${esc(n.id)}">${n.pinned?'고정 해제':'고정'}</button><button class="btn small" data-action="nDel" data-id="${esc(n.id)}">삭제</button>`}`}</span>`:'';
   const meta=n=>`<span class="hint num">${n.by?esc(n.by)+' · ':''}${n.at?ntime(n.at):''}</span>`;
   const long=t=>String(t||'').split('\n').length>4||String(t||'').length>180;
-  const pinHtml=pin?(`<div class="npin"><div class="nh"><span class="nbadge">📌 고정</span><button class="nlink" data-action="nView" data-id="${esc(pin.id)}">${esc(pin.title||'문파 공지')}</button>${isNew(pin)?'<span class="nnew">NEW</span>':''}<span class="grow"></span>${meta(pin)}</div>
+  const pinHtml=pin?(`<div class="npin"><div class="nh"><span class="nbadge">📌 고정</span><button class="nlink" data-action="nView" data-id="${esc(pin.id)}">${esc(pin.title||'문파 '+K.one)}</button>${isNew(pin)?'<span class="nnew">NEW</span>':''}<span class="grow"></span>${meta(pin)}</div>
       <div class="notice-body clamp">${nFmt(pin.body)}</div><div class="nfoot">${long(pin.body)?`<button class="btn small" data-action="nView" data-id="${esc(pin.id)}">전체 보기</button>`:''}<span class="grow"></span>${acts(pin)}</div></div>`):'';
   const rows=shown.map(n=>{
     return `<div class="nrow"><button class="nline" data-action="nView" data-id="${esc(n.id)}">${n.pinned?'<span class="nbadge sm">📌</span>':''}<span class="nt">${esc(n.title||'(제목 없음)')}</span>${isNew(n)?'<span class="nnew">NEW</span>':''}<span class="grow"></span>${meta(n)}<span class="nchev" aria-hidden="true">›</span></button></div>`}).join('');
-  return `<div class="panel notice"><div class="spread"><h2>문파 공지</h2>${adm?'<button class="btn small primary" data-action="nEditOpen" data-id="new">＋ 새 공지</button>':''}</div>
+  return `<div class="panel notice"><div class="spread"><div class="ntabs" role="tablist" aria-label="공지 · 규정">${['notice','rule'].map(k=>`<button role="tab" data-action="nKind" data-k="${k}" aria-selected="${nk===k}">${NK[k].tab}${k===other&&dot?'<span class="ndot" aria-label="새 글 있음"></span>':''}</button>`).join('')}</div>${adm?`<button class="btn small primary" data-action="nEditOpen" data-id="new">＋ 새 ${K.one}</button>`:''}</div>
+    ${!L.length?`<p class="hint nempty">아직 ${K.one}${nk==='notice'?'가':'이'} 없어요.</p>`:''}
     ${S.noticeBlocked&&adm?'<div class="confirm">공지를 불러올 수 없어요. Firestore 규칙을 새 버전으로 게시해 주세요.</div>':''}
     ${pinHtml}
-    ${rest.length?`<div class="nlist"><div class="nlh"><span class="l">최근 공지</span><span class="hint">${rest.length}개</span></div>${rows}${'<div class="nrow nph" aria-hidden="true"><span class="nline">&nbsp;</span></div>'.repeat(Math.max(0,PER-shown.length))}</div>`:''}
-    ${rest.length?`<div class="npage" role="navigation" aria-label="공지 페이지"><button class="pg" data-action="nPage" data-p="${S.nPage-1}"${S.nPage>0?'':' disabled'} aria-label="이전 페이지">‹</button>${(()=>{let a=Math.max(0,Math.min(S.nPage-2,pages-5)),z=Math.min(pages,a+5),o='';for(let i=a;i<z;i++)o+=`<button class="pg${i===S.nPage?' on':''}" data-action="nPage" data-p="${i}" aria-current="${i===S.nPage}">${i+1}</button>`;return o})()}<button class="pg" data-action="nPage" data-p="${S.nPage+1}"${S.nPage<pages-1?'':' disabled'} aria-label="다음 페이지">›</button></div>`:''}
+    ${rest.length?`<div class="nlist"><div class="nlh"><span class="l">${K.list}</span><span class="hint">${rest.length}개</span></div>${rows}${'<div class="nrow nph" aria-hidden="true"><span class="nline">&nbsp;</span></div>'.repeat(Math.max(0,PER-shown.length))}</div>`:''}
+    ${rest.length?`<div class="npage" role="navigation" aria-label="${K.one} 페이지"><button class="pg" data-action="nPage" data-p="${S.nPage-1}"${S.nPage>0?'':' disabled'} aria-label="이전 페이지">‹</button>${(()=>{let a=Math.max(0,Math.min(S.nPage-2,pages-5)),z=Math.min(pages,a+5),o='';for(let i=a;i<z;i++)o+=`<button class="pg${i===S.nPage?' on':''}" data-action="nPage" data-p="${i}" aria-current="${i===S.nPage}">${i+1}</button>`;return o})()}<button class="pg" data-action="nPage" data-p="${S.nPage+1}"${S.nPage<pages-1?'':' disabled'} aria-label="다음 페이지">›</button></div>`:''}
     ${!L.length&&S.nEdit!=='new'?`<p class="hint">${adm?'아직 공지가 없어요. [＋ 새 공지]로 규칙이나 안내를 적어 두세요. 규칙은 📌 고정으로 올려 두면 맨 위에 보여요.':'아직 등록된 공지가 없어요.'}</p>`:''}</div>`;
 }
 /* ---------- 홈 ---------- */
@@ -3712,6 +3726,7 @@ document.addEventListener('click',e=>{
   if(a==='nView'){S.nView=b.dataset.id;S.nDel=null;render();$('#noticebox .nv-x')?.focus();return}
   if(a==='nViewClose'){if(b.classList.contains('overlay')&&e.target!==b)return;S.nView=null;S.nDel=null;render();return}
   if(a==='nEditOpen'){S.nEdit=b.dataset.id||'new';S.nEditDirty=false;S.nDel=null;render();return}
+  if(a==='nKind'){S.nKind=b.dataset.k;S.nPage=0;S.nDel=null;render();return}
   if(a==='nCancel'){S.nEdit=null;render();return}
   if(a==='nStrike'){nStrike();return}
   if(a==='pgGo'){S.pg??={};S.pg[b.dataset.k]=Math.max(0,+b.dataset.p||0);render();const t=b.closest('.panel');if(t&&t.getBoundingClientRect().top<0)t.scrollIntoView({block:'start'});return}
@@ -3721,12 +3736,13 @@ document.addEventListener('click',e=>{
     if(!title&&!body){toast('제목이나 내용을 적어 주세요');return}
     const old=id&&id!=='legacy'?S.notices.find(n=>n.id===id):null;
     guard(async()=>{
-      if(pinned)for(const n of S.notices)if(n.pinned&&n.id!==id)await S.db.doc('notices/'+n.id).update({pinned:false});
+      const kind=old?nKindOf(old):id==='legacy'?'rule':(S.nKind==='rule'?'rule':'notice');
+      if(pinned)for(const n of S.notices)if(n.pinned&&n.id!==id&&nKindOf(n)===kind)await S.db.doc('notices/'+n.id).update({pinned:false});
       if(old)await S.db.doc('notices/'+id).update({title,body,pinned,editedBy:myName(),editedAt:Date.now()});
-      else{await S.db.collection('notices').doc().set({title,body,pinned,by:myName(),at:Date.now()});if(id==='legacy')await saveConfig({notice:{text:'',by:myName(),at:Date.now()}})}
-    },old?'공지를 고쳤어요':'공지를 올렸어요',{area:'설정',what:old?'공지 수정':'공지 등록',detail:(title||body).slice(0,60)}).then(ok=>{if(ok){S.nEdit=null;render()}});return}
+      else{await S.db.collection('notices').doc().set({title,body,pinned,kind,by:myName(),at:Date.now()});if(id==='legacy')await saveConfig({notice:{text:'',by:myName(),at:Date.now()}})}
+    },(()=>{const o=NK[old?nKindOf(old):id==='legacy'||S.nKind==='rule'?'rule':'notice'].one;return o+(o==='공지'?'를':'을')+(old?' 고쳤어요':' 올렸어요')})(),{area:'설정',what:old?'공지 수정':'공지 등록',detail:(title||body).slice(0,60)}).then(ok=>{if(ok){S.nEdit=null;render()}});return}
   if(a==='nPinT'){const n=S.notices.find(x=>x.id===b.dataset.id);if(!n)return;
-    guard(async()=>{if(!n.pinned)for(const x of S.notices)if(x.pinned&&x.id!==n.id)await S.db.doc('notices/'+x.id).update({pinned:false});await S.db.doc('notices/'+n.id).update({pinned:!n.pinned})},n.pinned?'고정을 풀었어요':'고정 공지로 올렸어요',{area:'설정',what:n.pinned?'공지 고정 해제':'공지 고정',detail:(n.title||'').slice(0,60)});return}
+    guard(async()=>{if(!n.pinned)for(const x of S.notices)if(x.pinned&&x.id!==n.id&&nKindOf(x)===nKindOf(n))await S.db.doc('notices/'+x.id).update({pinned:false});await S.db.doc('notices/'+n.id).update({pinned:!n.pinned})},n.pinned?'고정을 풀었어요':'고정 공지로 올렸어요',{area:'설정',what:n.pinned?'공지 고정 해제':'공지 고정',detail:(n.title||'').slice(0,60)});return}
   if(a==='nDelYes'){const n=S.notices.find(x=>x.id===b.dataset.id);if(!n)return;S.nDel=null;S.nView=null;
     guard(()=>S.db.doc('notices/'+n.id).delete(),'공지를 지웠어요',{area:'설정',what:'공지 삭제',detail:(n.title||'').slice(0,60)});return}
   if(a==='manToggle'){S.manOpen=!S.manOpen;try{localStorage.setItem('att.manOpen',S.manOpen?'1':'')}catch(_){}render();return}
