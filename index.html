@@ -1418,6 +1418,11 @@ del.nstrike{opacity:.5;text-decoration:line-through;text-decoration-thickness:1.
 .nbig-ov{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.86);display:grid;place-items:center;padding:24px;cursor:zoom-out}
 .nbig-ov img{max-width:100%;max-height:calc(100vh - 48px);border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
 .nbig-ov .nv-x{position:fixed;top:14px;right:14px}
+
+/* 요신·결계 순위 칸 */
+.rk-f{display:inline-flex;align-items:center;gap:6px;font-weight:600}
+.rk-in .rk-f input,.rk-in2 .rk-f input{width:64px;text-align:center}
+.rk-in2{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:4px}
 </style>
 </head>
 <body>
@@ -1658,6 +1663,13 @@ const onLeave=(m,d)=>!!m&&Array.isArray(m.leaves)&&m.leaves.some(l=>l&&l.from&&d
 const eligible=(m,s)=>!m||((!m.joinedAt||s.date>=m.joinedAt)&&!onLeave(m,s.date));
 const isLocked=d=>!!S.locks[String(d).slice(0,7)];
 function pts(k){const p=S.config.points;const v=p&&p[k];return typeof v==='number'&&v>=0?v:1}
+/* 요신·결계 순위: rank 글자에 '요신 3위 · 결계 5위'로 저장 (예전 한 칸 기록은 old) */
+const rkC=k=>!!k&&k===extraCfg().content;
+function rkParts(t){t=String(t||'');const y=t.match(/요신[^\d]{0,6}(\d{1,3})\s*위/),g=t.match(/결계[^\d]{0,6}(\d{1,3})\s*위/);
+  const o=!y&&!g?t.match(/(\d{1,3})\s*위/):null;return {y:y?+y[1]:null,g:g?+g[1]:null,old:o?+o[1]:null}}
+const rkNum=v=>{const n=parseInt(String(v||'').replace(/[^\d]/g,''),10);return n>=1&&n<=999?n:null};
+const rkCompose=(y,g)=>[y&&`요신 ${y}위`,g&&`결계 ${g}위`].filter(Boolean).join(' · ');
+function rkInputs(pre,s){const P=rkParts(s&&s.rank);return `<label class="rk-f">요신<input type="text" inputmode="numeric" id="${pre}Y" data-keep="0" maxlength="3" placeholder="–" value="${P.y??''}">위</label><label class="rk-f">결계<input type="text" inputmode="numeric" id="${pre}G" data-keep="0" maxlength="3" placeholder="–" value="${P.g??''}">위</label>${P.old!=null?`<span class="hint">예전 기록: ${esc(s.rank)} (구분 없음)</span>`:''}`}
 function extraCfg(){
   const e=S.demo?null:S.config.extra;const okDays=a=>[...new Set((Array.isArray(a)?a:[]).filter(d=>Number.isInteger(d)&&d>=0&&d<=6))].sort();
   if(e&&CMAP[e.content])return {days:okDays(e.days),content:e.content};
@@ -2189,14 +2201,14 @@ function renderSheet(members){
       <label class="f">날짜<input type="date" id="eDate" data-keep="0" value="${esc(s.date)}"></label>
       <label class="f">콘텐츠<select id="eContent" data-keep="0">${CONTENTS.filter(x=>x.on||x.k===s.content).map(x=>`<option value="${x.k}"${x.k===s.content?' selected':''}>${esc(x.name)}</option>`).join('')}</select></label>
       <label class="f full">회차 유형<select id="eType" data-keep="0"><option value="0"${s.extra?'':' selected'}>정규 (고정) · 출석률·경고에 들어가요</option><option value="1"${s.extra?' selected':''}>추가 진행 · 불참해도 패널티 없음, 참여하면 포인트</option></select></label>
-      <label class="f full">순위·결과 (예: 3위, 결계 12단계)<input type="text" id="eRank" data-keep="0" maxlength="30" value="${esc(s.rank||'')}"></label>
+      ${rkC(s.content)?`<div class="f full"><span>순위 (숫자만, 아는 쪽만)</span><div class="rk-in2">${rkInputs('eRk',s)}</div></div>`:`<label class="f full">순위·결과 (예: 3위, 결계 12단계)<input type="text" id="eRank" data-keep="0" maxlength="30" value="${esc(s.rank||'')}"></label>`}
       <label class="f full">메모<textarea id="eNote" data-keep="0" maxlength="500" placeholder="예: 화요일 보강, 22시 집결">${esc(s.note||'')}</textarea></label>
       <div class="row full"><button class="btn primary" data-action="saveEdit" data-sid="${s.id}">저장</button><button class="btn" data-action="cancelEdit">취소</button></div></div>`:'';
   const meta=[s.createdBy?`만든 사람 ${esc(nameOf(s.createdBy))}`:'',s.updatedAt?`마지막 수정 ${s.updatedBy?esc(nameOf(s.updatedBy))+' · ':''}${hm(s.updatedAt)}`:''].filter(Boolean).join(' · ');
   return `<div class="panel">
     <div class="spread"><div class="row"><span class="chip" ${ck(s.content)}>${esc(c?.name||s.content)}</span>${s.extra?'<span class="tag extra">추가 진행</span>':typeAsk(s.content)?'<span class="tag">정규</span>':''}${s.rank?`<span class="tag rank">${esc(s.rank)}</span>`:''}${canE&&typeAsk(s.content)?(S.confirm==='st:'+s.id?`<button class="btn small primary" data-action="sTypeYes" data-sid="${s.id}">${s.extra?'정규로':'추가 진행으로'} 바꾸기</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small" data-action="sTypeAsk" data-sid="${s.id}" title="이 회차를 ${s.extra?'정규(출석률·경고에 들어감)':'추가 진행(불참해도 패널티 없음)'}로 바꿔요">⇄ ${s.extra?'정규로':'추가 진행으로'}</button>`):''}</div>
       <span class="hint num">${s.date.replace(/-/g,'.')} (${DAYS[dow(s.date)]})</span></div>
-    ${!editing&&(s.content===extraCfg().content||s.rank)&&s.date<=gameDay()?`<div class="rk-in"><b>🏆 랭킹 결과</b>${canE?`<input type="text" id="rkIn-${s.id}" data-keep="0" maxlength="30" placeholder="예: 3위" value="${esc(s.rank||'')}"><button class="btn small primary" data-action="rkSave" data-sid="${s.id}">${s.rank?'고치기':'저장'}</button>`:`<span>${s.rank?esc(s.rank):'<span class="hint">아직 안 적었어요</span>'}</span>`}<span class="hint">"3위"처럼 적으면 통계 → 랭크 추이에 그려져요</span></div>`:''}
+    ${!editing&&(s.content===extraCfg().content||s.rank)&&s.date<=gameDay()?`<div class="rk-in"><b>🏆 랭킹 결과</b>${canE?`${rkC(s.content)?rkInputs('rk-'+s.id,s):`<input type="text" id="rkIn-${s.id}" data-keep="0" maxlength="30" placeholder="예: 3위" value="${esc(s.rank||'')}">`}<button class="btn small primary" data-action="rkSave" data-sid="${s.id}">${s.rank?'고치기':'저장'}</button>`:`<span>${s.rank?esc(s.rank):'<span class="hint">아직 안 적었어요</span>'}</span>`}<span class="hint">${rkC(s.content)?'아는 쪽만 숫자로 적어도 돼요 · 통계 → 랭크 추이에 그려져요':'"3위"처럼 적으면 통계 → 랭크 추이에 그려져요'}</span></div>`:''}
     ${edit||(s.note?`<div class="notebox">${esc(s.note)}</div>`:'')}
     ${s.date>gameDay()?'<div class="lockbar">아직 진행 전인 회차예요. 미리 사전공지를 체크해 둘 수 있고, 그날이 지나야 통계에 들어가요.</div>':''}
     ${lk?`<div class="lockbar on">${monLabel(s.date.slice(0,7))} 정산이 마감돼서 수정할 수 없어요. admin이 마감을 풀면 고칠 수 있어요.</div>`:''}
@@ -2469,17 +2481,21 @@ function statMembers(st){
     <div class="rk2" style="--rows:${Math.max(1,Math.ceil(rows.length/2))}">${list||'<p class="hint">조건에 맞는 문파원이 없어요.</p>'}</div></div>`;
 }
 function rankChart(rk,numOf){
-  const by={};for(const s of rk){if(!/위/.test(s.rank))continue;const n=numOf(s.rank);if(n==null)continue;(by[s.content]??=[]).push({d:s.date,n,x:!!s.extra})}
-  const ks=Object.keys(by).filter(k=>by[k].length);if(!ks.length)return `<div class="panel"><h2>랭크 결과 추이</h2><p class="hint">회차의 '회차 수정 · 메모'에 "3위"처럼 순위를 적으면 여기에 그래프가 그려져요.</p></div>`;
+  const by={},SN={};const rc=extraCfg().content,rcol=(CMAP[rc]?.color??7);
+  SN[rc+'#y']={name:'요신',c:`var(--k${rcol%8})`};SN[rc+'#g']={name:'결계',c:`var(--k${(rcol+3)%8})`};SN[rc+'#o']={name:'예전 기록',c:'var(--muted)'};
+  for(const s of rk){if(rkC(s.content)){const P=rkParts(s.rank);for(const [t,n] of [['y',P.y],['g',P.g],['o',P.old]])if(n!=null)(by[s.content+'#'+t]??=[]).push({d:s.date,n,x:!!s.extra});continue}
+    if(!/위/.test(s.rank))continue;const n=numOf(s.rank);if(n==null)continue;(by[s.content]??=[]).push({d:s.date,n,x:!!s.extra})}
+  const sn=k=>SN[k]||{name:CMAP[k]?.name||k,c:`var(--k${(CMAP[k]?.color??7)%8})`};
+  const ks=Object.keys(by).filter(k=>by[k].length).sort((a,b)=>a.endsWith('#o')-b.endsWith('#o'));if(!ks.length)return `<div class="panel"><h2>랭크 결과 추이</h2><p class="hint">회차의 🏆 랭킹 결과에 순위를 적으면 여기에 그래프가 그려져요.</p></div>`;
   for(const k of ks)by[k]=by[k].slice(-12);
   const maxN=Math.max(3,...ks.flatMap(k=>by[k].map(p=>p.n))),W=640,H=220,L=36,R=36,T=14,B=30,cw=W-L-R,ch=H-T-B;
   const dates=[...new Set(ks.flatMap(k=>by[k].map(p=>p.d)))].sort();const xi=d=>L+(dates.length<2?cw/2:dates.indexOf(d)*cw/(dates.length-1));const yi=n=>T+(n-1)/(maxN-1)*ch;
   const step=maxN<=10?1:maxN<=20?2:5;let grid='';for(let n=1;n<=maxN;n+=step)grid+=`<line x1="${L}" x2="${W-R}" y1="${yi(n)}" y2="${yi(n)}" class="rc-g"/><text x="${L-6}" y="${yi(n)+4}" class="rc-yl">${n}위</text>`;
   const lab=dates.map((d,i)=>dates.length<=8||i%Math.ceil(dates.length/8)===0||i===dates.length-1?`<text x="${xi(d)}" y="${H-8}" class="rc-xl">${md(d)}</text>`:'').join('');
-  const ser=ks.map(k=>{const c=`var(--k${(CMAP[k]?.color??7)%8})`,pts=by[k];return `<g style="--c:${c}"><polyline points="${pts.map(p=>xi(p.d)+','+yi(p.n)).join(' ')}" class="rc-l"/>${pts.map(p=>`<circle cx="${xi(p.d)}" cy="${yi(p.n)}" r="4.5" class="rc-p"><title>${md(p.d)} ${esc(CMAP[k]?.name||k)} ${p.n}위</title></circle>`).join('')}<text x="${xi(pts[pts.length-1].d)+7}" y="${yi(pts[pts.length-1].n)+4}" class="rc-last">${pts[pts.length-1].n}위</text></g>`}).join('');
+  const ser=ks.map(k=>{const c=sn(k).c,pts=by[k];return `<g style="--c:${c}"><polyline points="${pts.map(p=>xi(p.d)+','+yi(p.n)).join(' ')}" class="rc-l"/>${pts.map(p=>`<circle cx="${xi(p.d)}" cy="${yi(p.n)}" r="4.5" class="rc-p"><title>${md(p.d)} ${esc(sn(k).name)} ${p.n}위</title></circle>`).join('')}<text x="${xi(pts[pts.length-1].d)+7}" y="${yi(pts[pts.length-1].n)+4}" class="rc-last">${pts[pts.length-1].n}위</text></g>`}).join('');
   const sum=ks.map(k=>{const p=by[k],a=p[p.length-1],f=p.length>1?p[p.length-2]:null,best=Math.min(...p.map(x=>x.n));const d=f?f.n-a.n:0;
-    return `<span class="rc-s" style="--c:var(--k${(CMAP[k]?.color??7)%8})"><i></i><b>${esc(CMAP[k]?.name||k)}</b> 최근 ${a.n}위${f?(d>0?` <span class="up">▲${d}</span>`:d<0?` <span class="down">▼${-d}</span>`:''):''} · 최고 ${best}위</span>`}).join('');
-  return `<div class="panel rchart"><h2>랭크 결과 추이</h2><div class="rc-sum">${sum}</div><svg viewBox="0 0 ${W} ${H}" class="rc" role="img" aria-label="랭크 결과 추이 그래프">${grid}${lab}${ser}</svg><p class="hint">위쪽일수록 높은 순위예요. 콘텐츠마다 최근 12번까지 보여요.</p></div>`}
+    return `<span class="rc-s" style="--c:${sn(k).c}"><i></i><b>${esc(sn(k).name)}</b> 최근 ${a.n}위${f?(d>0?` <span class="up">▲${d}</span>`:d<0?` <span class="down">▼${-d}</span>`:''):''} · 최고 ${best}위</span>`}).join('');
+  return `<div class="panel rchart"><h2>랭크 결과 추이</h2><div class="rc-sum">${sum}</div><svg viewBox="0 0 ${W} ${H}" class="rc" role="img" aria-label="랭크 결과 추이 그래프">${grid}${lab}${ser}</svg><p class="hint">위쪽일수록 높은 순위예요. 줄마다 최근 12번까지 보여요.</p></div>`}
 function statTrend(st){
   const cols=shownContents(st.scoped);
   const wv=st.weeks.slice(-12);
@@ -2495,11 +2511,14 @@ function statTrend(st){
   // 랭킹 결과: 회차에 적은 순위·결과
   const rk=st.scoped.filter(s=>s.rank).slice().sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
   const numOf=t=>{const m=String(t).match(/(\d+)\s*위/)||String(t).match(/(\d+)/);return m?+m[1]:null};
-  const last={};const rr=rk.map(s=>{const n=numOf(s.rank),key=s.content,p=last[key];let ch='';
-    if(n!=null&&p!=null&&/위/.test(s.rank)){const d=p-n;ch=d>0?`<span class="up">▲${d}</span>`:d<0?`<span class="down">▼${-d}</span>`:'<span class="hint">–</span>'}
+  const last={},chOf=(p,n)=>{const d=p-n;return d>0?`<span class="up">▲${d}</span>`:d<0?`<span class="down">▼${-d}</span>`:'<span class="hint">–</span>'};
+  const rr=rk.map(s=>{let ch='';
+    if(rkC(s.content)){const P=rkParts(s.rank),out=[];for(const [t,lb,n] of [['y','요신',P.y],['g','결계',P.g],['o','',P.old]]){if(n==null)continue;const key=s.content+'#'+t,p=last[key];if(p!=null)out.push((lb?lb+' ':'')+chOf(p,n));last[key]=n}ch=out.join(' · ');return {s,ch}}
+    const n=numOf(s.rank),key=s.content,p=last[key];
+    if(n!=null&&p!=null&&/위/.test(s.rank))ch=chOf(p,n);
     if(n!=null)last[key]=n;return {s,ch}}).reverse().slice(0,30);
   const rchart=feat('rank')?rankChart(rk,numOf):'';
-  const rank=`${rchart}<div class="panel"><h2>랭킹 결과 기록</h2><p class="hint">회차의 '회차 수정 · 메모'에서 적은 순위·결과를 모았어요. "3위"처럼 적으면 지난번과 비교해 오르내림을 보여 줘요.</p>
+  const rank=`${rchart}<div class="panel"><h2>랭킹 결과 기록</h2><p class="hint">회차에 적은 순위를 모았어요. 요신·결계는 따로 지난번과 비교해 오르내림을 보여 줘요.</p>
     ${rr.length?`<div class="scroll"><table><thead><tr><th>날짜</th><th>콘텐츠</th><th>결과</th><th>변화</th></tr></thead><tbody>${rr.map(({s,ch})=>`<tr><td class="num">${mdd(s.date)}</td><td><span class="chip" ${ck(s.content)}>${esc(CMAP[s.content]?.name||s.content)}</span>${s.extra?' <span class="tag extra">추가</span>':''}</td><td style="white-space:normal">${esc(s.rank)}</td><td>${ch}</td></tr>`).join('')}</tbody></table></div>`:'<p class="hint">이 기간에 적힌 순위·결과가 없어요.</p>'}</div>`;
   return `${weekly}${days?`<div class="two">${rank}<div class="col">${days}</div></div>`:rank}`;
 }
@@ -3821,7 +3840,10 @@ document.addEventListener('click',e=>{
     if(allSessions().some(x=>x.id!==sid&&x.date===old.date&&x.content===old.content&&!!x.extra===ex)){toast('같은 날 같은 유형의 회차가 이미 있어요');return}
     if(!ex){const w=sameWeekReg(old.date,old.content,sid);if(w){toast(`그 주에는 ${CMAP[old.content]?.name||''} 정규 회차가 ${mdd(w.date)}에 이미 있어요. 그 회차를 먼저 추가 진행으로 바꿔 주세요`);return}}
     guard(()=>S.db.doc('sessions/'+sid).update({extra:ex,updatedAt:Date.now(),updatedBy:myName()}),ex?'추가 진행으로 바꿨어요':'정규 회차로 바꿨어요').then(ok=>{if(ok)writeLog({type:'edit',sid,before:{date:old.date,content:old.content,extra:!!old.extra},after:{date:old.date,content:old.content,extra:ex},more:[]})});return}
-  if(a==='rkSave'){const sid=b.dataset.sid,old=allSessions().find(x=>x.id===sid);if(!old)return;const v=($('#rkIn-'+sid)?.value||'').trim().slice(0,30);if(v===(old.rank||'')){toast('바뀐 내용이 없어요');return}
+  if(a==='rkSave'){const sid=b.dataset.sid,old=allSessions().find(x=>x.id===sid);if(!old)return;
+    let v;if(rkC(old.content)&&$('#rk-'+sid+'Y')){const yv=$('#rk-'+sid+'Y').value.trim(),gv=$('#rk-'+sid+'G').value.trim(),y=rkNum(yv),g=rkNum(gv);
+      if((yv&&!y)||(gv&&!g)){toast('순위는 1~999 숫자로 적어 주세요');return}
+      v=rkCompose(y,g);if(!v&&rkParts(old.rank).old!=null)v=old.rank||''}else v=($('#rkIn-'+sid)?.value||'').trim().slice(0,30);if(v===(old.rank||'')){toast('바뀐 내용이 없어요');return}
     if(isLocked(old.date)){toast('마감된 달이라 고칠 수 없어요');return}
     guard(()=>S.db.doc('sessions/'+sid).update({rank:v,updatedAt:Date.now(),updatedBy:myName()}),'랭킹 결과를 저장했어요').then(ok=>{if(ok)writeLog({type:'edit',sid,before:{date:old.date,content:old.content,extra:!!old.extra},after:{date:old.date,content:old.content,extra:!!old.extra},more:['순위·결과']})});return}
   if(a==='joinFix'){S.confirm='joinFix';render();return}
@@ -3848,7 +3870,7 @@ document.addEventListener('click',e=>{
   if(a==='edit'){S.editSid=b.dataset.sid;S.confirm=null;render();return}
   if(a==='cancelEdit'){S.editSid=null;render();return}
   if(a==='saveEdit'){const sid=b.dataset.sid;const date=$('#eDate').value;if(!date){toast('날짜를 골라 주세요');return}
-    const upd={date,content:$('#eContent').value,extra:$('#eType').value==='1',rank:$('#eRank').value.trim().slice(0,30),note:$('#eNote').value.trim().slice(0,500),updatedAt:Date.now(),updatedBy:myName()};
+    const upd={date,content:$('#eContent').value,extra:$('#eType').value==='1',rank:$('#eRkY')?(()=>{const y=rkNum($('#eRkY').value),g=rkNum($('#eRkG').value),v=rkCompose(y,g);return v||(rkParts((allSessions().find(x=>x.id===sid)?.rank||'')).old!=null&&!$('#eRkY').value.trim()&&!$('#eRkG').value.trim()?(allSessions().find(x=>x.id===sid)?.rank||''):'')})():($('#eRank')?.value||'').trim().slice(0,30),note:$('#eNote').value.trim().slice(0,500),updatedAt:Date.now(),updatedBy:myName()};
     const old=S.sessions.find(x=>x.id===sid);
     if((old&&isLocked(old.date))||isLocked(upd.date)){toast('마감된 달로는 옮길 수 없어요');return}
     if(allSessions().some(x=>x.id!==sid&&x.date===upd.date&&x.content===upd.content&&!!x.extra===!!upd.extra)){toast('같은 날짜·콘텐츠 회차가 이미 있어요');return}
@@ -4117,6 +4139,7 @@ document.addEventListener('keydown',e=>{
   if(e.target.id==='nBody'&&(e.ctrlKey||e.metaKey)&&!e.shiftKey&&!e.altKey&&(e.key==='d'||e.key==='D')){e.preventDefault();nStrike();return}
   if(e.key==='Escape'&&S.nBig){S.nBig=null;nBigShow();return}
   if(e.key==='Escape'&&S.nEdit){if(!S.nEditDirty){S.nEdit=null;render()}else toast('저장하거나 취소를 눌러 주세요');return}
+  if(e.key==='Enter'&&e.target.id&&/^rk-.+[YG]$/.test(e.target.id)&&!e.isComposing){e.preventDefault();document.querySelector(`[data-action="rkSave"][data-sid="${e.target.id.slice(3,-1)}"]`)?.click();return}
   if(e.key==='Enter'&&e.target.id&&e.target.id.startsWith('rkIn-')&&!e.isComposing){e.preventDefault();document.querySelector(`[data-action="rkSave"][data-sid="${e.target.id.slice(5)}"]`)?.click()}
   if(e.key==='Enter'&&e.target.dataset&&e.target.dataset.action==='pwIn'&&!e.isComposing){e.preventDefault();const i=+e.target.dataset.i;const nx=document.querySelector(`[data-action="pwIn"][data-i="${i+1}"]`);e.target.blur();if(nx){nx.focus();nx.select&&nx.select()}}
   if(e.key==='Enter'&&e.target.dataset&&(e.target.dataset.action==='rename'||e.target.dataset.action==='roleRename'))e.target.blur();
