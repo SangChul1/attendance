@@ -1442,6 +1442,9 @@ label.chk .nmust{margin:0 2px 0 0}
 .xs-hint i{font-style:normal;display:inline-block;animation:xsnudge 1.4s ease-in-out infinite}
 @keyframes xsnudge{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
 @media (prefers-reduced-motion:reduce){.xs-hint i{animation:none}}
+
+/* 조회수 */
+.nvw{white-space:nowrap}
 </style>
 </head>
 <body>
@@ -1560,7 +1563,7 @@ apply();})();
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc as fdoc, collection as fcol, setDoc, updateDoc, deleteDoc, getDoc, getDocs, runTransaction, onSnapshot as fsnap, query, orderBy as fOrder, limit as fLimit, where as fWhere } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc as fdoc, collection as fcol, setDoc, updateDoc, deleteDoc, getDoc, getDocs, runTransaction, increment, onSnapshot as fsnap, query, orderBy as fOrder, limit as fLimit, where as fWhere } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 /* ====== 문파별 Firebase 설정 (문파를 추가하려면 여기에 한 줄 더) ====== */
 const GUILDS = {
@@ -1927,6 +1930,12 @@ function guildPicker(first){
 const nKindOf=n=>n&&n.kind==='notice'?'notice':'rule';
 const nNew=n=>{const t=Math.max(n&&n.at||0,n&&n.editedAt||0);return t>0&&Date.now()-t<7*864e5};
 const NMUST=3;
+/* 조회수: 기기(브라우저)마다 글 하나에 1번만 셈 */
+function nCountView(id){if(!id||id==='legacy'||S.demo||!S.db)return;const n=S.notices.find(x=>x.id===id);if(!n)return;
+  const key='att.nv.'+GKEY;let seen=[];try{seen=JSON.parse(localStorage.getItem(key)||'[]');if(!Array.isArray(seen))seen=[]}catch(_){seen=[]}
+  if(seen.includes(id))return;seen.push(id);if(seen.length>400)seen=seen.slice(-400);try{localStorage.setItem(key,JSON.stringify(seen))}catch(_){return}
+  try{const r=S.db.doc('notices/'+id);(r.bump?r.bump('views'):r.update({views:(n.views||0)+1})).catch(e=>console.warn('views',e))}catch(e){console.warn('views',e)}}
+const nViews=n=>Number.isFinite(n&&n.views)&&n.views>0?n.views:0;
 const NK={notice:{tab:'📢 문파 공지',one:'공지',list:'최근 공지'},rule:{tab:'📜 문파 규정',one:'규정',list:'규정 목록'}};
 function noticeList(kind){const N=S.config.notice&&typeof S.config.notice==='object'?S.config.notice:{};
   let L=S.notices.slice();if(kind)L=L.filter(n=>nKindOf(n)===kind);if((!kind||kind==='rule')&&!S.notices.some(n=>nKindOf(n)==='rule')&&N.text)L.push({id:'legacy',title:'문파 공지',body:N.text,pinned:true,at:N.at||0,by:N.by||'',legacy:true});
@@ -2003,7 +2012,7 @@ function renderNoticeView(){
   const prev=L[i-1],next=L[i+1];
   return `<div class="overlay nv-ov" data-action="nViewClose"><div class="panel nv" role="dialog" aria-modal="true" aria-label="${K.one} 보기">
     <div class="nv-h"><div class="nv-tags">${n.pinned?`<span class="nmust lg">필독</span><span class="nbadge gr">${K.one}</span>`:`<span class="nbadge gr">${K.one}</span>`}${isNew?'<span class="nnew">NEW</span>':''}</div>
-      <h3>${esc(n.title||'문파 '+K.one)}</h3><div class="nv-meta">${n.by?esc(n.by):''}${n.by&&d?' · ':''}${n.at?ntime(n.at):''}${n.editedAt?` · ${esc(n.editedBy||'')} ${ntime(n.editedAt)} 수정`:''}</div>
+      <h3>${esc(n.title||'문파 '+K.one)}</h3><div class="nv-meta">${n.by?esc(n.by):''}${n.by&&d?' · ':''}${n.at?ntime(n.at):''}${n.editedAt?` · ${esc(n.editedBy||'')} ${ntime(n.editedAt)} 수정`:''}${n.id!=='legacy'?` · 조회 ${nViews(n)}`:''}</div>
       <button class="nv-x" data-action="nViewClose" aria-label="닫기">✕</button></div>
     <div class="nv-body">${nFmt(n.body,nImgMap(n))||'<span class="hint">내용이 없어요.</span>'}</div>
     <div class="nv-f">${prev?`<button class="btn small" data-action="nView" data-id="${esc(prev.id)}">‹ 이전</button>`:''}${next?`<button class="btn small" data-action="nView" data-id="${esc(next.id)}">다음 ›</button>`:''}<span class="grow"></span>
@@ -2015,7 +2024,7 @@ function renderNotices(){
   const other=nk==='notice'?'rule':'notice',dot=noticeList(other).some(nNew);
   const rest=L,PER=7,pages=Math.max(1,Math.ceil(rest.length/PER));if(!(S.nPage>=0))S.nPage=0;if(S.nPage>pages-1)S.nPage=pages-1;const shown=rest.slice(S.nPage*PER,S.nPage*PER+PER);
   const acts=n=>adm?`<span class="nacts">${S.nDel===n.id?`<button class="btn small danger" data-action="nDelYes" data-id="${esc(n.id)}">정말 삭제</button><button class="btn small" data-action="nDel" data-id="">취소</button>`:`<button class="btn small" data-action="nEditOpen" data-id="${esc(n.id)}">수정</button>${n.legacy?'':`<button class="btn small" data-action="nPinT" data-id="${esc(n.id)}">${n.pinned?'필독 해제':'필독'}</button><button class="btn small" data-action="nDel" data-id="${esc(n.id)}">삭제</button>`}`}</span>`:'';
-  const meta=n=>`<span class="hint num">${n.by?esc(n.by)+' · ':''}${n.at?ntime(n.at):''}</span>`;
+  const meta=n=>`<span class="hint num">${n.by?esc(n.by)+' · ':''}${n.at?ntime(n.at):''}${n.id!=='legacy'?`<span class="nvw" title="조회수"> · 👁 ${nViews(n)}</span>`:''}</span>`;
   const long=t=>String(t||'').split('\n').length>4||String(t||'').length>180;
   const rows=shown.map(n=>{
     return `<div class="nrow"><button class="nline" data-action="nView" data-id="${esc(n.id)}">${n.pinned?'<span class="nmust">필독</span>':''}<span class="nt">${esc(n.title||'(제목 없음)')}</span>${nHasImg(n)?'<span class="nimg-ic" title="사진 있음">🖼</span>':''}${isNew(n)?'<span class="nnew">NEW</span>':''}<span class="grow"></span>${meta(n)}<span class="nchev" aria-hidden="true">›</span></button></div>`}).join('');
@@ -3828,7 +3837,7 @@ document.addEventListener('click',e=>{
   if(a==='wkPopCheck'){S.wkPop=false;S.tab='check';remember('tab','check');render();window.scrollTo({top:0});return}
   if(a==='homeOpen'){S.wkPop=false;S.tab='check';remember('tab','check');S.mt.check='sheet';S.openSid=b.dataset.sid;S.confirm=null;S.editSid=null;S.search='';S.hist=null;render();window.scrollTo({top:0});scrollSheet();return}
   if(a==='homeUnc'){S.tab='check';remember('tab','check');S.mt.check='list';render();window.scrollTo({top:0});return}
-  if(a==='nView'){S.nView=b.dataset.id;S.nDel=null;render();$('#noticebox .nv-x')?.focus();return}
+  if(a==='nView'){S.nView=b.dataset.id;nCountView(b.dataset.id);S.nDel=null;render();$('#noticebox .nv-x')?.focus();return}
   if(a==='nViewClose'){if(b.classList.contains('overlay')&&e.target!==b)return;S.nView=null;S.nDel=null;render();return}
   if(a==='nEditOpen'){S.nEdit=b.dataset.id||'new';S.nEditDirty=false;{const o=S.notices.find(x=>x.id===S.nEdit);S.nEditImg={map:{...nImgMap(o)},draft:{}}}S.nDel=null;render();return}
   if(a==='nKind'){S.nKind=b.dataset.k;S.nPage=0;S.nDel=null;render();return}
@@ -4228,6 +4237,7 @@ function makeDb(fs){
   const D=ref=>({id:ref.id,path:ref.path,
     set:d=>setDoc(ref,d).catch(e=>{throw mapErr(e)}),
     update:d=>updateDoc(ref,flat(d)).catch(e=>{throw mapErr(e)}),
+    bump:f=>updateDoc(ref,{[f]:increment(1)}).catch(e=>{throw mapErr(e)}),
     delete:()=>deleteDoc(ref).catch(e=>{throw mapErr(e)}),
     get:()=>getDoc(ref).then(wrapSnap).catch(e=>{throw mapErr(e)}),
     onSnapshot:(n,er)=>fsnap(ref,x=>n(wrapSnap(x)),e=>er&&er(mapErr(e)))});
