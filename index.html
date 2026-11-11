@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <script>(function(){try{var q=new URLSearchParams(location.search).get('g'),m={"학살":"haksal","초살":"chosal"},k=q?(m[q]||q):localStorage.getItem('att.guild');if(k)document.documentElement.setAttribute('data-guild',k)}catch(e){}})();</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive">
 <title>도깨비 문파 출석부</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1423,6 +1424,24 @@ del.nstrike{opacity:.5;text-decoration:line-through;text-decoration-thickness:1.
 .rk-f{display:inline-flex;align-items:center;gap:6px;font-weight:600}
 .rk-in .rk-f input,.rk-in2 .rk-f input{width:64px;text-align:center}
 .rk-in2{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:4px}
+
+/* 탭 글자 가운데 */
+nav.tabs button,.subtabs button,.ntabs button{justify-content:center;text-align:center}
+/* 필독 */
+.nmust{display:inline-flex;align-items:center;flex:0 0 auto;padding:1px 7px;margin-right:6px;border-radius:6px;background:var(--seal);color:#fff;font-size:12px;font-weight:800;letter-spacing:.02em;line-height:1.5}
+.nmust.lg{font-size:13px;padding:2px 9px}
+label.chk .nmust{margin:0 2px 0 0}
+/* 폰: 넓은 표 첫 칸 고정 + 밀기 안내 */
+@media (max-width:700px){
+  .scroll.xs>table>thead>tr>th:first-child,.scroll.xs>table>tbody>tr>td:first-child,.scroll.xs>table>tbody>tr>th:first-child,.scroll.xs>table>tfoot>tr>td:first-child{position:sticky;left:-4px;z-index:2;background:var(--surface);background-clip:padding-box}
+  .scroll.xs>table>thead>tr>th:first-child{z-index:3;background:linear-gradient(var(--thead),var(--thead)),var(--surface)}
+  .scroll.xs.sx>table>tbody>tr>td:first-child,.scroll.xs.sx>table>tbody>tr>th:first-child,.scroll.xs.sx>table>thead>tr>th:first-child{box-shadow:6px 0 8px -6px rgba(0,0,0,.35)}
+}
+.xs-hint{display:flex;align-items:center;justify-content:flex-end;gap:4px;margin:2px 2px 4px;font-size:12.5px;font-weight:600;color:var(--accent)}
+.xs-hint.end{visibility:hidden}
+.xs-hint i{font-style:normal;display:inline-block;animation:xsnudge 1.4s ease-in-out infinite}
+@keyframes xsnudge{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+@media (prefers-reduced-motion:reduce){.xs-hint i{animation:none}}
 </style>
 </head>
 <body>
@@ -1508,6 +1527,22 @@ show();})();
  addEventListener('scroll',go,{passive:true});addEventListener('resize',go);
  var app=document.getElementById('app');if(app&&window.MutationObserver)new MutationObserver(go).observe(app,{childList:true,subtree:true});
  f.addEventListener('click',function(){setTimeout(go,50)});go();})();
+</script>
+<script>
+/* 넓은 표: 옆으로 밀 수 있으면 '밀어서 더 보기' 안내 + 첫 칸 고정 */
+(function(){var q=0;
+ function upd(el){var over=el.scrollWidth>el.clientWidth+4,h=el.previousElementSibling;
+  if(!h||!h.classList||!h.classList.contains('xs-hint')){h=null}
+  if(!over||innerWidth>700){el.classList.remove('xs','sx');if(h)h.remove();return}
+  el.classList.add('xs');el.classList.toggle('sx',el.scrollLeft>2);
+  if(!h){h=document.createElement('div');h.className='xs-hint';h.setAttribute('aria-hidden','true');h.innerHTML='옆으로 밀어서 더 보기 <i>→</i>';el.parentNode.insertBefore(h,el)}
+  h.classList.toggle('end',el.scrollLeft+el.clientWidth>=el.scrollWidth-4)}
+ function all(){q=0;document.querySelectorAll('.scroll').forEach(function(el){if(el.querySelector(':scope>table'))upd(el)})}
+ function go(){if(!q)q=requestAnimationFrame(all)}
+ document.addEventListener('scroll',function(e){var t=e.target;if(t&&t.classList&&t.classList.contains('xs'))upd(t)},true);
+ addEventListener('resize',go);
+ var app=document.getElementById('app');if(app&&window.MutationObserver)new MutationObserver(function(ms){for(var i=0;i<ms.length;i++){var n=ms[i].target;if(n.classList&&n.classList.contains('xs-hint'))continue;go();return}}).observe(app,{childList:true,subtree:true});
+ go()})();
 </script>
 <script>/* 화면 크기 버튼: 80%~160%, 10%씩. 기기마다 기억 */
 (function(){var MIN=0.8,MAX=1.6,KEY='att.zoom',z=1;try{var v=parseFloat(localStorage.getItem(KEY));if(v>=MIN&&v<=MAX)z=v}catch(_){}
@@ -1595,7 +1630,10 @@ const S={nImgCache:{},nEditImg:null,nBig:null,nKind:'notice',nView:null,notices:
   search:'',onlyUnchecked:false,mSearch:''};
 let pending={},inflight={},flushing=false,flushTimer=null;
 try{const t=localStorage.getItem('att.tab');if(['home','check','stats','settle','me','admin'].includes(t))S.tab=t;if(t==='members')S.tab='admin';const ns=localStorage.getItem('att.nsort');if(['role','ko','en'].includes(ns))S.nsort=ns;const at=localStorage.getItem('att.atab');if(['warn','members','cfg','team','power','logs'].includes(at))S.atab=at;if(at==='pay'||at==='buy'){S.sview=at==='pay'?'log':'buyin'}S.me=localStorage.getItem('att.me.'+GKEY)||(GKEY==='haksal'?localStorage.getItem('att.me'):'')||'';const st=localStorage.getItem('att.stab');if(['sum','mem','trend'].includes(st))S.stab=st}catch(_){}
-function remember(k,v){try{localStorage.setItem('att.'+k+(k==='me'?'.'+GKEY:''),v)}catch(_){}}
+try{if(!S.me){S.me=meCookie()||'';if(S.me)try{localStorage.setItem('att.me.'+GKEY,S.me)}catch(_){}}else if(meCookie()!==S.me)meCookie(S.me)}catch(_){}
+function meCookie(v){try{const n='att_me_'+GKEY;if(v===undefined){const m=document.cookie.match(new RegExp('(?:^|; )'+n+'=([^;]*)'));return m?decodeURIComponent(m[1]):''}
+  document.cookie=n+'='+encodeURIComponent(v)+';max-age='+(v?400*86400:0)+';path=/;SameSite=Lax'+(location.protocol==='https:'?';Secure':'')}catch(_){return ''}}
+function remember(k,v){try{localStorage.setItem('att.'+k+(k==='me'?'.'+GKEY:''),v)}catch(_){}if(k==='me')meCookie(v)}
 
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1755,7 +1793,7 @@ function renderNav(){
 function blockNote(){return S.canWrite&&(S.logBlocked||S.warnBlocked)?'<div class="readonly-note" style="color:var(--seal)">변경 이력이나 경고 기록이 저장되지 않고 있어요. Firebase의 Firestore 규칙을 새 버전으로 바꿔 주세요.</div>':''}
 function roNote(){if(S.canWrite)return '';
   if(S.authUser)return `<div class="readonly-note">${esc(S.authUser.email||'')} 계정은 운영진으로 등록되지 않았어요. admin에게 이 이메일로 운영진 등록을 요청해 주세요.</div>`;
-  return '<div class="readonly-note">보기 전용 화면이에요. 운영진은 오른쪽 위 <b>운영진 로그인</b>으로 들어와 주세요.</div>'}
+  return '<div class="readonly-note">보기 전용 화면이에요. 운영진은 화면 맨 위의 <b>운영진 로그인</b> 버튼으로 들어와 주세요.</div>'}
 const inKakao=/KAKAOTALK/i.test(navigator.userAgent);
 function renderAuth(){const el=$('#authbar');if(!el)return;
   if(S.setup||!S.auth){el.innerHTML='';return}
@@ -1888,6 +1926,7 @@ function guildPicker(first){
 /* ---------- 문파 공지 (고정 1개 + 최근 목록) ---------- */
 const nKindOf=n=>n&&n.kind==='notice'?'notice':'rule';
 const nNew=n=>{const t=Math.max(n&&n.at||0,n&&n.editedAt||0);return t>0&&Date.now()-t<7*864e5};
+const NMUST=3;
 const NK={notice:{tab:'📢 문파 공지',one:'공지',list:'최근 공지'},rule:{tab:'📜 문파 규정',one:'규정',list:'규정 목록'}};
 function noticeList(kind){const N=S.config.notice&&typeof S.config.notice==='object'?S.config.notice:{};
   let L=S.notices.slice();if(kind)L=L.filter(n=>nKindOf(n)===kind);if((!kind||kind==='rule')&&!S.notices.some(n=>nKindOf(n)==='rule')&&N.text)L.push({id:'legacy',title:'문파 공지',body:N.text,pinned:true,at:N.at||0,by:N.by||'',legacy:true});
@@ -1950,7 +1989,7 @@ function noticeForm(n,kind){const K=NK[n?nKindOf(n):kind||'notice'];
     <div class="ned-tools"><button class="btn small" data-action="nStrike" title="드래그한 부분을 흐리게 + 가로줄 (Ctrl+D). 표시된 곳을 다시 고르고 누르면 풀려요"><del>삭제 표시</del></button><button class="btn small" data-action="nImgPick" title="사진을 넣을 자리에 커서를 두고 누르세요 (최대 ${NIMG_MAX}장)">🖼 사진 넣기</button><input type="file" id="nImgIn" accept="image/*" multiple hidden><span class="hint">고칠 부분을 드래그하고 [삭제 표시] · Ctrl+D / 커서 자리에 [사진] 들어가요</span></div>
     <textarea id="nBody" data-keep="0" maxlength="2000" rows="9" placeholder="내용">${esc(n&&n.body||'')}</textarea>
     <div class="ned-pv"><div class="hint">미리보기</div><div class="notice-body" id="nPrev">${nFmt(n&&n.body||'',nImgMap(n),S.nEditImg&&S.nEditImg.draft)||'<span class="hint">내용을 적으면 여기에 보여요</span>'}</div></div>
-    <label class="chk"><input type="checkbox" id="nPin" data-keep="0"${n&&n.pinned?' checked':''}> 📌 고정 ${K.one} (맨 위에 펼쳐서 보여요)</label>
+    <label class="chk"><input type="checkbox" id="nPin" data-keep="0"${n&&n.pinned?' checked':''}> <span class="nmust">필독</span> 표시 (목록 맨 위로 올라가요 · 최대 ${NMUST}개)</label>
     <p class="hint">링크를 가진 누구나 볼 수 있어요 · 내용 2000자까지</p></div>
     <div class="nv-f"><span class="grow"></span><button class="btn small" data-action="nCancel">취소</button><button class="btn small primary" data-action="nSave" data-id="${esc(n&&n.id||'')}">저장</button></div>
   </div></div>`}
@@ -1963,32 +2002,29 @@ function renderNoticeView(){
   const d=n.at?new Date(n.at+9*3600e3).toISOString().slice(0,10):'';
   const prev=L[i-1],next=L[i+1];
   return `<div class="overlay nv-ov" data-action="nViewClose"><div class="panel nv" role="dialog" aria-modal="true" aria-label="${K.one} 보기">
-    <div class="nv-h"><div class="nv-tags">${n.pinned?`<span class="nbadge">📌 고정 ${K.one}</span>`:`<span class="nbadge gr">${K.one}</span>`}${isNew?'<span class="nnew">NEW</span>':''}</div>
+    <div class="nv-h"><div class="nv-tags">${n.pinned?`<span class="nmust lg">필독</span><span class="nbadge gr">${K.one}</span>`:`<span class="nbadge gr">${K.one}</span>`}${isNew?'<span class="nnew">NEW</span>':''}</div>
       <h3>${esc(n.title||'문파 '+K.one)}</h3><div class="nv-meta">${n.by?esc(n.by):''}${n.by&&d?' · ':''}${n.at?ntime(n.at):''}${n.editedAt?` · ${esc(n.editedBy||'')} ${ntime(n.editedAt)} 수정`:''}</div>
       <button class="nv-x" data-action="nViewClose" aria-label="닫기">✕</button></div>
     <div class="nv-body">${nFmt(n.body,nImgMap(n))||'<span class="hint">내용이 없어요.</span>'}</div>
     <div class="nv-f">${prev?`<button class="btn small" data-action="nView" data-id="${esc(prev.id)}">‹ 이전</button>`:''}${next?`<button class="btn small" data-action="nView" data-id="${esc(next.id)}">다음 ›</button>`:''}<span class="grow"></span>
-      ${adm?(S.nDel===n.id?`<button class="btn small danger" data-action="nDelYes" data-id="${esc(n.id)}">정말 삭제</button><button class="btn small" data-action="nDel" data-id="">취소</button>`:`<button class="btn small" data-action="nEditOpen" data-id="${esc(n.id)}">수정</button>${n.legacy?'':`<button class="btn small" data-action="nPinT" data-id="${esc(n.id)}">${n.pinned?'고정 해제':'고정'}</button><button class="btn small" data-action="nDel" data-id="${esc(n.id)}">삭제</button>`}`):''}
+      ${adm?(S.nDel===n.id?`<button class="btn small danger" data-action="nDelYes" data-id="${esc(n.id)}">정말 삭제</button><button class="btn small" data-action="nDel" data-id="">취소</button>`:`<button class="btn small" data-action="nEditOpen" data-id="${esc(n.id)}">수정</button>${n.legacy?'':`<button class="btn small" data-action="nPinT" data-id="${esc(n.id)}">${n.pinned?'필독 해제':'필독'}</button><button class="btn small" data-action="nDel" data-id="${esc(n.id)}">삭제</button>`}`):''}
       <button class="btn small primary" data-action="nViewClose">닫기</button></div></div></div>`;
 }
 function renderNotices(){
   const nk=S.nKind==='rule'?'rule':'notice',K=NK[nk],adm=can('notice'),L=noticeList(nk),isNew=nNew;
   const other=nk==='notice'?'rule':'notice',dot=noticeList(other).some(nNew);
-  const pin=L.find(n=>n.pinned),rest=L.filter(n=>n!==pin),PER=7,pages=Math.max(1,Math.ceil(rest.length/PER));if(!(S.nPage>=0))S.nPage=0;if(S.nPage>pages-1)S.nPage=pages-1;const shown=rest.slice(S.nPage*PER,S.nPage*PER+PER);
-  const acts=n=>adm?`<span class="nacts">${S.nDel===n.id?`<button class="btn small danger" data-action="nDelYes" data-id="${esc(n.id)}">정말 삭제</button><button class="btn small" data-action="nDel" data-id="">취소</button>`:`<button class="btn small" data-action="nEditOpen" data-id="${esc(n.id)}">수정</button>${n.legacy?'':`<button class="btn small" data-action="nPinT" data-id="${esc(n.id)}">${n.pinned?'고정 해제':'고정'}</button><button class="btn small" data-action="nDel" data-id="${esc(n.id)}">삭제</button>`}`}</span>`:'';
+  const rest=L,PER=7,pages=Math.max(1,Math.ceil(rest.length/PER));if(!(S.nPage>=0))S.nPage=0;if(S.nPage>pages-1)S.nPage=pages-1;const shown=rest.slice(S.nPage*PER,S.nPage*PER+PER);
+  const acts=n=>adm?`<span class="nacts">${S.nDel===n.id?`<button class="btn small danger" data-action="nDelYes" data-id="${esc(n.id)}">정말 삭제</button><button class="btn small" data-action="nDel" data-id="">취소</button>`:`<button class="btn small" data-action="nEditOpen" data-id="${esc(n.id)}">수정</button>${n.legacy?'':`<button class="btn small" data-action="nPinT" data-id="${esc(n.id)}">${n.pinned?'필독 해제':'필독'}</button><button class="btn small" data-action="nDel" data-id="${esc(n.id)}">삭제</button>`}`}</span>`:'';
   const meta=n=>`<span class="hint num">${n.by?esc(n.by)+' · ':''}${n.at?ntime(n.at):''}</span>`;
   const long=t=>String(t||'').split('\n').length>4||String(t||'').length>180;
-  const pinHtml=pin?(`<div class="npin"><div class="nh"><span class="nbadge">📌 고정</span><button class="nlink" data-action="nView" data-id="${esc(pin.id)}">${esc(pin.title||'문파 '+K.one)}</button>${isNew(pin)?'<span class="nnew">NEW</span>':''}<span class="grow"></span>${meta(pin)}</div>
-      <div class="notice-body clamp">${nFmt(pin.body,null,null,'clamp')}</div><div class="nfoot">${long(pin.body)||nHasImg(pin)?`<button class="btn small" data-action="nView" data-id="${esc(pin.id)}">전체 보기</button>`:''}<span class="grow"></span>${acts(pin)}</div></div>`):'';
   const rows=shown.map(n=>{
-    return `<div class="nrow"><button class="nline" data-action="nView" data-id="${esc(n.id)}">${n.pinned?'<span class="nbadge sm">📌</span>':''}<span class="nt">${esc(n.title||'(제목 없음)')}</span>${nHasImg(n)?'<span class="nimg-ic" title="사진 있음">🖼</span>':''}${isNew(n)?'<span class="nnew">NEW</span>':''}<span class="grow"></span>${meta(n)}<span class="nchev" aria-hidden="true">›</span></button></div>`}).join('');
+    return `<div class="nrow"><button class="nline" data-action="nView" data-id="${esc(n.id)}">${n.pinned?'<span class="nmust">필독</span>':''}<span class="nt">${esc(n.title||'(제목 없음)')}</span>${nHasImg(n)?'<span class="nimg-ic" title="사진 있음">🖼</span>':''}${isNew(n)?'<span class="nnew">NEW</span>':''}<span class="grow"></span>${meta(n)}<span class="nchev" aria-hidden="true">›</span></button></div>`}).join('');
   return `<div class="panel notice"><div class="spread"><div class="ntabs" role="tablist" aria-label="공지 · 규정">${['notice','rule'].map(k=>`<button role="tab" data-action="nKind" data-k="${k}" aria-selected="${nk===k}">${NK[k].tab}${k===other&&dot?'<span class="ndot" aria-label="새 글 있음"></span>':''}</button>`).join('')}</div>${adm?`<button class="btn small primary" data-action="nEditOpen" data-id="new">＋ 새 ${K.one}</button>`:''}</div>
     ${!L.length?`<p class="hint nempty">아직 ${K.one}${nk==='notice'?'가':'이'} 없어요.</p>`:''}
     ${S.noticeBlocked&&adm?'<div class="confirm">공지를 불러올 수 없어요. Firestore 규칙을 새 버전으로 게시해 주세요.</div>':''}
-    ${pinHtml}
     ${rest.length?`<div class="nlist"><div class="nlh"><span class="l">${K.list}</span><span class="hint">${rest.length}개</span></div>${rows}${'<div class="nrow nph" aria-hidden="true"><span class="nline">&nbsp;</span></div>'.repeat(Math.max(0,PER-shown.length))}</div>`:''}
     ${rest.length?`<div class="npage" role="navigation" aria-label="${K.one} 페이지"><button class="pg" data-action="nPage" data-p="${S.nPage-1}"${S.nPage>0?'':' disabled'} aria-label="이전 페이지">‹</button>${(()=>{let a=Math.max(0,Math.min(S.nPage-2,pages-5)),z=Math.min(pages,a+5),o='';for(let i=a;i<z;i++)o+=`<button class="pg${i===S.nPage?' on':''}" data-action="nPage" data-p="${i}" aria-current="${i===S.nPage}">${i+1}</button>`;return o})()}<button class="pg" data-action="nPage" data-p="${S.nPage+1}"${S.nPage<pages-1?'':' disabled'} aria-label="다음 페이지">›</button></div>`:''}
-    ${!L.length&&S.nEdit!=='new'?`<p class="hint">${adm?'아직 공지가 없어요. [＋ 새 공지]로 규칙이나 안내를 적어 두세요. 규칙은 📌 고정으로 올려 두면 맨 위에 보여요.':'아직 등록된 공지가 없어요.'}</p>`:''}</div>`;
+    </div>`;
 }
 /* ---------- 홈 ---------- */
 function homeWeek(){
@@ -2087,7 +2123,7 @@ function renderHome(){
   const pad=n=>Array.from({length:Math.max(0,5-n)},(_,i)=>`<div class="it ph">${rankMark(n+i+1)}<span class="n">–</span><b class="num"></b></div>`).join('');
   const topP=`<div class="panel h5p tint-w"><div class="h5s"><div class="spread"><h2>${+mon.slice(5)}월 포인트 TOP 5</h2><button class="btn small" data-action="tab" data-tab="settle">월간 정산</button></div>
     <div class="hrank">${top.map((r,i)=>`<div class="it">${rankMark(i+1)}<span class="n">${esc(r.m.name)}${r.perfect?' <span class="pill-perfect">개근</span>':''}</span><b class="num">${r.P}<small>점</small></b></div>`).join('')}${pad(top.length)}</div>
-    <div class="hperf"><span class="l">개근 후보 ${perf.length}명</span>${perf.length?perf.map(r=>`<span class="tag ok">${esc(r.m.name)}</span>`).join(''):'<span class="hint">아직 없어요</span>'}</div></div></div>`;
+    </div></div>`;
   const topB=`<div class="panel h5p tint-w"><div class="h5s"><div class="spread"><h2>구매 우선권 TOP 5</h2><span class="hint">${mdd(B.t)} 기준</span></div>
     <div class="hrank">${btop.map(r=>`<div class="it">${rankMark(r.rank)}<span class="n">${esc(r.m.name)}${r.tie?' <span class="tag no">동점</span>':''}</span><b class="num">${r.P}<small>점</small></b></div>`).join('')}${pad(btop.length)}</div>
     <p class="hint">최근 ${B.C.days}일 ${B.C.min}점 이상 · 구매 포인트 높은 순${S.canWrite?'':' · 정확한 순번은 운영진 공지를 확인해 주세요'}</p></div></div>`;
@@ -2179,7 +2215,8 @@ function findSession(date,k,extra){return S.sessions.find(s=>s.date===date&&s.co
 
 function renderSheet(members){
   const s=S.sessions.find(x=>x.id===S.openSid);
-  if(!s) return `<div class="panel"><div class="empty"><h3>체크할 회차를 고르세요</h3><p class="hint">왼쪽에서 회차를 누르면 문파원 명단이 열려요. 참여 · 사전공지(미리 알리고 빠짐) · 불참 중에 고르면 바로 저장돼요.</p></div></div>`;
+  if(!s) return can('check')?`<div class="panel"><div class="empty"><h3>체크할 회차를 고르세요</h3><p class="hint">회차 목록에서 회차를 누르면 문파원 명단이 열려요. 참여 · 사전공지(미리 알리고 빠짐) · 불참 중에 고르면 바로 저장돼요.</p></div></div>`
+    :`<div class="panel"><div class="empty"><h3>볼 회차를 고르세요</h3><p class="hint">회차 목록에서 회차를 누르면 그 회차에 누가 참여 · 사전공지 · 불참했는지 볼 수 있어요.</p></div></div>`;
   members=members.filter(m=>eligible(m,s));
   if(!members.length) return S.members.some(m=>m.active!==false)?`<div class="panel"><div class="empty"><h3>이 회차에 체크할 문파원이 없어요</h3><p class="hint">모두 휴식 중이거나 이 날짜 뒤에 가입했어요. 관리 → 문파원 명단에서 가입일과 휴식 기간을 확인해 주세요.</p></div></div>`
     :`<div class="panel"><div class="empty"><h3>문파원 명단이 비어 있어요</h3><p class="hint">관리 → 문파원 명단에서 닉네임을 먼저 추가해 주세요.</p>${S.canWrite?'<button class="btn primary" data-action="gotoMembers">문파원 추가하러 가기</button>':''}</div></div>`;
@@ -2710,9 +2747,9 @@ function renderSettings(){
         ${notes(['<b>판정 방식</b>: 월간 경고는 출석률과 포인트 중 고른 하나만 써요','<b>출석률 대상</b>과 <b>출석률 기준</b>은 통계 화면의 ‘저조’ 표시에도 쓰여요','<b>포인트 기준</b>은 달 중간에 가입하거나 휴식한 문파원에게 참여할 수 있었던 회차 비율만큼 줄여서 적용해요','<b>추방 후보</b>: 집계 기간 안의 경고가 누적 기준 이상이면 목록에 올라요. 추방은 운영진이 직접 결정해요'])}</div>
     </div><div class="cfg-stack">
       <div class="cfg-group"${msA(sc,'role')}><h3>직위</h3>
-        <div class="col" style="gap:6px">${ROLES.map((r,i)=>{const n=S.members.filter(m=>m.role===r).length;return `<div class="role-row"><span class="hint num">${i+1}.</span>
+        <div class="col" style="gap:6px">${ROLES.map((r,i)=>{const n=S.members.filter(m=>m.role===r&&m.active!==false).length,off=S.members.filter(m=>m.role===r&&m.active===false).length;return `<div class="role-row"><span class="hint num">${i+1}.</span>
           <input type="text" id="role-${i}" data-keep="0" data-action="roleRename" data-i="${i}" maxlength="12" value="${esc(r)}" aria-label="직위 이름">
-          <span class="meta"><span class="hint">${n}명${i===ROLES.length-1?' · 기본 직위':''}</span><span class="grow"></span>
+          <span class="meta"><span class="hint"${off?` title="탈퇴·이동한 ${off}명은 빼고 셌어요"`:''}>${n}명${i===ROLES.length-1?' · 기본 직위':''}</span><span class="grow"></span>
           <button class="btn small" data-action="roleMove" data-i="${i}" data-d="-1"${i===0?' disabled':''} aria-label="위로">▲</button><button class="btn small" data-action="roleMove" data-i="${i}" data-d="1"${i===ROLES.length-1?' disabled':''} aria-label="아래로">▼</button>
           ${S.confirm==='role:'+i?`<button class="btn small danger" data-action="roleDel" data-i="${i}">정말 삭제</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small danger" data-action="askRoleDel" data-i="${i}"${ROLES.length<=1?' disabled':''}>삭제</button>`}</span></div>`}).join('')}</div>
         <div class="row"><input type="text" id="roleNew" maxlength="12" placeholder="새 직위 이름 (예: 장로)" style="flex:1 1 180px"><button class="btn primary" data-action="roleAdd">직위 추가</button></div>
@@ -3806,19 +3843,21 @@ document.addEventListener('click',e=>{
   if(a==='nSave'){const id=b.dataset.id,title=($('#nTitle')?.value||'').trim().slice(0,60),body=($('#nBody')?.value||'').replace(/\s+$/,'').slice(0,2000),pinned=!!$('#nPin')?.checked;
     if(!title&&!body){toast('제목이나 내용을 적어 주세요');return}
     const old=id&&id!=='legacy'?S.notices.find(n=>n.id===id):null;
+    {const kk=old?nKindOf(old):id==='legacy'?'rule':(S.nKind==='rule'?'rule':'notice');if(pinned&&!(old&&old.pinned)&&S.notices.filter(x=>x.pinned&&x.id!==id&&nKindOf(x)===kk).length>=NMUST){toast(`필독은 ${NK[kk].one}마다 ${NMUST}개까지예요. 다른 글의 필독을 먼저 풀어 주세요`);return}}
     const EI=S.nEditImg||{map:{},draft:{}},usedK=[...new Set([...body.matchAll(/\[사진(\d{1,2})\]/g)].map(m=>m[1]))];
     guard(async()=>{
       const img={};for(const k of usedK){if(EI.draft[k]){const r=S.db.collection('nimg').doc();await r.set({data:EI.draft[k],by:myName(),at:Date.now()});img[k]=r.id}else if(EI.map[k])img[k]=EI.map[k]}
       const gone=Object.entries(nImgMap(old)).filter(([k,v])=>img[k]!==v).map(([,v])=>v);
       const kind=old?nKindOf(old):id==='legacy'?'rule':(S.nKind==='rule'?'rule':'notice');
-      if(pinned)for(const n of S.notices)if(n.pinned&&n.id!==id&&nKindOf(n)===kind)await S.db.doc('notices/'+n.id).update({pinned:false});
+
       const cleanup=async()=>{for(const g of gone){try{await S.db.doc('nimg/'+g).delete()}catch(e){console.warn(e)}}};
       if(old)await S.db.doc('notices/'+id).update({title,body,pinned,imgs:Object.entries(img).map(([k,v])=>k+':'+v),editedBy:myName(),editedAt:Date.now()});
       else{await S.db.collection('notices').doc().set({title,body,pinned,kind,imgs:Object.entries(img).map(([k,v])=>k+':'+v),by:myName(),at:Date.now()});if(id==='legacy')await saveConfig({notice:{text:'',by:myName(),at:Date.now()}})}
       await cleanup();
     },(()=>{const o=NK[old?nKindOf(old):id==='legacy'||S.nKind==='rule'?'rule':'notice'].one;return o+(o==='공지'?'를':'을')+(old?' 고쳤어요':' 올렸어요')})(),{area:'설정',what:old?'공지 수정':'공지 등록',detail:(title||body).slice(0,60)}).then(ok=>{if(ok){S.nEdit=null;S.nEditImg=null;render()}});return}
   if(a==='nPinT'){const n=S.notices.find(x=>x.id===b.dataset.id);if(!n)return;
-    guard(async()=>{if(!n.pinned)for(const x of S.notices)if(x.pinned&&x.id!==n.id&&nKindOf(x)===nKindOf(n))await S.db.doc('notices/'+x.id).update({pinned:false});await S.db.doc('notices/'+n.id).update({pinned:!n.pinned})},n.pinned?'고정을 풀었어요':'고정 공지로 올렸어요',{area:'설정',what:n.pinned?'공지 고정 해제':'공지 고정',detail:(n.title||'').slice(0,60)});return}
+    if(!n.pinned&&S.notices.filter(x=>x.pinned&&x.id!==n.id&&nKindOf(x)===nKindOf(n)).length>=NMUST){toast(`필독은 ${NK[nKindOf(n)].one}마다 ${NMUST}개까지예요. 다른 글의 필독을 먼저 풀어 주세요`);return}
+    guard(async()=>{await S.db.doc('notices/'+n.id).update({pinned:!n.pinned})},n.pinned?'필독을 풀었어요':'필독으로 표시했어요',{area:'설정',what:n.pinned?'필독 해제':'필독 표시',detail:(n.title||'').slice(0,60)});return}
   if(a==='nDelYes'){const n=S.notices.find(x=>x.id===b.dataset.id);if(!n)return;S.nDel=null;S.nView=null;
     guard(async()=>{await S.db.doc('notices/'+n.id).delete();for(const g of Object.values(nImgMap(n))){try{await S.db.doc('nimg/'+g).delete()}catch(e){console.warn(e)}}},'공지를 지웠어요',{area:'설정',what:'공지 삭제',detail:(n.title||'').slice(0,60)});return}
   if(a==='manToggle'){S.manOpen=!S.manOpen;try{localStorage.setItem('att.manOpen',S.manOpen?'1':'')}catch(_){}render();return}
