@@ -1459,6 +1459,18 @@ label.chk .nmust{margin:0 2px 0 0}
 .skg-l .num{color:var(--muted);font-size:13px}
 .skg-e{margin:4px 0}
 .sheet-out{margin-top:6px}
+
+/* 주력 도술 분포: 두 줄 카드 */
+.sk-dist{grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+@media (max-width:1000px){.sk-dist{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:640px){.sk-dist{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:420px){.sk-dist{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.sk-d{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"n c" "b b";row-gap:7px;column-gap:6px;padding:9px 12px;text-align:left}
+.sk-d .n{grid-area:n;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sk-d b{grid-area:c;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.sk-d b small{font-size:.78em;font-weight:600;color:var(--muted);margin-left:1px}
+.sk-d .bar{grid-area:b;width:100%;height:7px;border:0}
+.sk-d .bar i{min-width:0}
 </style>
 </head>
 <body>
@@ -2437,7 +2449,7 @@ function statPower(){
       <div class="tile"><span class="l">${f?esc(f)+' ':''}평균 전투력</span><span class="v">${fmtPow(avg)}</span><span class="l">${vs.length}명 기준</span></div>
       <div class="tile"><span class="l">${f?esc(f)+' ':''}최고 전투력</span><span class="v">${fmtPow(vs.length?Math.max(...vs):null)}</span><span class="l">&nbsp;</span></div></div>
     <div class="panel"><div class="spread"><h2>주력 도술 분포</h2>${f?`<button class="btn small" data-action="pwSk" data-s="">전체 보기</button>`:'<span class="hint">도술을 누르면 그 도술 문파원만 보여요</span>'}</div>
-      <div class="sk-dist">${SKILLS.map(x=>`<button class="sk-d${f===x?' on':''}" data-action="pwSk" data-s="${x}" aria-pressed="${f===x}"><span class="n">${x}</span><span class="bar"><i style="width:${Math.round(cnt[x]/mx*100)}%"></i></span><b class="num">${cnt[x]}</b></button>`).join('')}</div></div>
+      <div class="sk-dist">${SKILLS.map(x=>`<button class="sk-d${f===x?' on':''}" data-action="pwSk" data-s="${x}" aria-pressed="${f===x}" aria-label="${x} ${cnt[x]}명"><span class="n">${x}</span><b class="num">${cnt[x]}<small>명</small></b><span class="bar"><i style="width:${Math.round(cnt[x]/mx*100)}%"></i></span></button>`).join('')}</div></div>
     ${S.pwView==='s'?`<div class="panel"><div class="spread"><h2>주력 도술별 문파원</h2><span class="row">${pwViewBar()}${S.canWrite?'<button class="btn small" data-action="skCopy">카톡 복사</button>':''}</span></div>${skillGroups(act,true)}</div>`:''}
     <div class="panel"${S.pwView==='s'?' hidden':''}><div class="spread"><h2>문파원 전투력 · 도술${f?` <span class="hint">${esc(f)}</span>`:''}</h2><span class="row"><span class="hint">${list.length}명</span>${pwViewBar()}</span></div>
       <div class="scroll tall"><table><thead><tr>${sortTh('pw','name','닉네임',true)}${sortTh('pw','pw','전투력')}<th style="text-align:left">주력 도술</th>${sortTh('pw','at','갱신')}</tr></thead><tbody>${rows||'<tr><td colspan="4" class="dash">기록 없음</td></tr>'}</tbody></table></div>
