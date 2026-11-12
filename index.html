@@ -1445,6 +1445,20 @@ label.chk .nmust{margin:0 2px 0 0}
 
 /* 조회수 */
 .nvw{white-space:nowrap}
+
+/* 도술별 보기 */
+.pwv button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+.skg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-top:8px}
+.skg{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--surface)}
+.skg-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-bottom:6px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.skg-h .sk{font-size:14px}
+.skg-l{list-style:none;margin:0;padding:0;counter-reset:sg}
+.skg-l li{counter-increment:sg;display:flex;align-items:center;gap:6px;padding:3px 0;font-size:14px}
+.skg-l li::before{content:counter(sg);min-width:18px;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.skg-l .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.skg-l .num{color:var(--muted);font-size:13px}
+.skg-e{margin:4px 0}
+.sheet-out{margin-top:6px}
 </style>
 </head>
 <body>
@@ -2232,7 +2246,8 @@ function renderSheet(members){
   const mk=marksOf(s);const c=CMAP[s.content];const by=s.marksBy||{};
   const cnt={O:0,A:0,X:0,N:0};members.forEach(m=>cnt[validMark(mk[m.id])?mk[m.id]:'N']++);
   const lk=isLocked(s.date),canE=can('check')&&!lk,dis=canE?'':' disabled';
-  const leaveNames=activeMembers(S.members).filter(m=>onLeave(m,s.date)).map(m=>m.name);
+  const outL=[];for(const m of S.members){if(m.active!==false){if(onLeave(m,s.date))outL.push([m.name,'휴식']);else if(m.joinedAt&&s.date<m.joinedAt)outL.push([m.name,md(m.joinedAt)+' 가입'])}
+    else{const at=m.moved?m.movedAt:m.leftAt;if((at&&at>s.date)||validMark(mk[m.id]))outL.push([m.name,(m.moved?'이동':'탈퇴')+(at?' '+md(at):'')])}}
   const q=S.search.trim().toLowerCase();
   const shown=members.filter(m=>(!q||String(m.name).toLowerCase().includes(q))&&(!S.onlyUnchecked||!validMark(mk[m.id])));
   const rows=shown.map(m=>{const v=mk[m.id]||'';const b=by[m.id];
@@ -2270,7 +2285,7 @@ function renderSheet(members){
     ${S.canWrite&&S.hist&&S.hist.sid===s.id?renderHist():''}
     <div class="row"><input type="search" id="sheetSearch" data-keep="0" data-action="search" placeholder="닉네임 검색" value="${esc(S.search)}" class="grow" aria-label="닉네임 검색">${nsortSel('nsortSheet')}<label class="chk"><input type="checkbox" id="onlyUnc" data-keep="0" data-action="onlyUnc"${S.onlyUnchecked?' checked':''}> 미체크만</label></div>
     <div class="mlist">${rows||'<p class="hint" style="padding:12px 2px">조건에 맞는 문파원이 없어요.</p>'}</div>
-    ${leaveNames.length?`<p class="hint">휴식 중이라 이 회차에서 빠진 문파원: ${leaveNames.map(esc).join(', ')}</p>`:''}
+    ${outL.length?`<p class="hint sheet-out">이 회차 명단에서 빠진 사람 ${outL.length}명: ${outL.map(([n,r])=>`${esc(n)}<span class="dash">(${esc(r)})</span>`).join(' · ')}</p>`:''}
     ${notes([s.extra?'<b>추가 진행</b> 회차는 출석률·개근에 들어가지 않고, 참여하면 보너스 포인트만 붙어요':'','체크하지 않은 사람은 출석률 계산에서 빠지지만 그 달 <b>개근은 안 돼요</b>. 회차마다 전원을 체크해 주세요','같은 칸을 한 번 더 누르면 체크가 지워져요'])}${meta?`<p class="hint">${meta}</p>`:''}
   </div>`;
 }
@@ -2376,9 +2391,19 @@ function parsePowerPaste(text){const act=activeMembers(S.members);const names=ac
     let rest=m?line.replace(new RegExp(String(m.name).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i'),' '):line;
     let v=null;const eok=rest.match(/(\d+(?:\.\d+)?)\s*억(?:\s*(\d+(?:[.,]\d+)?)\s*만)?/);
     if(eok){v=+eok[1]*10000+(eok[2]?+eok[2].replace(/,/g,''):0)}else{const mm=rest.replace(/(?<=\d),(?=\d)/g,'').match(/(\d+(?:\.\d+)?)\s*(만)?/);if(mm){const n=+mm[1];v=mm[2]?n:(n>=100000?Math.round(n/10000*10)/10:n)}}
-    const sk=SKILLS.filter(x=>rest.includes(x)).slice(0,3);
+    const sk=SKILLS.filter(x=>rest.includes(x)).slice(0,SKMAX);
     out.push({line,m,v:v&&v>0&&v<10000000?v:null,sk})}
   return out}
+const SKMAX=4;
+function skillGroups(act,link){const ttl=`【${GUILD.name} 문파】 주력 도술별 문파원`;
+  const G=SKILLS.map(x=>{const ms=act.filter(m=>(m.skills||[]).includes(x)).sort((a,b)=>(powOf(b)||0)-(powOf(a)||0)||nameCmp(a.name,b.name));const vs=ms.map(powOf).filter(Boolean);
+    return {x,ms,avg:vs.length?vs.reduce((a,b)=>a+b,0)/vs.length:null}});
+  const none=act.filter(m=>!(m.skills||[]).length);
+  const cards=G.map(g=>`<div class="skg"><div class="skg-h"><span class="sk">${g.x}</span><b class="num">${g.ms.length}명</b>${g.avg!=null?`<span class="hint num">평균 ${fmtPow(g.avg)}</span>`:''}</div>
+    ${g.ms.length?`<ol class="skg-l">${g.ms.map(m=>`<li><span class="n">${link?nmLink(m):esc(m.name)}</span><span class="num">${powOf(m)?fmtPow(powOf(m)):'<span class="dash">–</span>'}</span></li>`).join('')}</ol>`:'<p class="hint skg-e">아직 없어요</p>'}</div>`).join('');
+  S._skCopy=[ttl,'',...G.filter(g=>g.ms.length).map(g=>`[${g.x}] ${g.ms.length}명\n${g.ms.map(m=>m.name+(powOf(m)?` (${fmtPow(powOf(m))})`:'')).join(', ')}`),...(none.length?['',`도술 미입력 ${none.length}명: ${none.map(m=>m.name).join(', ')}`]:[])].join('\n');
+  return `<div class="skg-grid">${cards}</div>${none.length?`<p class="hint">도술 미입력 ${none.length}명: ${none.map(m=>esc(m.name)).join(', ')}</p>`:''}`}
+const pwViewBar=()=>`<div class="seg pwv" role="tablist"><button role="tab" data-action="pwView" data-k="p" aria-selected="${S.pwView!=='s'}">사람별</button><button role="tab" data-action="pwView" data-k="s" aria-selected="${S.pwView==='s'}">도술별</button></div>`;
 function renderPowerAdmin(){
   const act=activeMembers(S.members).slice().sort((a,b)=>nameCmp(a.name,b.name,nameMode()));const gd=gameDay();
   const P=S.pwPrev;
@@ -2395,8 +2420,9 @@ function renderPowerAdmin(){
       <textarea id="pwPaste" rows="6" placeholder="백야 152만 절명 연타&#10;청풍 1억 2000만&#10;소월 98.5"></textarea>
       <p class="hint">숫자만 쓰면 '만' 단위로 봐요 (152 → 152만). 1520000처럼 원 단위도 알아서 바꿔요. 도술 이름(${SKILLS.join('·')})을 함께 적으면 주력 도술로 들어가요.</p>
       <div class="row"><button class="btn" data-action="pwParse">미리보기</button></div>${prev}</details>
-    <div class="panel"><div class="spread"><h2>전투력 · 주력 도술 입력</h2><span class="hint">입력 ${nIn}/${act.length}명${nOld?` · 30일 넘은 기록 ${nOld}명`:''}</span></div>
-      <p class="hint">숫자를 쓰고 Enter를 누르면 저장되고 다음 사람으로 넘어가요. 30일이 넘은 기록은 흐리게 보여요. 주력 도술은 PvP 기준으로 최대 3개까지 골라요.</p>
+    ${S.pwView==='s'?`<div class="panel"><div class="spread"><h2>주력 도술별 문파원</h2><span class="row">${pwViewBar()}<button class="btn small" data-action="skCopy">카톡 복사</button></span></div>${skillGroups(act,false)}</div>`:''}
+    <div class="panel"${S.pwView==='s'?' hidden':''}><div class="spread"><h2>전투력 · 주력 도술 입력</h2><span class="row"><span class="hint">입력 ${nIn}/${act.length}명${nOld?` · 30일 넘은 기록 ${nOld}명`:''}</span>${pwViewBar()}</span></div>
+      <p class="hint">숫자를 쓰고 Enter를 누르면 저장되고 다음 사람으로 넘어가요. 30일이 넘은 기록은 흐리게 보여요. 주력 도술은 PvP 기준으로 최대 ${SKMAX}개까지 골라요.</p>
       <div class="scroll tall"><table class="pw-t"><thead><tr><th style="text-align:left">닉네임</th><th>전투력</th><th>갱신</th><th style="text-align:left">주력 도술</th></tr></thead><tbody>${rows||'<tr><td colspan="4" class="dash">활동 중인 문파원이 없어요</td></tr>'}</tbody></table></div></div></div>`;
 }
 function statPower(){
@@ -2412,9 +2438,10 @@ function statPower(){
       <div class="tile"><span class="l">${f?esc(f)+' ':''}최고 전투력</span><span class="v">${fmtPow(vs.length?Math.max(...vs):null)}</span><span class="l">&nbsp;</span></div></div>
     <div class="panel"><div class="spread"><h2>주력 도술 분포</h2>${f?`<button class="btn small" data-action="pwSk" data-s="">전체 보기</button>`:'<span class="hint">도술을 누르면 그 도술 문파원만 보여요</span>'}</div>
       <div class="sk-dist">${SKILLS.map(x=>`<button class="sk-d${f===x?' on':''}" data-action="pwSk" data-s="${x}" aria-pressed="${f===x}"><span class="n">${x}</span><span class="bar"><i style="width:${Math.round(cnt[x]/mx*100)}%"></i></span><b class="num">${cnt[x]}</b></button>`).join('')}</div></div>
-    <div class="panel"><div class="spread"><h2>문파원 전투력 · 도술${f?` <span class="hint">${esc(f)}</span>`:''}</h2><span class="hint">${list.length}명</span></div>
+    ${S.pwView==='s'?`<div class="panel"><div class="spread"><h2>주력 도술별 문파원</h2><span class="row">${pwViewBar()}${S.canWrite?'<button class="btn small" data-action="skCopy">카톡 복사</button>':''}</span></div>${skillGroups(act,true)}</div>`:''}
+    <div class="panel"${S.pwView==='s'?' hidden':''}><div class="spread"><h2>문파원 전투력 · 도술${f?` <span class="hint">${esc(f)}</span>`:''}</h2><span class="row"><span class="hint">${list.length}명</span>${pwViewBar()}</span></div>
       <div class="scroll tall"><table><thead><tr>${sortTh('pw','name','닉네임',true)}${sortTh('pw','pw','전투력')}<th style="text-align:left">주력 도술</th>${sortTh('pw','at','갱신')}</tr></thead><tbody>${rows||'<tr><td colspan="4" class="dash">기록 없음</td></tr>'}</tbody></table></div>
-      ${notes(['전투력은 운영진이 입력한 값이라 실제와 다를 수 있어요','30일이 넘은 기록은 흐리게 보여요','주력 도술은 PvP 기준 최대 3개'])}</div></div>`;
+      ${notes(['전투력은 운영진이 입력한 값이라 실제와 다를 수 있어요','30일이 넘은 기록은 흐리게 보여요',`주력 도술은 PvP 기준 최대 ${SKMAX}개`])}</div></div>`;
 }
 function monthTable(mon){
   const {members:allM,sessions:allS}=data();const act=activeMembers(allM);const gd=gameDay();
@@ -2522,7 +2549,7 @@ function statMembers(st){
       <div class="pt"><span class="pv"><b>${r.P}</b> <span>점</span></span>${buyM&&buyM.has(r.m.id)?`<small class="bp" title="구매 포인트 (마지막 구매 다음 날부터)">구매 ${buyM.get(r.m.id)}점</small>`:''}</div></div>`}).join('');
   return `${renderCare()}<div class="panel"><div class="spread"><h2>문파원별 출석률${S.cfilter==='all'?'':' · '+esc(CMAP[S.cfilter]?.name||'')}</h2>
       <div class="row"><input type="search" id="statSearch" data-keep="0" data-action="ssearch" placeholder="닉네임 검색" value="${esc(S.ssearch)}" aria-label="닉네임 검색">
-      <select id="statSort" data-keep="0" data-action="ssort" aria-label="정렬">${[['rate','출석률 순'],['main','메인 출석률 순'],['pts','포인트 순'],['name','가나다순 (한글 먼저)'],['nameEn','ABC순 (영어 먼저)']].map(([v,l])=>`<option value="${v}"${S.ssort===v?' selected':''}>${l}</option>`).join('')}</select></div></div>
+      <select id="statSort" data-keep="0" data-action="ssort" aria-label="정렬">${[['rate','출석률 순'],['main','메인 출석률 순'],['pts','포인트 순'],['name','가나다순 (한글 먼저)'],['nameEn','ABC순 (영어 먼저)']].map(([v,l])=>`<option value="${v}"${S.ssort===v?' selected':''}>${l}</option>`).join('')}</select>${S.canWrite?'<button class="btn small" data-action="csv" title="지금 기간·콘텐츠 기준 문파원별 출석률·포인트를 엑셀로 내려받아요">⬇ 엑셀(CSV)</button>':''}</div></div>
     ${notes([`이름 아래 칸은 콘텐츠별 참여/기록 횟수예요. 점 하나가 한 회차예요 (<span class="c-o">●</span> 참여 · <span class="c-a">●</span> 사전공지(면제) · <span class="c-x">●</span> 불참). 칸 색은 참여율이에요`,feat('buy')?'오른쪽 점수는 <b>출석 포인트</b>(기간 안), 아래 작은 글씨는 <b>구매 포인트</b>(지금 기준)예요':'','<b>사전공지(면제)</b>는 한 달 한도 안의 사전공지예요. 한도를 넘은 사전공지는 불참으로 세요','<b>판정 보류</b>인 문파원은 순위 맨 아래에 있어요'])}
     <div class="rk2" style="--rows:${Math.max(1,Math.ceil(rows.length/2))}">${list||'<p class="hint">조건에 맞는 문파원이 없어요.</p>'}</div></div>`;
 }
@@ -3988,8 +4015,10 @@ document.addEventListener('click',e=>{
     guard(async()=>{for(const r of L){const d={};if(r.v){d.power=r.v;d.powerAt=t}if(r.sk.length)d.skills=r.sk;await S.db.doc('members/'+r.m.id).update(d)}},`${L.length}명 전투력을 넣었어요`,{area:'전투력',what:'전투력 붙여넣기',detail:L.map(r=>r.m.name+(r.v?' '+fmtPow(r.v):'')).join(', ').slice(0,300)}).then(ok=>{if(ok){S.pwPrev=null;const ta=$('#pwPaste');if(ta)ta.value='';render()}});return}
   if(a==='skFor'){S.skFor=S.skFor===b.dataset.mid?null:b.dataset.mid;render();return}
   if(a==='skT'){const m=S.members.find(x=>x.id===b.dataset.mid);if(!m)return;const cur=(m.skills||[]).filter(x=>SKILLS.includes(x)),x=b.dataset.s;
-    const nx=cur.includes(x)?cur.filter(y=>y!==x):cur.length>=3?null:[...cur,x];if(!nx){toast('주력 도술은 3개까지 고를 수 있어요');return}
+    const nx=cur.includes(x)?cur.filter(y=>y!==x):cur.length>=SKMAX?null:[...cur,x];if(!nx){toast(`주력 도술은 ${SKMAX}개까지 고를 수 있어요`);return}
     guard(()=>S.db.doc('members/'+m.id).update({skills:nx}),null,{area:'전투력',what:'주력 도술',detail:`${m.name} ${nx.join('·')||'없음'}`});return}
+  if(a==='pwView'){S.pwView=b.dataset.k;render();return}
+  if(a==='skCopy'){if(S._skCopy)copyText(S._skCopy,'도술별 명단을 복사했어요');return}
   if(a==='pwSk'){S.pwSk=S.pwSk===b.dataset.s?'':b.dataset.s;render();return}
   if(a==='wkCopy'){copyText(weekText(S.wkPopOff),'주간 요약을 복사했어요. 공지방에 붙여 넣으세요');return}
   if(a==='careAll'){S.careAll=!S.careAll;render();return}
