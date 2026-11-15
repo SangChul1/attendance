@@ -1471,6 +1471,15 @@ label.chk .nmust{margin:0 2px 0 0}
 .sk-d b small{font-size:.78em;font-weight:600;color:var(--muted);margin-left:1px}
 .sk-d .bar{grid-area:b;width:100%;height:7px;border:0}
 .sk-d .bar i{min-width:0}
+
+/* 회차 명단 넣기·빼기 */
+.mrow .mx{width:30px;height:30px;border-radius:8px;border:1px solid transparent;background:transparent;color:var(--muted);font-size:13px;cursor:pointer;flex:none}
+.mrow .mx:hover,.mrow .mx:focus-visible{border-color:var(--line);color:var(--seal);background:var(--sunken)}
+.sheet-out{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:8px}
+.rp{max-width:520px;width:100%}
+.rp-l{display:flex;flex-direction:column;gap:2px;margin-top:8px;max-height:52vh;overflow:auto}
+.rp-it{display:flex;align-items:center;gap:8px;padding:6px 4px;border-bottom:1px solid var(--line)}
+.rp-it .mn{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style>
 </head>
 <body>
@@ -1727,7 +1736,9 @@ function memberName(id){const m=S.members.find(x=>x.id===id);return m?m.name:''}
 function monthAdd(mon,n){let [y,m]=mon.split('-').map(Number);m+=n;while(m<1){m+=12;y--}while(m>12){m-=12;y++}return y+'-'+pad(m)}
 const sessId=(date,c,extra)=>`${date}_${c}${extra?'_x':''}`;
 const onLeave=(m,d)=>!!m&&Array.isArray(m.leaves)&&m.leaves.some(l=>l&&l.from&&d>=l.from&&d<=(l.to||'9999-12-31'));
-const eligible=(m,s)=>!m||((!m.joinedAt||s.date>=m.joinedAt)&&!onLeave(m,s.date));
+const baseElig=(m,s)=>(!m.joinedAt||s.date>=m.joinedAt)&&!onLeave(m,s.date);
+/* 회차별 명단 조정: s.ex[mid]=true 이 회차에서 뺌 · s.inc[mid]=true 이 회차에 넣음 */
+const eligible=(m,s)=>!m||(s.ex&&s.ex[m.id]===true?false:s.inc&&s.inc[m.id]===true?true:baseElig(m,s));
 const isLocked=d=>!!S.locks[String(d).slice(0,7)];
 function pts(k){const p=S.config.points;const v=p&&p[k];return typeof v==='number'&&v>=0?v:1}
 /* 요신·결계 순위: rank 글자에 '요신 3위 · 결계 5위'로 저장 (예전 한 칸 기록은 old) */
@@ -1765,7 +1776,7 @@ function myName(){return S.myNick||(S.isOwner?'admin':'운영진')}
 /* ---------- render ---------- */
 let composing=false,needRender=false;
 document.addEventListener('compositionstart',()=>{composing=true});
-document.addEventListener('compositionend',e=>{composing=false;const a=e.target.dataset&&e.target.dataset.action;if(a==='search')S.search=e.target.value;else if(a==='mSearch')S.mSearch=e.target.value;else if(a==='ssearch')S.ssearch=e.target.value;else if(a==='rfQ')S.rf.q=e.target.value;else if(a==='meQ')S.meQ=e.target.value;if(needRender||a==='search'||a==='mSearch'||a==='ssearch'||a==='rfQ'||a==='meQ'){needRender=false;render()}});
+document.addEventListener('compositionend',e=>{composing=false;const a=e.target.dataset&&e.target.dataset.action;if(a==='search')S.search=e.target.value;else if(a==='rosterQ')S.rosterQ=e.target.value;else if(a==='mSearch')S.mSearch=e.target.value;else if(a==='ssearch')S.ssearch=e.target.value;else if(a==='rfQ')S.rf.q=e.target.value;else if(a==='meQ')S.meQ=e.target.value;if(needRender||a==='search'||a==='mSearch'||a==='ssearch'||a==='rfQ'||a==='meQ'){needRender=false;render()}});
 /* 화면 갱신: 바뀐 부분만 고쳐서, 입력 중인 칸(한글 조합 포함)은 건드리지 않음 */
 function paint(el,html){
   if(typeof window.morphdom!=='function'){el.innerHTML=html;return}
@@ -2248,6 +2259,16 @@ function renderWeek(members){
 }
 function findSession(date,k,extra){return S.sessions.find(s=>s.date===date&&s.content===k&&!!s.extra===!!extra)}
 
+function renderRosterPick(s,inList){const ids=new Set(inList.map(m=>m.id)),q=(S.rosterQ||'').trim().toLowerCase();
+  const cand=activeMembers(S.members).filter(m=>!ids.has(m.id)).map(m=>[m,s.ex&&s.ex[m.id]===true?'이 회차 제외':onLeave(m,s.date)?'휴식':m.joinedAt&&s.date<m.joinedAt?md(m.joinedAt)+' 가입':'']).sort((a,b)=>nameCmp(a[0].name,b[0].name,nameMode()));
+  const shown=cand.filter(([m])=>!q||String(m.name).toLowerCase().includes(q));
+  return `<div class="overlay nv-ov rp-ov"><div class="panel nv rp" role="dialog" aria-modal="true" aria-label="이 회차에 문파원 넣기">
+    <div class="ned-h"><b>이 회차에 문파원 넣기</b><button class="nv-x ned-x" data-action="rosterClose" aria-label="닫기">✕</button></div>
+    <div class="ned-b"><p class="hint">${esc(CMAP[s.content]?.name||'')} ${mdd(s.date)} · 지금 명단에 없는 활동 문파원이에요. 넣으면 이 회차에서만 체크할 수 있어요 (가입일·휴식은 그대로).</p>
+      <input type="search" id="rosterQ" data-keep="0" data-action="rosterQ" placeholder="닉네임 검색" value="${esc(S.rosterQ||'')}" aria-label="닉네임 검색">
+      <div class="rp-l">${shown.length?shown.map(([m,r])=>`<div class="rp-it">${avatar(m)}<span class="mn">${esc(m.name)}</span>${r?`<span class="tag">${esc(r)}</span>`:''}<span class="grow"></span><button class="btn small primary" data-action="rosterIn" data-sid="${s.id}" data-mid="${m.id}">넣기</button></div>`).join(''):`<p class="hint" style="padding:10px 2px">${cand.length?'검색 결과가 없어요.':'모든 활동 문파원이 이미 명단에 있어요.'}</p>`}</div>
+      <p class="hint">탈퇴·이동한 사람은 관리 → 문파원 명단에서 다시 활동으로 바꾸면 여기에 나와요.</p></div>
+    <div class="nv-f"><span class="grow"></span><button class="btn small" data-action="rosterClose">닫기</button></div></div></div>`}
 function renderSheet(members){
   const s=S.sessions.find(x=>x.id===S.openSid);
   if(!s) return can('check')?`<div class="panel"><div class="empty"><h3>체크할 회차를 고르세요</h3><p class="hint">회차 목록에서 회차를 누르면 문파원 명단이 열려요. 참여 · 사전공지(미리 알리고 빠짐) · 불참 중에 고르면 바로 저장돼요.</p></div></div>`
@@ -2258,13 +2279,13 @@ function renderSheet(members){
   const mk=marksOf(s);const c=CMAP[s.content];const by=s.marksBy||{};
   const cnt={O:0,A:0,X:0,N:0};members.forEach(m=>cnt[validMark(mk[m.id])?mk[m.id]:'N']++);
   const lk=isLocked(s.date),canE=can('check')&&!lk,dis=canE?'':' disabled';
-  const outL=[];for(const m of S.members){if(m.active!==false){if(onLeave(m,s.date))outL.push([m.name,'휴식']);else if(m.joinedAt&&s.date<m.joinedAt)outL.push([m.name,md(m.joinedAt)+' 가입'])}
+  const outL=[];for(const m of S.members){if(m.active!==false){if(eligible(m,s))continue;if(s.ex&&s.ex[m.id]===true)outL.push([m.name,'이 회차 제외',m.id]);else if(onLeave(m,s.date))outL.push([m.name,'휴식',m.id]);else if(m.joinedAt&&s.date<m.joinedAt)outL.push([m.name,md(m.joinedAt)+' 가입',m.id])}
     else{const at=m.moved?m.movedAt:m.leftAt;if((at&&at>s.date)||validMark(mk[m.id]))outL.push([m.name,(m.moved?'이동':'탈퇴')+(at?' '+md(at):'')])}}
   const q=S.search.trim().toLowerCase();
   const shown=members.filter(m=>(!q||String(m.name).toLowerCase().includes(q))&&(!S.onlyUnchecked||!validMark(mk[m.id])));
   const rows=shown.map(m=>{const v=mk[m.id]||'';const b=by[m.id];
-    return `<div class="mrow"><div class="nm" title="${esc(m.name)}${b&&b.at&&validMark(v)?` · 마지막 체크: ${b.by?esc(nameOf(b.by))+' ':''}${hm(b.at)}`:''}">${avatar(m)}<span class="mn">${esc(m.name)}</span>${m.role&&m.role!==baseRole()?`<span class="tag">${esc(m.role)}</span>`:''}${b&&b.at&&validMark(v)?`<span class="by num" title="마지막으로 체크한 운영진">${b.by?esc(nameOf(b.by))+' · ':''}${hm(b.at)}</span>`:''}</div>
-      <div class="seg" role="group" aria-label="${esc(m.name)} 출석">${[['O','참여'],['A','사전공지'],['X','불참']].map(([k,l])=>`<button data-action="mark" data-sid="${s.id}" data-mid="${m.id}" data-v="${k}" aria-pressed="${v===k}"${k==='A'?' title="사유 있는 불참 (사전공지) · 한 달 면제 횟수 안에서는 불참으로 안 쳐요"':''}${dis}>${l}</button>`).join('')}</div></div>`}).join('');
+    return `<div class="mrow${canE?' rx':''}"><div class="nm" title="${esc(m.name)}${b&&b.at&&validMark(v)?` · 마지막 체크: ${b.by?esc(nameOf(b.by))+' ':''}${hm(b.at)}`:''}">${avatar(m)}<span class="mn">${esc(m.name)}</span>${m.role&&m.role!==baseRole()?`<span class="tag">${esc(m.role)}</span>`:''}${b&&b.at&&validMark(v)?`<span class="by num" title="마지막으로 체크한 운영진">${b.by?esc(nameOf(b.by))+' · ':''}${hm(b.at)}</span>`:''}</div>
+      <div class="seg" role="group" aria-label="${esc(m.name)} 출석">${[['O','참여'],['A','사전공지'],['X','불참']].map(([k,l])=>`<button data-action="mark" data-sid="${s.id}" data-mid="${m.id}" data-v="${k}" aria-pressed="${v===k}"${k==='A'?' title="사유 있는 불참 (사전공지) · 한 달 면제 횟수 안에서는 불참으로 안 쳐요"':''}${dis}>${l}</button>`).join('')}</div>${canE?`<button class="mx" data-action="rosterOut" data-sid="${s.id}" data-mid="${m.id}" title="이 회차 명단에서 빼기 (출석률·경고·포인트에서 빠짐)" aria-label="${esc(m.name)} 이 회차에서 빼기">✕</button>`:''}</div>`}).join('');
   const allConf=S.confirm&&S.confirm.startsWith('all:'+s.id+':')?S.confirm.slice(-1):null;
   const allChanged=allConf?members.filter(m=>validMark(mk[m.id])&&mk[m.id]!==allConf).length:0;
   const conf2=allConf?`<div class="confirm">이미 체크된 ${allChanged}명도 모두 ${allConf==='O'?'참여로':'불참으로'} 바꿀까요? <button class="btn small danger" data-action="bulkAllYes" data-sid="${s.id}" data-v="${allConf}">모두 바꾸기</button><button class="btn small" data-action="cancel">취소</button></div>`:'';
@@ -2297,7 +2318,8 @@ function renderSheet(members){
     ${S.canWrite&&S.hist&&S.hist.sid===s.id?renderHist():''}
     <div class="row"><input type="search" id="sheetSearch" data-keep="0" data-action="search" placeholder="닉네임 검색" value="${esc(S.search)}" class="grow" aria-label="닉네임 검색">${nsortSel('nsortSheet')}<label class="chk"><input type="checkbox" id="onlyUnc" data-keep="0" data-action="onlyUnc"${S.onlyUnchecked?' checked':''}> 미체크만</label></div>
     <div class="mlist">${rows||'<p class="hint" style="padding:12px 2px">조건에 맞는 문파원이 없어요.</p>'}</div>
-    ${outL.length?`<p class="hint sheet-out">이 회차 명단에서 빠진 사람 ${outL.length}명: ${outL.map(([n,r])=>`${esc(n)}<span class="dash">(${esc(r)})</span>`).join(' · ')}</p>`:''}
+    ${outL.length||canE?`<div class="sheet-out"><span class="hint">${outL.length?`이 회차 명단에서 빠진 사람 ${outL.length}명: ${outL.map(([n,r])=>`${esc(n)}<span class="dash">(${esc(r)})</span>`).join(' · ')}`:''}</span>${canE?`<button class="btn small" data-action="rosterPick" data-sid="${s.id}">＋ 문파원 넣기</button>`:''}</div>`:''}
+    ${canE&&S.rosterSid===s.id?renderRosterPick(s,members):''}
     ${notes([s.extra?'<b>추가 진행</b> 회차는 출석률·개근에 들어가지 않고, 참여하면 보너스 포인트만 붙어요':'','체크하지 않은 사람은 출석률 계산에서 빠지지만 그 달 <b>개근은 안 돼요</b>. 회차마다 전원을 체크해 주세요','같은 칸을 한 번 더 누르면 체크가 지워져요'])}${meta?`<p class="hint">${meta}</p>`:''}
   </div>`;
 }
@@ -3708,7 +3730,7 @@ function parseCsv(t){t=t.replace(/^﻿/,'');const rows=[];let row=[],cur='',q=fa
 }
 
 /* ---------- 월 요약: 마감한 달은 회차를 한 장으로 묶어 저장 → 오래된 달은 요약 1장만 읽음 ---------- */
-const SUMF=['date','content','extra','marks','rank','note','createdAt','createdBy'];
+const SUMF=['date','content','extra','marks','rank','note','ex','inc','createdAt','createdBy'];
 async function rawMonth(mon){const a=mon+'-01',b=monthAdd(mon,1)+'-01';const snap=await S.db.collection('sessions').where('date','>=',a).where('date','<',b).get();
   return snap.docs.map(d=>normS({id:d.id,...d.data()})).filter(s=>s.date&&s.content&&s.date>=a&&s.date<b)}
 async function makeSummary(mon,list){try{const ss=(list||await rawMonth(mon)).filter(s=>s.date.slice(0,7)===mon);
@@ -3921,6 +3943,11 @@ document.addEventListener('click',e=>{
   if(a==='slot'){const k=b.dataset.k,dt=b.dataset.date,ex=b.dataset.extra==='1';
     if(typeAsk(k)&&!findAny(dt,k,ex)){S.slotAsk={dt,k,ex};render();return}
     S.mt.check='sheet';createSession(dt,k,ex);return}
+  if(a==='rosterPick'){S.rosterSid=b.dataset.sid;S.rosterQ='';render();setTimeout(()=>$('#rosterQ')?.focus(),0);return}
+  if(a==='rosterClose'){S.rosterSid=null;render();return}
+  if(a==='rosterIn'||a==='rosterOut'){const sid=b.dataset.sid,mid=b.dataset.mid,s0=S.sessions.find(x=>x.id===sid);if(!s0||!can('check'))return;if(isLocked(s0.date)){toast('마감된 달이라 바꿀 수 없어요');return}
+    const inn=a==='rosterIn',nm=memberName(mid);
+    guard(()=>S.db.doc('sessions/'+sid).update({inc:{[mid]:inn},ex:{[mid]:!inn},updatedAt:Date.now(),updatedBy:myName()}),inn?`${nm} 님을 이 회차에 넣었어요`:`${nm} 님을 이 회차에서 뺐어요`,{area:'출석 체크',what:inn?'회차 명단에 넣기':'회차 명단에서 빼기',detail:`${CMAP[s0.content]?.name||''} ${s0.date} · ${nm}`});return}
   if(a==='sTypeAsk'){S.confirm='st:'+b.dataset.sid;render();return}
   if(a==='sTypeYes'){S.confirm=null;const sid=b.dataset.sid,old=allSessions().find(x=>x.id===sid);if(!old)return;const ex=!old.extra;
     if(isLocked(old.date)){toast('마감된 달이라 바꿀 수 없어요');return}
@@ -4184,6 +4211,7 @@ document.addEventListener('input',e=>{
   const t=e.target,a=t.dataset&&t.dataset.action;
   if(t.id==='nBody'||t.id==='nTitle'){if(t.id==='nBody')nPrevUpd();S.nEditDirty=true}
   if(a==='search'){S.search=t.value;render()}
+  if(a==='rosterQ'){S.rosterQ=t.value;render()}
   else if(a==='mSearch'){S.mSearch=t.value;render()}
   else if(a==='ssearch'){S.ssearch=t.value;render()}
   else if(a==='rfQ'){S.rf.q=t.value;render()}
@@ -4226,6 +4254,7 @@ document.addEventListener('change',e=>{
 document.addEventListener('toggle',e=>{if(e.target&&e.target.id==='tierBox')S.tierOpen=e.target.open},true);
 document.addEventListener('keydown',e=>{
   if(e.target.id==='nBody'&&(e.ctrlKey||e.metaKey)&&!e.shiftKey&&!e.altKey&&(e.key==='d'||e.key==='D')){e.preventDefault();nStrike();return}
+  if(e.key==='Escape'&&S.rosterSid){S.rosterSid=null;render();return}
   if(e.key==='Escape'&&S.nBig){S.nBig=null;nBigShow();return}
   if(e.key==='Escape'&&S.nEdit){if(!S.nEditDirty){S.nEdit=null;render()}else toast('저장하거나 취소를 눌러 주세요');return}
   if(e.key==='Enter'&&e.target.id&&/^rk-.+[YG]$/.test(e.target.id)&&!e.isComposing){e.preventDefault();document.querySelector(`[data-action="rkSave"][data-sid="${e.target.id.slice(3,-1)}"]`)?.click();return}
