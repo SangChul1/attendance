@@ -1480,6 +1480,15 @@ label.chk .nmust{margin:0 2px 0 0}
 .rp-l{display:flex;flex-direction:column;gap:2px;margin-top:8px;max-height:52vh;overflow:auto}
 .rp-it{display:flex;align-items:center;gap:8px;padding:6px 4px;border-bottom:1px solid var(--line)}
 .rp-it .mn{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* 신입 */
+.tag.tnew{background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);border-color:color-mix(in srgb,var(--accent) 35%,transparent);font-weight:700}
+.tag.tnew.due{background:var(--seal);color:#fff;border-color:var(--seal)}
+.subtabs .cnt{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;margin-left:4px;border-radius:999px;background:var(--seal);color:#fff;font-size:11.5px;font-weight:800}
+.nbtab td{vertical-align:middle}
+.nbtab .nb-act{white-space:nowrap;text-align:right}
+.nbtab .nb-act .btn{margin-left:4px}
+.hero-new{margin:8px 0 0;font-size:14px;font-weight:600;color:#fff;opacity:.95;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style>
 </head>
 <body>
@@ -1667,7 +1676,7 @@ const S={nImgCache:{},nEditImg:null,nBig:null,nKind:'notice',nView:null,notices:
   tab:'home',openSid:null,editSid:null,period:'4',cfilter:'all',demo:false,confirm:null,showOff:false,
   search:'',onlyUnchecked:false,mSearch:''};
 let pending={},inflight={},flushing=false,flushTimer=null;
-try{const t=localStorage.getItem('att.tab');if(['home','check','stats','settle','me','admin'].includes(t))S.tab=t;if(t==='members')S.tab='admin';const ns=localStorage.getItem('att.nsort');if(['role','ko','en'].includes(ns))S.nsort=ns;const at=localStorage.getItem('att.atab');if(['warn','members','cfg','team','power','logs'].includes(at))S.atab=at;if(at==='pay'||at==='buy'){S.sview=at==='pay'?'log':'buyin'}S.me=localStorage.getItem('att.me.'+GKEY)||(GKEY==='haksal'?localStorage.getItem('att.me'):'')||'';const st=localStorage.getItem('att.stab');if(['sum','mem','trend'].includes(st))S.stab=st}catch(_){}
+try{const t=localStorage.getItem('att.tab');if(['home','check','stats','settle','me','admin'].includes(t))S.tab=t;if(t==='members')S.tab='admin';const ns=localStorage.getItem('att.nsort');if(['role','ko','en'].includes(ns))S.nsort=ns;const at=localStorage.getItem('att.atab');if(['warn','members','newb','cfg','team','power','logs'].includes(at))S.atab=at;if(at==='pay'||at==='buy'){S.sview=at==='pay'?'log':'buyin'}S.me=localStorage.getItem('att.me.'+GKEY)||(GKEY==='haksal'?localStorage.getItem('att.me'):'')||'';const st=localStorage.getItem('att.stab');if(['sum','mem','trend'].includes(st))S.stab=st}catch(_){}
 try{if(!S.me){S.me=meCookie()||'';if(S.me)try{localStorage.setItem('att.me.'+GKEY,S.me)}catch(_){}}else if(meCookie()!==S.me)meCookie(S.me)}catch(_){}
 function meCookie(v){try{const n='att_me_'+GKEY;if(v===undefined){const m=document.cookie.match(new RegExp('(?:^|; )'+n+'=([^;]*)'));return m?decodeURIComponent(m[1]):''}
   document.cookie=n+'='+encodeURIComponent(v)+';max-age='+(v?400*86400:0)+';path=/;SameSite=Lax'+(location.protocol==='https:'?';Secure':'')}catch(_){return ''}}
@@ -1711,6 +1720,18 @@ const num=(v,d,lo,hi)=>typeof v==='number'&&isFinite(v)&&v>=lo&&v<=hi?v:d;
 function excuseLimit(){const c=S.config;if(typeof c.excuseLimit==='number'&&c.excuseLimit>=0)return c.excuseLimit;return c.excuse==='exclude'?99:c.excuse==='absent'?0:2}
 function minJudge(){return num(S.config.minJudge,4,1,100)}
 function streakMin(){return num(S.config.streak,3,2,50)}
+/* 신입 수습: 가입 후 trialDays 일. m.trial: ''(수습) | 'ok'(정식) | 'review'(추방 검토), m.trialUntil: 연장한 끝날 */
+function trialDays(){return num(S.config.trialDays,14,1,90)}
+function trialFrom(){const v=S.config.trialFrom;return /^\d{4}-\d{2}-\d{2}$/.test(v||'')?v:'2026-11-01'}
+const dDiff=(a,b)=>Math.round((parseD(b)-parseD(a))/864e5);
+function trialOf(m){if(!m||m.active===false||!m.joinedAt||m.trial==='ok')return null;const t=todayStr();
+  if(m.joinedAt<trialFrom()&&!m.trialUntil&&m.trial!=='review')return null; // 신입 관리 시작일 전 가입자는 제외
+  const end=m.trialUntil||addDays(m.joinedAt,trialDays());
+  if(m.trial==='review')return {st:'review',end};return t<end?{st:'on',end,left:dDiff(t,end)}:{st:'due',end}}
+function trialStats(m,end){const t=gameDay(),to=end<t?addDays(end,-1):t;let O=0,E=0,X=0;
+  for(const s of data().sessions){if(isBonus(s)||s.date<m.joinedAt||s.date>to||!eligible(m,s))continue;const v=effOf(s,m.id);if(v==='O')O++;else if(v==='E')E++;else if(v==='X'||v==='XA')X++}
+  return {O,E,X,rate:O+X?Math.round(O/(O+X)*100):null}}
+const trialTag=m=>{const r=trialOf(m);return r?`<span class="tag tnew${r.st!=='on'?' due':''}" title="수습 ${mdd(r.end)}까지">${r.st==='on'?'신입':r.st==='due'?'신입 · 판정':'추방 검토'}</span>`:''};
 function warnCfg(){const c=S.config;return {basis:c.warnBasis==='points'?'points':'rate',scope:c.warnScope==='main'?'main':'all',rate:num(c.warnRate,50,0,100),pts:num(c.warnPts,10,0,10000),expelN:num(c.expelCount,2,1,20),expelM:num(c.expelMonths,3,0,36)}}
 function rateOf(o,x){const d=o+x;return d?o/d:null}
 /* 사전공지 면제: 문파원마다 한 달에 정해진 횟수까지 E(면제), 넘으면 XA(불참 처리) */
@@ -2156,7 +2177,7 @@ function renderHome(){
       <span class="cd-d">${cd.dt===t?'오늘':mdd(cd.dt)} ${p2(new Date(cd.st+9*3600e3).getUTCHours())}:${p2(new Date(cd.st+9*3600e3).getUTCMinutes())} 시작</span></div>`:'';
   const motto=S.config.motto?`<p class="hero-motto">“${esc(S.config.motto)}”</p>`:(S.canWrite?'<p class="hero-motto hm-empty">관리 → 설정에서 문파 한마디를 적어 보세요</p>':'');
   const hero=`<div class="hero hero2"><div class="hero-t"><span class="hero-k">도깨비의세계</span><h2>${g}</h2><p>${mdd(t)} · 오늘도 함께해요</p></div>
-    <div class="hero-mid">${motto}${cdHtml}</div>
+    <div class="hero-mid">${motto}${(()=>{const t0=todayStr(),nw=activeMembers(S.members).filter(m=>m.joinedAt&&m.joinedAt<=t0&&m.joinedAt>=addDays(t0,-6)).sort((a,b)=>a.joinedAt<b.joinedAt?1:-1);return nw.length?`<p class="hero-new" title="${esc(nw.map(m=>m.name).join(', '))}"><span aria-hidden="true">🎉</span> 새 문파원 · ${nw.slice(0,4).map(m=>esc(m.name)).join(', ')}${nw.length>4?` 외 ${nw.length-4}명`:''} 환영해요!</p>`:''})()}${cdHtml}</div>
     <div class="hero-days"><div class="hd${tod&&tod.slots.length?' on':''}"><div class="hd-h"><b>오늘</b><span>${mdd(t)}</span></div>${tod&&tod.slots.length?runOf(tod):'<p class="hd-none">오늘은 정규 일정이 없어요</p>'}</div>
       <div class="hd${!(tod&&tod.slots.length)&&nxt?' on':''}"><div class="hd-h"><b>다음</b><span>${nxt?`${mdd(nxt.dt)} · ${dLeft(nxt.dt)}`:''}</span></div>${nxt?runOf(nxt):'<p class="hd-none">2주 안에 일정이 없어요</p>'}</div></div>
     <button class="hero-wk" data-action="wkPop"><span aria-hidden="true">📅</span> 이번 주 전체 일정 보기<span class="ar" aria-hidden="true">›</span></button></div>`;
@@ -2284,7 +2305,7 @@ function renderSheet(members){
   const q=S.search.trim().toLowerCase();
   const shown=members.filter(m=>(!q||String(m.name).toLowerCase().includes(q))&&(!S.onlyUnchecked||!validMark(mk[m.id])));
   const rows=shown.map(m=>{const v=mk[m.id]||'';const b=by[m.id];
-    return `<div class="mrow${canE?' rx':''}"><div class="nm" title="${esc(m.name)}${b&&b.at&&validMark(v)?` · 마지막 체크: ${b.by?esc(nameOf(b.by))+' ':''}${hm(b.at)}`:''}">${avatar(m)}<span class="mn">${esc(m.name)}</span>${m.role&&m.role!==baseRole()?`<span class="tag">${esc(m.role)}</span>`:''}${b&&b.at&&validMark(v)?`<span class="by num" title="마지막으로 체크한 운영진">${b.by?esc(nameOf(b.by))+' · ':''}${hm(b.at)}</span>`:''}</div>
+    return `<div class="mrow${canE?' rx':''}"><div class="nm" title="${esc(m.name)}${b&&b.at&&validMark(v)?` · 마지막 체크: ${b.by?esc(nameOf(b.by))+' ':''}${hm(b.at)}`:''}">${avatar(m)}<span class="mn">${esc(m.name)}</span>${m.role&&m.role!==baseRole()?`<span class="tag">${esc(m.role)}</span>`:''}${trialTag(m)}${b&&b.at&&validMark(v)?`<span class="by num" title="마지막으로 체크한 운영진">${b.by?esc(nameOf(b.by))+' · ':''}${hm(b.at)}</span>`:''}</div>
       <div class="seg" role="group" aria-label="${esc(m.name)} 출석">${[['O','참여'],['A','사전공지'],['X','불참']].map(([k,l])=>`<button data-action="mark" data-sid="${s.id}" data-mid="${m.id}" data-v="${k}" aria-pressed="${v===k}"${k==='A'?' title="사유 있는 불참 (사전공지) · 한 달 면제 횟수 안에서는 불참으로 안 쳐요"':''}${dis}>${l}</button>`).join('')}</div>${canE?`<button class="mx" data-action="rosterOut" data-sid="${s.id}" data-mid="${m.id}" title="이 회차 명단에서 빼기 (출석률·경고·포인트에서 빠짐)" aria-label="${esc(m.name)} 이 회차에서 빼기">✕</button>`:''}</div>`}).join('');
   const allConf=S.confirm&&S.confirm.startsWith('all:'+s.id+':')?S.confirm.slice(-1):null;
   const allChanged=allConf?members.filter(m=>validMark(mk[m.id])&&mk[m.id]!==allConf).length:0;
@@ -2653,13 +2674,14 @@ function csvText(opt){
 function renderAdmin(){
   if(!S.ready||!S.authKnown) return loading;
   if(!S.canWrite) return `<div class="col">${roNote()}${renderAdmins()}</div>`;
-  const TP={warn:'manage',members:'members',pay:'manage',buy:'manage',power:'members',cfg:'owner'};
-  const tabs=[['warn','경고 · 추방'],['members','문파원 명단'],['power','전투력 · 도술'],['cfg','설정 · 콘텐츠'],['team','운영진 · 백업'],['logs','변경 기록']].filter(([k])=>!TP[k]||(TP[k]==='owner'?S.isOwner:can(TP[k]))).filter(([k])=>(k!=='buy'||feat('buy'))&&(k!=='power'||feat('power')));
+  const TP={warn:'manage',members:'members',newb:'members',pay:'manage',buy:'manage',power:'members',cfg:'owner'};
+  const nDue=activeMembers(S.members).filter(m=>{const r=trialOf(m);return r&&r.st!=='on'}).length;
+  const tabs=[['warn','경고 · 추방'],['members','문파원 명단'],['newb','신입'+(nDue?` <span class="cnt">${nDue}</span>`:'')],['power','전투력 · 도술'],['cfg','설정 · 콘텐츠'],['team','운영진 · 백업'],['logs','변경 기록']].filter(([k])=>!TP[k]||(TP[k]==='owner'?S.isOwner:can(TP[k]))).filter(([k])=>(k!=='buy'||feat('buy'))&&(k!=='power'||feat('power')));
   if(!tabs.some(t=>t[0]===S.atab))S.atab=tabs[0][0];
-  const GR=[['mem','👥 문파원',['members','power','warn']],['ops','⚙ 운영',['cfg','team','logs']]].map(([g,l,ks])=>[g,l,ks.filter(k=>tabs.some(t=>t[0]===k))]).filter(x=>x[2].length);
+  const GR=[['mem','👥 문파원',['members','newb','power','warn']],['ops','⚙ 운영',['cfg','team','logs']]].map(([g,l,ks])=>[g,l,ks.filter(k=>tabs.some(t=>t[0]===k))]).filter(x=>x[2].length);
   const cg=GR.find(x=>x[2].includes(S.atab))||GR[0];
   const sub=`<div class="subtabs agrp" role="tablist">${GR.map(([g,l,ks])=>`<button role="tab" data-action="atab" data-k="${ks.includes(S.atab)?S.atab:ks[0]}" data-g="${g}" aria-selected="${cg[0]===g}">${l}</button>`).join('')}</div>${cg[2].length>1?`<div class="subtabs asub" role="tablist">${cg[2].map(k=>{const l=tabs.find(t=>t[0]===k)[1];return `<button role="tab" data-action="atab" data-k="${k}" aria-selected="${S.atab===k}">${l}</button>`}).join('')}</div>`:''}`;
-  const body=S.atab==='power'?renderPowerAdmin():S.atab==='members'?renderMemberAdmin():S.atab==='logs'?renderLogs():S.atab==='cfg'?renderSettings():S.atab==='team'?`${renderAdmins()}${renderBackup()}${renderDeleted()}`:renderWarn();
+  const body=S.atab==='newb'?renderNewbAdmin():S.atab==='power'?renderPowerAdmin():S.atab==='members'?renderMemberAdmin():S.atab==='logs'?renderLogs():S.atab==='cfg'?renderSettings():S.atab==='team'?`${renderAdmins()}${renderBackup()}${renderDeleted()}`:renderWarn();
   return `<div class="col">${blockNote()}${lockNote()}${backupNote()}${sub}${lastNote(S.atab)}${body}</div>`;
 }
 const AREAS={power:['전투력'],warn:['경고'],members:['문파원'],pay:['지급'],buy:['구매'],cfg:['설정','콘텐츠','직위'],team:['운영진','백업']};
@@ -2725,6 +2747,17 @@ function joinFixList(){const ss=allSessions();const first=ss.reduce((a,s)=>!a||s
   return S.members.filter(m=>m.active!==false&&!m.joinedAt&&m.createdAt).map(m=>({m,d:kstDay(m.createdAt)})).filter(({m,d})=>first&&d>first&&!ss.some(s=>s.date<d&&validMark(marksOf(s)[m.id]))&&ss.some(s=>s.date<d))}
 function joinFixBar(){if(!can('members')||S.demo)return '';const L=joinFixList();if(!L.length)return '';
   return `<div class="lockbar"><span>가입일이 비어 있어서 들어오기 전 회차까지 <b>미체크</b>로 잡히는 문파원이 <b>${L.length}명</b> 있어요: ${L.slice(0,8).map(x=>esc(x.m.name)+' ('+md(x.d)+')').join(', ')}${L.length>8?' …':''}</span><span class="grow"></span>${S.confirm==='joinFix'?`<button class="btn small primary" data-action="joinFixYes">명단에 추가된 날로 채우기</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small" data-action="joinFix">가입일 채우기</button>`}</div>`}
+function renderNewbAdmin(){const td=trialDays(),L=activeMembers(S.members).map(m=>[m,trialOf(m)]).filter(x=>x[1]);
+  const ord={due:0,review:1,on:2};L.sort((a,b)=>ord[a[1].st]-ord[b[1].st]||(a[1].end<b[1].end?-1:a[1].end>b[1].end?1:nameCmp(a[0].name,b[0].name)));
+  const due=L.filter(x=>x[1].st==='due');
+  const rows=L.map(([m,r])=>{const st=trialStats(m,r.end),cf=S.confirm==='tr:'+m.id;
+    const stl=r.st==='on'?`<span class="tag tnew">수습 D-${r.left}</span>`:r.st==='due'?'<span class="tag tnew due">판정 필요</span>':'<span class="tag tnew due">추방 검토</span>';
+    return `<tr><td>${avatar(m)} <b>${esc(m.name)}</b>${m.role&&m.role!==baseRole()?` <span class="tag">${esc(m.role)}</span>`:''}</td><td class="num">${mdd(m.joinedAt)}</td><td>${stl}<div class="hint num">~${mdd(addDays(r.end,-1))}</div></td>
+      <td class="num">${st.O+st.X?`<b>${st.rate}%</b> <span class="hint">(${st.O}/${st.O+st.X})</span>`:'<span class="dash">–</span>'}</td><td class="num">${st.E||'<span class="dash">0</span>'}</td><td class="num">${st.X?`<b class="c-x">${st.X}</b>`:'<span class="dash">0</span>'}</td>
+      <td class="nb-act">${r.st==='review'?`<button class="btn small" data-action="trialSet" data-mid="${m.id}" data-v="">검토 취소</button>`:`<button class="btn small primary" data-action="trialSet" data-mid="${m.id}" data-v="ok">정식 전환</button><button class="btn small" data-action="trialExt" data-mid="${m.id}">7일 연장</button><button class="btn small danger" data-action="trialSet" data-mid="${m.id}" data-v="review">추방 검토</button>`}</td></tr>`}).join('');
+  return `<div class="panel"><div class="spread"><h2>신입 관리 <span class="hint">수습 ${td}일</span></h2><span class="row">${due.length>1?(S.confirm==='trAll'?`<span class="hint">판정 필요 ${due.length}명을 모두 정식 전환할까요?</span><button class="btn small primary" data-action="trialOkAll">모두 정식 전환</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small" data-action="trialAskAll">판정 필요 ${due.length}명 모두 정식 전환</button>`):''}</span></div>
+    ${L.length?`<div class="scroll"><table class="nbtab"><thead><tr><th>닉네임</th><th>가입</th><th>상태</th><th>수습 중 출석률</th><th>사전공지</th><th>불참</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`:`<p class="hint" style="padding:10px 2px">지금 수습 중인 신입이 없어요. 문파원 명단에 새로 추가하면 가입일부터 ${td}일 동안 여기에 나와요.</p>`}
+    ${notes([`가입일부터 <b>${td}일</b>이 수습 기간이에요. <b>${mdd(trialFrom())}</b> 이후 가입자만 대상이에요. 둘 다 관리 → 설정 · 콘텐츠 → 기본에서 바꿔요`,'출석 체크 명단에 <b>신입</b> 표시가 붙어요. 기간이 끝나면 <b>판정 필요</b>로 바뀌고 이 탭 이름 옆에 숫자가 떠요','<b>정식 전환</b>하면 목록에서 빠져요. <b>7일 연장</b>은 수습 끝날을 7일 늦춰요. <b>추방 검토</b>는 표시만 남기고, 실제 탈퇴는 문파원 명단에서 처리해요','수습 중 출석률은 가입 후 정규 회차만 세요 (추가 진행 제외, 사전공지 한도 안은 빼고 계산)'])}</div>`}
 function renderMemberAdmin(){
   const q=S.mSearch.trim().toLowerCase();const F=['active','left','moved','all'].includes(S.mFilter)?S.mFilter:'active';
   const cnt={active:0,left:0,moved:0};S.members.forEach(m=>cnt[mStatus(m)]++);
@@ -2800,6 +2833,8 @@ function renderSettings(){
         <label class="f">문파 한자 (도장·배경 무늬, 1~4글자)<input type="text" id="cfgHanja" maxlength="4" placeholder="예: ${esc((GUILD&&GUILD.hanja)||'虐殺')}" value="${esc(C.hanja||'')}"></label>
         <label class="f">문파 한마디 (홈 맨 위 문파 칸에 보여요)<input type="text" id="cfgMotto" maxlength="40" placeholder="예: 함께 강해지는 학살" value="${esc(C.motto||'')}"></label>
         <label class="f full">이동할 문파 목록 <span class="hint">(문파원 명단 → 이동에 버튼으로 나와요 · 한 줄에 하나 · ${Object.keys(GUILDS).filter(k=>k!==GKEY).map(k=>esc(GUILDS[k].name)).join('·')||'연결된 문파'}는 자동)</span><textarea id="cfgMoveT" rows="3" maxlength="400" placeholder="예: 묘룡2 학살 문파&#10;묘룡3 초살 문파">${esc((Array.isArray(C.moveTargets)?C.moveTargets:[]).join('\n'))}</textarea></label>
+        <label class="f">신입 수습 기간 (일)<input type="number" id="cfgTrial" min="1" max="90" step="1" value="${trialDays()}"></label>
+        <label class="f">신입 관리 시작일 <span class="hint">(이날부터 가입한 사람만)</span><input type="date" id="cfgTrialFrom" value="${trialFrom()}"></label>
         <label class="f">주 시작 요일<select id="cfgWeek">${DAYS.map((d,i)=>`<option value="${i}"${+C.weekStart===i?' selected':''}>${d}요일</option>`).join('')}</select></label></div>
         ${notes(['<b>문파 이름</b>은 머리말과 카톡 공지 문구에 들어가요','<b>주 시작 요일</b>은 랭킹이 초기화되는 요일로 맞추세요. 주간 통계와 주 1회 콘텐츠가 이 기준으로 나뉘어요'])}</div>
       <div class="cfg-group"${msA(sc,'base')}><h3>출석률 계산</h3><div class="fg3">
@@ -4030,14 +4065,21 @@ document.addEventListener('click',e=>{
   if(a==='leaveOut'){const m=S.members.find(x=>x.id===b.dataset.mid);if(m)guard(()=>S.db.doc('members/'+m.id).update({active:false,moved:false,movedTo:'',leftAt:todayStr()}),`${m.name} 님을 탈퇴 처리했어요`,{area:'문파원',what:'탈퇴 처리',detail:m.name});return}
   if(a==='rejoin'){const m=S.members.find(x=>x.id===b.dataset.mid);if(m)guard(()=>S.db.doc('members/'+m.id).update({active:true,moved:false}),`${m.name} 님이 복귀했어요`,{area:'문파원',what:'복귀',detail:`${m.name}${m.moved?' (이동에서)':' (탈퇴에서)'}`});return}
   if(a==='addMembers'){addMembers();return}
+  if(a==='trialSet'){const m=S.members.find(x=>x.id===b.dataset.mid);if(!m)return;const v=b.dataset.v||'';
+    guard(()=>S.db.doc('members/'+m.id).update({trial:v,trialAt:Date.now(),trialBy:myName()}),v==='ok'?`${m.name} 님을 정식 문파원으로 전환했어요`:v==='review'?`${m.name} 님을 추방 검토로 표시했어요`:`${m.name} 님 추방 검토를 취소했어요`,{area:'문파원',what:v==='ok'?'신입 정식 전환':v==='review'?'신입 추방 검토':'추방 검토 취소',detail:m.name});return}
+  if(a==='trialExt'){const m=S.members.find(x=>x.id===b.dataset.mid);const r=trialOf(m);if(!m||!r)return;const base=r.end>todayStr()?r.end:todayStr(),nu=addDays(base,7);
+    guard(()=>S.db.doc('members/'+m.id).update({trial:'',trialUntil:nu,trialAt:Date.now(),trialBy:myName()}),`${m.name} 님 수습을 ${mdd(addDays(nu,-1))}까지 늘렸어요`,{area:'문파원',what:'신입 수습 연장',detail:`${m.name} → ${nu}`});return}
+  if(a==='trialAskAll'){S.confirm='trAll';render();return}
+  if(a==='trialOkAll'){S.confirm=null;const due=activeMembers(S.members).filter(m=>{const r=trialOf(m);return r&&r.st==='due'});
+    guard(async()=>{for(const m of due)await S.db.doc('members/'+m.id).update({trial:'ok',trialAt:Date.now(),trialBy:myName()})},`${due.length}명을 정식 문파원으로 전환했어요`,{area:'문파원',what:'신입 일괄 정식 전환',detail:due.map(m=>m.name).join(', ').slice(0,200)});return}
   if(a==='saveCfg'){
     const guild=$('#cfgGuild').value.trim().slice(0,30),motto=($('#cfgMotto')?.value||'').trim().slice(0,40),hanja=Array.from(($('#cfgHanja')?.value||'').replace(/\s/g,'')).slice(0,4).join(''),moveTargets=[...new Set(($('#cfgMoveT')?.value||'').split(/\r?\n/).map(x=>x.trim().slice(0,30)).filter(Boolean))].slice(0,10);
     let sk=Math.round(+$('#cfgStreak').value);if(!(sk>=2&&sk<=50))sk=3;
     const iv=(id,d,lo,hi)=>{const v=Math.round(+$(id).value);return v>=lo&&v<=hi?v:d};
     const excuseLimit_=iv('#cfgExLim',2,0,31),minJudge_=iv('#cfgMinJ',4,1,100),warnRate=iv('#cfgWRate',50,0,100),warnPts=iv('#cfgWPts',10,0,10000),expelCount=iv('#cfgExN',2,1,20),expelMonths=iv('#cfgExM',3,0,36);
     const warnBasis=$('#cfgWBasis').value==='points'?'points':'rate',warnScope=$('#cfgWScope').value==='main'?'main':'all';
-    const weekStart=Math.min(6,Math.max(0,+$('#cfgWeek').value||0));
-    guard(()=>saveConfig({guild,motto,hanja,moveTargets,streak:sk,weekStart,excuseLimit:excuseLimit_,minJudge:minJudge_,warnBasis,warnScope,warnRate,warnPts,expelCount,expelMonths}),'설정을 저장했어요',{area:'설정',what:'설정 저장',detail:`면제 ${excuseLimit_}회 · 판정 ${minJudge_}회 · 경고 ${warnBasis==='points'?warnPts+'점':warnRate+'%'} · 추방 ${expelCount}회/${expelMonths}개월`});return}
+    const weekStart=Math.min(6,Math.max(0,+$('#cfgWeek').value||0)),trialDays_=$('#cfgTrial')?iv('#cfgTrial',14,1,90):trialDays(),trialFrom_=/^\d{4}-\d{2}-\d{2}$/.test($('#cfgTrialFrom')?.value||'')?$('#cfgTrialFrom').value:trialFrom();
+    guard(()=>saveConfig({guild,motto,hanja,moveTargets,streak:sk,weekStart,trialDays:trialDays_,trialFrom:trialFrom_,excuseLimit:excuseLimit_,minJudge:minJudge_,warnBasis,warnScope,warnRate,warnPts,expelCount,expelMonths}),'설정을 저장했어요',{area:'설정',what:'설정 저장',detail:`면제 ${excuseLimit_}회 · 판정 ${minJudge_}회 · 경고 ${warnBasis==='points'?warnPts+'점':warnRate+'%'} · 추방 ${expelCount}회/${expelMonths}개월`});return}
   if(a==='login'){
     if(inKakao){copyText(location.href,'주소를 복사했어요. 크롬이나 사파리에 붙여 넣어 열어 주세요');return}
     const pv=new GoogleAuthProvider();pv.setCustomParameters({prompt:'select_account'});
