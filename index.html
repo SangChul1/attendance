@@ -1648,10 +1648,10 @@ function cleanContents(arr){
   if(!Array.isArray(arr)||!arr.length)return DEFAULT_CONTENTS;
   const seen=new Set(),out=[];const dd=a=>[...new Set((Array.isArray(a)?a:[]).filter(d=>Number.isInteger(d)&&d>=0&&d<=6))].sort();
   for(const c of arr){if(!c||typeof c.k!=='string'||!/^[A-Za-z0-9]{1,24}$/.test(c.k)||seen.has(c.k))continue;seen.add(c.k);
-    out.push({k:c.k,name:String(c.name||c.k).slice(0,20),short:String(c.short||c.name||c.k).slice(0,8),main:!!c.main,days:dd(c.days),extraDays:dd(c.extraDays),weekly:!!c.weekly,time:String(c.time||'').slice(0,24),color:Number.isInteger(c.color)?((c.color%8)+8)%8:out.length%8,on:c.on!==false})}
+    out.push({k:c.k,name:String(c.name||c.k).slice(0,20),short:String(c.short||c.name||c.k).slice(0,8),main:!!c.main,days:dd(c.days),extraDays:dd(c.extraDays),weekly:!!c.weekly,po:!!c.po,time:String(c.time||'').slice(0,24),color:Number.isInteger(c.color)?((c.color%8)+8)%8:out.length%8,on:c.on!==false})}
   return out.length?out:DEFAULT_CONTENTS;
 }
-function applyContents(){CONTENTS=S.demo?DEFAULT_CONTENTS:cleanContents(S.config.contents);CMAP=Object.fromEntries(CONTENTS.map(c=>[c.k,c]));MAIN=CONTENTS.filter(c=>c.main).map(c=>c.k)}
+function applyContents(){CONTENTS=S.demo?DEFAULT_CONTENTS:cleanContents(S.config.contents);CMAP=Object.fromEntries(CONTENTS.map(c=>[c.k,c]));MAIN=CONTENTS.filter(c=>c.main&&!c.po).map(c=>c.k)}
 const ck=k=>`style="--cc:var(--k${CMAP[k]?CMAP[k].color:7})"`;
 const cshort=k=>CMAP[k]?.short||k;
 function schedText(c){const d=c.days.map(i=>DAYS[i]).join('·');return (d?(c.weekly&&c.days.length>1?d+' 중 주 1회':d):'요일 미정')+(c.time?' · '+c.time:'')}
@@ -1660,8 +1660,10 @@ function shownContents(sessions){const used=new Set((sessions||data().sessions).
 function mainLabel(){return MAIN.length?'메인('+MAIN.map(cshort).join('·')+')':'메인'}
 const LEGACY={yosin:'rank',gyeol:'rank'};
 const normS=s=>LEGACY[s.content]?{...s,content:LEGACY[s.content]}:s;
-const isBonus=s=>!!s.extra;
-function sessPts(s){return isBonus(s)?pts('bonus'):pts(s.content)}
+/* 점수만 콘텐츠(po): 참여하면 포인트만, 출석률·경고·불참 패널티 없음 */
+const isPO=s=>!s.extra&&!!(CMAP[s.content]&&CMAP[s.content].po);
+const isBonus=s=>!!s.extra||isPO(s);
+function sessPts(s){return s.extra?pts('bonus'):pts(s.content)}
 const DEFAULT_ROLES=['문주','부문주','간부','문파원'];
 let ROLES=DEFAULT_ROLES;
 function cleanRoles(r){const out=[...new Set((Array.isArray(r)?r:[]).map(x=>String(x??'').trim().slice(0,12)).filter(Boolean))];return out.length?out:DEFAULT_ROLES}
@@ -1880,6 +1882,7 @@ function badgeAll(){
     for(const s of ss){if(!eligible(m,s))continue;const v=effOf(s,m.id),mo=s.date.slice(0,7),M=z.mon[mo]??={O:0,E:0,X:0,XA:0,B:0,P:0,need:0,ok:0,xe:0};
       const wk=weekMon(s.date);
       if(v&&!z.first0)z.first0=s.date;
+      if(isPO(s)){if(v==='O')M.P+=sessPts(s);continue}
       if(isBonus(s)){M.xe++;const X=z.wkX[wk]??={n:0,o:0};X.n++;
         if(v==='O'){M.B++;M.P+=sessPts(s);z.B++;z.cross.B[z.B]=s.date;X.o++;X.d=s.date;if(!z.firstX)z.firstX=s.date;gotO(s.date)}continue}
       M.need++;
@@ -2321,7 +2324,7 @@ function renderSheet(members){
       <div class="row full"><button class="btn primary" data-action="saveEdit" data-sid="${s.id}">저장</button><button class="btn" data-action="cancelEdit">취소</button></div></div>`:'';
   const meta=[s.createdBy?`만든 사람 ${esc(nameOf(s.createdBy))}`:'',s.updatedAt?`마지막 수정 ${s.updatedBy?esc(nameOf(s.updatedBy))+' · ':''}${hm(s.updatedAt)}`:''].filter(Boolean).join(' · ');
   return `<div class="panel">
-    <div class="spread"><div class="row"><span class="chip" ${ck(s.content)}>${esc(c?.name||s.content)}</span>${s.extra?'<span class="tag extra">추가 진행</span>':typeAsk(s.content)?'<span class="tag">정규</span>':''}${s.rank?`<span class="tag rank">${esc(s.rank)}</span>`:''}${canE&&typeAsk(s.content)?(S.confirm==='st:'+s.id?`<button class="btn small primary" data-action="sTypeYes" data-sid="${s.id}">${s.extra?'정규로':'추가 진행으로'} 바꾸기</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small" data-action="sTypeAsk" data-sid="${s.id}" title="이 회차를 ${s.extra?'정규(출석률·경고에 들어감)':'추가 진행(불참해도 패널티 없음)'}로 바꿔요">⇄ ${s.extra?'정규로':'추가 진행으로'}</button>`):''}</div>
+    <div class="spread"><div class="row"><span class="chip" ${ck(s.content)}>${esc(c?.name||s.content)}</span>${s.extra?'<span class="tag extra">추가 진행</span>':isPO(s)?`<span class="tag extra" title="참여하면 +${pts(s.content)}점 · 출석률·경고에는 안 들어가요">점수만 +${pts(s.content)}</span>`:typeAsk(s.content)?'<span class="tag">정규</span>':''}${s.rank?`<span class="tag rank">${esc(s.rank)}</span>`:''}${canE&&typeAsk(s.content)?(S.confirm==='st:'+s.id?`<button class="btn small primary" data-action="sTypeYes" data-sid="${s.id}">${s.extra?'정규로':'추가 진행으로'} 바꾸기</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small" data-action="sTypeAsk" data-sid="${s.id}" title="이 회차를 ${s.extra?'정규(출석률·경고에 들어감)':'추가 진행(불참해도 패널티 없음)'}로 바꿔요">⇄ ${s.extra?'정규로':'추가 진행으로'}</button>`):''}</div>
       <span class="hint num">${s.date.replace(/-/g,'.')} (${DAYS[dow(s.date)]})</span></div>
     ${!editing&&(s.content===extraCfg().content||s.rank)&&s.date<=gameDay()?`<div class="rk-in"><b>🏆 랭킹 결과</b>${canE?`${rkC(s.content)?rkInputs('rk-'+s.id,s):`<input type="text" id="rkIn-${s.id}" data-keep="0" maxlength="30" placeholder="예: 3위" value="${esc(s.rank||'')}">`}<button class="btn small primary" data-action="rkSave" data-sid="${s.id}">${s.rank?'고치기':'저장'}</button>`:`<span>${s.rank?esc(s.rank):'<span class="hint">아직 안 적었어요</span>'}</span>`}<span class="hint">${rkC(s.content)?'아는 쪽만 숫자로 적어도 돼요 · 통계 → 랭크 추이에 그려져요':'"3위"처럼 적으면 통계 → 랭크 추이에 그려져요'}</span></div>`:''}
     ${edit||(s.note?`<div class="notebox">${esc(s.note)}</div>`:'')}
@@ -2402,7 +2405,7 @@ function computeStats(opt){
   const per={};members.forEach(m=>per[m.id]={m,O:0,E:0,X:0,XA:0,P:0,B:0,byC:Object.fromEntries(CONTENTS.map(c=>[c.k,{O:0,E:0,X:0}]))});
   for(const s of sessions){
     for(const m of members){if(!eligible(m,s))continue;const v=effOf(s,m.id);if(!v)continue;const p=per[m.id];
-      if(isBonus(s)){if(inF(s)&&v==='O'){p.B++;p.P+=sessPts(s)}continue}
+      if(isBonus(s)){if(inF(s)&&v==='O'){if(s.extra)p.B++;else{const b=p.byC[s.content];if(b)b.O++}p.P+=sessPts(s)}continue}
       const b=p.byC[s.content];if(b){if(v==='O')b.O++;else if(v==='E')b.E++;else b.X++}
       if(!inF(s))continue;
       if(v==='O'){p.O++;p.P+=sessPts(s)}else if(v==='E')p.E++;else if(v==='XA')p.XA++;else p.X++}}
@@ -2417,11 +2420,11 @@ function computeStats(opt){
   const wk={};
   for(const s of scoped){const w=weekStart(s.date);const c=countSession(s,mid);
     const W=wk[w]??={w,n:0,o:0,x:0,byC:{},bonus:null};
-    if(isBonus(s)){const B=W.bonus??={n:0,o:0};B.n++;B.o+=c.o;continue}
+    if(s.extra){const B=W.bonus??={n:0,o:0};B.n++;B.o+=c.o;continue}if(isPO(s))continue;
     W.n++;W.o+=c.o;W.x+=c.x;const B=W.byC[s.content]??={n:0,o:0};B.n++;B.o+=c.o}
   const weeks=Object.values(wk).sort((a,b)=>a.w<b.w?-1:1);
   const dc={};
-  const exK=extraCfg().content;for(const s of sessions){const cc=CMAP[s.content];if(!cc||(cc.days.length<2&&s.content!==exK))continue;const key=isBonus(s)?'추가':String(dow(s.date));const c=countSession(s,mid);
+  const exK=extraCfg().content;for(const s of sessions){const cc=CMAP[s.content];if(!cc||cc.po||(cc.days.length<2&&s.content!==exK))continue;const key=s.extra?'추가':String(dow(s.date));const c=countSession(s,mid);
     const D=dc[s.content]??={};const C=D[key]??={n:0,o:0,x:0};C.n++;C.o+=c.o;C.x+=c.x}
   return {members,rows,scoped,sessionsN:scoped.length,regN:scoped.filter(s=>!isBonus(s)).length,avg:rateOf(tO,tX),attn:rows.filter(r=>r.low||r.streakHit),weeks,dc,th,sk,mj};
 }
@@ -2500,13 +2503,13 @@ function statPower(){
 }
 function monthTable(mon){
   const {members:allM,sessions:allS}=data();const act=activeMembers(allM);const gd=gameDay();
-  const ss=allS.filter(s=>s.date.slice(0,7)===mon&&s.date<=gd);const ks=CONTENTS.filter(c=>ss.some(s=>s.content===c.k&&!isBonus(s))).map(c=>c.k);const hasX=ss.some(isBonus);
+  const ss=allS.filter(s=>s.date.slice(0,7)===mon&&s.date<=gd);const ks=CONTENTS.filter(c=>ss.some(s=>s.content===c.k&&!s.extra)).map(c=>c.k);const hasX=ss.some(s=>s.extra);
   const ms=monthStats(mon),mr=new Map(ms.rows.map(r=>[r.m.id,r]));
   const rows=act.map(m=>{const c={};for(const k of ks)c[k]={n:0,o:0,e:0,x:0};const xt={n:0,o:0};
-    for(const s of ss){if(!eligible(m,s))continue;const v=effOf(s,m.id);if(isBonus(s)){xt.n++;if(v==='O')xt.o++;continue}const b=c[s.content];if(!b)continue;b.n++;if(v==='O')b.o++;else if(v==='E')b.e++;else if(v)b.x++}
+    for(const s of ss){if(!eligible(m,s))continue;const v=effOf(s,m.id);if(s.extra){xt.n++;if(v==='O')xt.o++;continue}const b=c[s.content];if(!b)continue;b.n++;if(v==='O')b.o++;else if(v==='E')b.e++;else if(v)b.x++}
     const r=mr.get(m.id);return {m,c,xt,r,need:r?r.need:0,O:r?r.O:0,rate:r?r.rate:null,P:r?r.P:0,hold:r?r.hold:false}}).filter(x=>x.need||x.xt.n);
-  const tot={};for(const k of ks){const L=ss.filter(s=>s.content===k&&!isBonus(s));let o=0,n=0;for(const x of rows){o+=x.c[k].o;n+=x.c[k].n}tot[k]={cnt:L.length,o,n,avg:L.length?o/L.length:0}}
-  const xo=rows.reduce((a,x)=>a+x.xt.o,0),xn=rows.reduce((a,x)=>a+x.xt.n,0),xc=ss.filter(isBonus).length;
+  const tot={};for(const k of ks){const L=ss.filter(s=>s.content===k&&!s.extra);let o=0,n=0;for(const x of rows){o+=x.c[k].o;n+=x.c[k].n}tot[k]={cnt:L.length,o,n,avg:L.length?o/L.length:0}}
+  const xo=rows.reduce((a,x)=>a+x.xt.o,0),xn=rows.reduce((a,x)=>a+x.xt.n,0),xc=ss.filter(s=>s.extra).length;
   const sO=rows.reduce((a,x)=>a+x.O,0),sN=rows.reduce((a,x)=>a+x.need,0);let sX=0;ms.rows.forEach(r=>sX+=r.absent);
   return {mon,ss,ks,hasX,rows,tot,xo,xn,xc,sO,sN,rate:rateOf(sO,sX)}}
 function statMonth(){
@@ -2877,7 +2880,8 @@ function renderContentEditor(){
     <div class="f"><span class="hint">정규 진행 요일</span>${dayBoxes(i,'d',c.days)}</div>
     <div class="ct-opts">
       <label class="chk"><input type="checkbox" id="ct-${i}-main"${c.main?' checked':''}> 메인 콘텐츠</label>
-      <label class="chk"><input type="checkbox" id="ct-${i}-weekly"${c.weekly?' checked':''}> 정규 요일 중 주 1회만 진행</label></div>
+      <label class="chk"><input type="checkbox" id="ct-${i}-weekly"${c.weekly?' checked':''}> 정규 요일 중 주 1회만 진행</label>
+      <label class="chk" title="참여하면 포인트만 받고, 출석률·경고에는 안 들어가요 (불참 패널티 없음)"><input type="checkbox" id="ct-${i}-po"${c.po?' checked':''}> 점수만 (출석률 제외)</label></div>
     </div>`).join('');
   return `<div class="panel"><div class="spread"><h2>콘텐츠 · 포인트</h2><div class="row"><button class="btn small" data-action="ctAdd">콘텐츠 추가</button>${S.cdraft?'<button class="btn small" data-action="ctCancel">취소</button>':''}<button class="btn primary" data-action="ctSave">콘텐츠 저장</button></div></div>
     <div class="cfg-stack">
@@ -2898,7 +2902,7 @@ function readContentForm(){
   return list.map((c,i)=>{const g=id=>document.getElementById(`ct-${i}-${id}`);if(!g('name'))return c;
     const days=[];for(let d=0;d<7;d++){if(g('d'+d)?.checked)days.push(d)}
     const p=Math.round(+g('pts').value);
-    return {...c,name:g('name').value.trim().slice(0,20),short:g('short').value.trim().slice(0,8),time:g('time').value.trim().slice(0,24),pts:p>=0&&p<=100?p:1,days,extraDays:[],main:g('main').checked,weekly:g('weekly').checked,on:g('on').checked}});
+    return {...c,name:g('name').value.trim().slice(0,20),short:g('short').value.trim().slice(0,8),time:g('time').value.trim().slice(0,24),pts:p>=0&&p<=100?p:1,days,extraDays:[],main:g('main').checked&&!g('po')?.checked,weekly:g('weekly').checked,po:!!g('po')?.checked,on:g('on').checked}});
 }
 const JCOLS=['members','sessions','warnings','notes','rewards','purchases','locks','notices','nimg'];
 async function exportJson(){
@@ -3082,7 +3086,7 @@ function monthStats(mon){
   const W=warnCfg(),mj=minJudge();
   const rows=members.map(m=>{let O=0,E=0,X=0,XA=0,B=0,P=0,need=0,ok=0,mO=0,mX=0,mT=0;
     for(const s of ss){if(!eligible(m,s))continue;const v=effOf(s,m.id);
-      if(isBonus(s)){if(v==='O'){B++;P+=sessPts(s)}continue}
+      if(isBonus(s)){if(v==='O'){if(s.extra)B++;P+=sessPts(s)}continue}
       need++;if(!v)continue;const main=MAIN.includes(s.content);if(main)mT++;
       if(v==='O'){O++;ok++;P+=sessPts(s);if(main)mO++}else if(v==='E'){E++;ok++}else{if(v==='XA')XA++;else X++;if(main)mX++}}
     const absent=X+XA,T=O+E+absent,rate=rateOf(O,absent),mainRate=rateOf(mO,mX);
@@ -3737,7 +3741,7 @@ function renderMe(){
     <p class="hint"><b>도달</b>: 기준을 넘으면 동·은·금·전설로 올라가요 · <b>특별</b>: 그 달 기록으로만 받아요 (여러 번 가능) · <b>업적</b>: 한 번 달성하면 끝 · 배지를 누르면 자세히 보여요</p></div>`;
   // ---- 자세히 보기
   const myBuy=feat('buy')?renderMyBuy(me):'';
-  const more=`<details class="panel me-more" id="meMore"><summary><h2>자세히 보기</h2><span class="hint">26주 출석률 · 개근한 달 · 연속 참여 · 구매 포인트 · 콘텐츠별 · 계산 기준</span></summary>
+  const more=`<details class="panel me-more" id="meMore"><summary><h2>자세히 보기</h2><span class="hint">26주 출석률 · 개근한 달 · 연속 참여${feat('buy')?' · 구매 포인트':''} · 콘텐츠별 · 계산 기준</span></summary>
     <div class="col">
     <div class="tiles">
       <div class="tile"><span class="l">최근 26주 출석률</span><span class="v">${pct(w26.r)}</span><span class="l">참여 ${w26.o} · 면제 ${w26.e} · 불참 ${w26.x}</span></div>
