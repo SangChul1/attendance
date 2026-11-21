@@ -112,7 +112,7 @@ label.chk{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:va
   .settle-grid section{display:none}
   .settle-grid.m-table [data-sec=table],.settle-grid.m-buy [data-sec=buy],.settle-grid.m-pay [data-sec=pay],.settle-grid.m-dist [data-sec=dist],.settle-grid.m-pay [data-sec=link],.settle-grid.m-dist [data-sec=link]{display:block}
   .settle-grid.m-table .settle-right,.settle-grid.m-buy .settle-right,.settle-grid.m-pay .settle-left,.settle-grid.m-dist .settle-left{display:none}
-  .subtabs.calc-tabs{display:none}.subtabs.left-tabs{display:none}}
+  .subtabs.calc-tabs:not(.calc-only){display:none}.subtabs.left-tabs{display:none}}
 @media (min-width:1000px){
   .subtabs.settle-mtabs{display:none}
   .settle-grid{display:grid;grid-template-columns:auto minmax(340px,1fr);gap:20px;align-items:start}
@@ -1502,6 +1502,11 @@ label.chk .nmust{margin:0 2px 0 0}
 .mrow.gone,tr.gone{opacity:.72}
 .mrow.gone .gv{margin-left:auto;font-size:13px;font-weight:700;padding:4px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
 .gtab td,.gtab th{white-space:nowrap}
+
+/* 창고 장부 */
+.ledger td,.ledger th{vertical-align:middle}
+.ledger td:nth-child(4),.ledger td:nth-child(5){white-space:nowrap}
+.calc-only{margin-bottom:-4px}
 </style>
 </head>
 <body>
@@ -1686,7 +1691,7 @@ const roleIdx=r=>{const i=ROLES.indexOf(r);return i<0?ROLES.length:i};
 const DAYS=['일','월','화','수','목','금','토'];
 const CFG0={guild:GUILD?GUILD.name:'',weekStart:1,streak:3,points:{singi:1,mihok:1,rank:1,bonus:1}};
 
-const S={nImgCache:{},nEditImg:null,nBig:null,nKind:'notice',nView:null,notices:[],noticeBlocked:false,nEdit:null,nPage:0,nDel:null,demoT:{},manOpen:(()=>{try{return localStorage.getItem('att.manOpen')==='1'}catch(_){return false}})(),msel:new Set(),mbulk:null,noticeEdit:false,rfSug:false,mt:(()=>{try{const v=JSON.parse(localStorage.getItem('att.mt')||'{}');return v&&typeof v==='object'?v:{}}catch(_){return {}}})(),mFilter:'active',detail:null,jimp:null,sorts:{},leftTab:'table',setTab:'table',calcTab:'pay',tierOpen:false,lqDraft:null,xOpen:false,lp:{mode:'month',off:0},plogs:null,lcats:null,lq:'',logs:[],wkOff:0,purchases:[],buyBlocked:false,buyFor:'',olderFail:false,rf:{mon:'all',kind:'all',q:'',unpaid:false},payOpen:null,man:null,db:null,fs:null,auth:null,authUser:null,myNick:'',isOwner:false,admins:[],ready:false,err:false,setup:false,canWrite:false,older:[],olderRange:null,olderLoading:false,cutoff:'',me:'',month:'',imp:null,stab:'sum',ssort:'rate',ssearch:'',warnings:[],warnBlocked:false,logBlocked:false,wmonth:'',dist:null,hist:null,delLogs:null,atab:'warn',sview:'calc',nsort:'role',notes:{},locks:{},rewards:[],leaveFor:null,noteFor:null,cdraft:null,tierDraft:null,pay:null,selMode:false,sel:new Set(),
+const S={ledger:[],nImgCache:{},nEditImg:null,nBig:null,nKind:'notice',nView:null,notices:[],noticeBlocked:false,nEdit:null,nPage:0,nDel:null,demoT:{},manOpen:(()=>{try{return localStorage.getItem('att.manOpen')==='1'}catch(_){return false}})(),msel:new Set(),mbulk:null,noticeEdit:false,rfSug:false,mt:(()=>{try{const v=JSON.parse(localStorage.getItem('att.mt')||'{}');return v&&typeof v==='object'?v:{}}catch(_){return {}}})(),mFilter:'active',detail:null,jimp:null,sorts:{},leftTab:'table',setTab:'table',calcTab:'pay',tierOpen:false,lqDraft:null,xOpen:false,lp:{mode:'month',off:0},plogs:null,lcats:null,lq:'',logs:[],wkOff:0,purchases:[],buyBlocked:false,buyFor:'',olderFail:false,rf:{mon:'all',kind:'all',q:'',unpaid:false},payOpen:null,man:null,db:null,fs:null,auth:null,authUser:null,myNick:'',isOwner:false,admins:[],ready:false,err:false,setup:false,canWrite:false,older:[],olderRange:null,olderLoading:false,cutoff:'',me:'',month:'',imp:null,stab:'sum',ssort:'rate',ssearch:'',warnings:[],warnBlocked:false,logBlocked:false,wmonth:'',dist:null,hist:null,delLogs:null,atab:'warn',sview:'table',nsort:'role',notes:{},locks:{},rewards:[],leaveFor:null,noteFor:null,cdraft:null,tierDraft:null,pay:null,selMode:false,sel:new Set(),
   members:[],sessions:[],config:{...CFG0},
   tab:'home',openSid:null,editSid:null,period:'4',cfilter:'all',demo:false,confirm:null,showOff:false,
   search:'',onlyUnchecked:false,mSearch:''};
@@ -2947,7 +2952,7 @@ async function exportJson(){
   try{toast('전체 데이터를 모으는 중이에요…');await loadOlderAll();
     const strip=o=>{const {id,...d}=o;return d};
     const data={members:S.members.map(x=>({id:x.id,d:strip(x)})),sessions:allSessions().map(x=>({id:x.id,d:strip(x)})),warnings:S.warnings.map(x=>({id:x.id,d:strip(x)})),
-      notes:Object.entries(S.notes).map(([id,d])=>({id,d})),rewards:S.rewards.map(x=>({id:x.id,d:strip(x)})),purchases:S.purchases.map(x=>({id:x.id,d:strip(x)})),notices:S.notices.map(x=>({id:x.id,d:strip(x)})),
+      notes:Object.entries(S.notes).map(([id,d])=>({id,d})),rewards:[...S.rewards,...(S.ledger||[])].map(x=>({id:x.id,d:strip(x)})),purchases:S.purchases.map(x=>({id:x.id,d:strip(x)})),notices:S.notices.map(x=>({id:x.id,d:strip(x)})),
       locks:Object.entries(S.locks).map(([id,d])=>({id,d})),config:S.config,...(S.isOwner?{admins:S.admins.map(x=>({id:x.id,d:strip(x)}))}:{})};
     const body=JSON.stringify({app:'guild-attendance',version:1,exportedAt:Date.now(),by:myName(),guild:S.config.guild||'',gkey:GKEY,data});
     const blob=new Blob([body],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`문파출석_완전백업_${todayStr()}.json`;document.body.appendChild(a);a.click();
@@ -2959,7 +2964,7 @@ async function readJson(f){
   S.jimp={loading:true};render();
   try{const j=JSON.parse(await f.text());if(!j||j.app!=='guild-attendance'||!j.data)throw new Error('format');
     S.olderRange=null;await loadOlderAll();
-    const have={members:new Set(S.members.map(x=>x.id)),sessions:new Set(allSessions().map(x=>x.id)),warnings:new Set(S.warnings.map(x=>x.id)),notes:new Set(Object.keys(S.notes)),rewards:new Set(S.rewards.map(x=>x.id)),purchases:new Set(S.purchases.map(x=>x.id)),notices:new Set(S.notices.map(x=>x.id)),locks:new Set(Object.keys(S.locks)),admins:new Set(S.admins.map(x=>x.id))};
+    const have={members:new Set(S.members.map(x=>x.id)),sessions:new Set(allSessions().map(x=>x.id)),warnings:new Set(S.warnings.map(x=>x.id)),notes:new Set(Object.keys(S.notes)),rewards:new Set([...S.rewards,...(S.ledger||[])].map(x=>x.id)),purchases:new Set(S.purchases.map(x=>x.id)),notices:new Set(S.notices.map(x=>x.id)),locks:new Set(Object.keys(S.locks)),admins:new Set(S.admins.map(x=>x.id))};
     const cols=[...JCOLS,...(S.isOwner&&j.data.admins?['admins']:[])];const plan={};let total=0;
     for(const c of cols){const list=(Array.isArray(j.data[c])?j.data[c]:[]).filter(x=>x&&typeof x.id==='string'&&x.id&&!x.id.includes('/')&&x.d&&typeof x.d==='object');plan[c]={all:list.length,add:list.filter(x=>!have[c].has(x.id))};total+=plan[c].add.length}
     S.jimp={plan,total,cols,config:j.data.config||null,exportedAt:j.exportedAt,guild:j.guild||'',gkey:j.gkey||''}}
@@ -3215,11 +3220,17 @@ function renderSettle(){
   const lt=S.leftTab==='buy'&&feat('buy')?'buy':'table';
   const ltabs=cls=>!feat('buy')?'':`<div class="subtabs ${cls}" role="tablist"><button role="tab" data-action="leftTab" data-k="table" aria-selected="${lt==='table'}">포인트 · 개근</button><button role="tab" data-action="leftTab" data-k="buy" aria-selected="${lt==='buy'}">구매 포인트 · 우선권</button></div>`;
   if(!adm)return `<div class="col">${head}${ltabs('')}${lt==='buy'?renderSettleBuy():table}</div>`;
-  const SV=[['calc','📊 정산 · 분배'],...(can('manage')?[['log','🧾 지급 기록']]:[]),...(can('manage')&&feat('buy')?[['buyin','🛒 구매 기록']]:[])];
-  const sv=SV.some(x=>x[0]===S.sview)?S.sview:'calc';
+  const SV=[['table','📊 포인트표'],...(can('manage')?[['calc','💰 분배하기'],['vault','🏦 창고 장부'],['log','🧾 분배 내역']]:[]),...(can('manage')&&feat('buy')?[['buyin','🛒 구매 기록']]:[])];
+  const sv=SV.some(x=>x[0]===S.sview)?S.sview:'table';
   const vbar=SV.length>1?`<div class="subtabs agrp sview" role="tablist">${SV.map(([k,l])=>`<button role="tab" data-action="sview" data-k="${k}" aria-selected="${sv===k}">${l}</button>`).join('')}</div>`:'';
   if(sv==='log')return `<div class="col">${vbar}${renderPayLog()}</div>`;
+  if(sv==='vault')return `<div class="col">${vbar}${renderLedger()}</div>`;
   if(sv==='buyin')return `<div class="col">${vbar}${renderBuy()}</div>`;
+  if(sv==='table')return `<div class="col">${vbar}${head}${ltabs('')}${lt==='buy'?renderSettleBuy():table}</div>`;
+  {const ct=S.calcTab==='dist'?'dist':'pay';
+   return `<div class="col">${vbar}${head}
+    <div class="subtabs calc-tabs calc-only" role="tablist"><button role="tab" data-action="calcTab" data-k="pay" aria-selected="${ct==='pay'}">💰 금전 분배</button><button role="tab" data-action="calcTab" data-k="dist" aria-selected="${ct==='dist'}">🎁 아이템 분배</button></div>
+    ${ct==='pay'?renderPay(ms):renderDist(ms)}${rewardLink(ms)}</div>`}
   const mt=['table','pay','dist',...(feat('buy')?['buy']:[])].includes(S.setTab)?S.setTab:'table',ct=S.calcTab==='dist'?'dist':'pay';
   const mtabs=[['table','정산표'],['pay','금전 분배'],['dist','아이템 분배'],...(feat('buy')?[['buy','구매 포인트']]:[])];
   return `<div class="col">${vbar}${head}
@@ -3245,6 +3256,7 @@ function rewardItem(r){
       <div class="row" style="width:100%"><span class="hint">${kindTxt} · ${esc(r.by||'')} · ${r.at?hm(r.at):''}</span><span class="grow"></span>
       <button class="btn small${open?' primary':''}" data-action="payOpen" data-id="${esc(r.id)}" aria-pressed="${open}">${open?'지급 체크 닫기':'지급 체크'}</button>
       <button class="btn small" data-action="copyReward" data-id="${esc(r.id)}">카톡용 복사</button>
+      ${r.manual&&r.kind==='money'&&can('manage')?`<button class="btn small${S.confirm==='tv:'+r.id?' primary':''}" data-action="toVin" data-id="${esc(r.id)}" title="문파원에게 준 게 아니라 창고에 들어온 금전이면 창고 장부 입금으로 옮겨요">${S.confirm==='tv:'+r.id?'정말 입금으로 옮기기':'창고 입금으로 바꾸기'}</button>`:''}
       ${S.isOwner?(S.confirm==='rw:'+r.id?`<button class="btn small danger" data-action="delReward" data-id="${esc(r.id)}">정말 삭제</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small" data-action="askDelR" data-id="${esc(r.id)}">삭제</button>`):''}</div>
       ${open?`<div class="paygrid">${it.map(o=>`<button class="paybtn${isPaid(r,o.i)?' on':''}" data-action="paidToggle" data-id="${esc(r.id)}" data-i="${o.i}" aria-pressed="${isPaid(r,o.i)}">${esc(o.x.name)} ${rwUnit(r,o.v)}</button>`).join('')}</div>
         <div class="row"><button class="btn small" data-action="paidAll" data-id="${esc(r.id)}" data-v="1"${unpaid.length?'':' disabled'}>모두 지급함</button><button class="btn small" data-action="paidAll" data-id="${esc(r.id)}" data-v="0"${pc.n?'':' disabled'}>모두 해제</button><span class="hint">이름을 누르면 지급함 ↔ 미지급이 바뀌어요</span></div>`
@@ -3256,7 +3268,7 @@ function rewardRow(r,no){
   const main=`<tr${open?' class="open"':''}><td class="num">${no}</td><td class="num">${monLabel(r.month)}</td><td><span class="tag${r.kind==='money'?' extra':''}">${r.kind==='money'?'금전':'아이템'}</span></td>
     <td style="text-align:left;white-space:normal"><b>${esc(r.name)}</b><br><span class="hint">${kindTxt}</span></td><td class="num">${r.kind==='money'?won(r.amount)+'금전'+(r.gross?`<br><span class="hint">판매 ${won(r.gross)} · 수수료 ${r.fee}%</span>`:''):won(r.N)+'개'}</td>
     <td><span class="tag ${pc.n===pc.t?'ok':'no'}">${pc.n}/${pc.t}명</span></td><td style="text-align:left"><span class="hint">${esc(r.by||'')}${r.at?'<br>'+hm(r.at):''}</span></td>
-    <td><span class="row" style="flex-wrap:nowrap;gap:5px;justify-content:flex-end"><button class="btn small${open?' primary':''}" data-action="payOpen" data-id="${esc(r.id)}" aria-pressed="${open}">${open?'닫기':'지급 체크'}</button><button class="btn small" data-action="copyReward" data-id="${esc(r.id)}">카톡 복사</button>
+    <td><span class="row" style="flex-wrap:nowrap;gap:5px;justify-content:flex-end"><button class="btn small${open?' primary':''}" data-action="payOpen" data-id="${esc(r.id)}" aria-pressed="${open}">${open?'닫기':'지급 체크'}</button><button class="btn small" data-action="copyReward" data-id="${esc(r.id)}">카톡 복사</button>${r.manual&&r.kind==='money'&&can('manage')?`<button class="btn small${S.confirm==='tv:'+r.id?' primary':''}" data-action="toVin" data-id="${esc(r.id)}" title="창고에 들어온 금전이면 창고 장부 입금으로 옮겨요">${S.confirm==='tv:'+r.id?'정말 옮기기':'입금으로'}</button>`:''}
     ${S.isOwner?(S.confirm==='rw:'+r.id?`<button class="btn small danger" data-action="delReward" data-id="${esc(r.id)}">정말 삭제</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small" data-action="askDelR" data-id="${esc(r.id)}">삭제</button>`):''}</span></td></tr>`;
   const sub=open?`<tr class="paysub"><td></td><td colspan="7"><div class="paygrid">${it.map(o=>`<button class="paybtn${isPaid(r,o.i)?' on':''}" data-action="paidToggle" data-id="${esc(r.id)}" data-i="${o.i}" aria-pressed="${isPaid(r,o.i)}">${esc(o.x.name)} ${rwUnit(r,o.v)}</button>`).join('')}</div>
       <div class="row"><button class="btn small" data-action="paidAll" data-id="${esc(r.id)}" data-v="1"${unpaid.length?'':' disabled'}>모두 지급함</button><button class="btn small" data-action="paidAll" data-id="${esc(r.id)}" data-v="0"${pc.n?'':' disabled'}>모두 해제</button><span class="hint">이름을 누르면 지급함 ↔ 미지급이 바뀌어요</span></div></td></tr>`
@@ -3276,7 +3288,7 @@ function renderManual(){
   const act=activeMembers(S.members);const tot=M.rows.reduce((a,x)=>a+x.v,0);
   const rows=M.rows.map((x,i)=>`<div class="manrow"><span class="grow">${esc(memberName(x.mid)||x.name)}</span><span class="num">${won(x.v)}</span><button class="btn small" data-action="manDel" data-i="${i}">빼기</button></div>`).join('');
   const shut=!S.manOpen&&!M.rows.length;
-  return `<div class="panel manp${shut?' shut':''}"><div class="spread"><h2>직접 지급 기록</h2><div class="row">${M.rows.length?'<button class="btn small" data-action="manClear">모두 지우기</button>':''}<button class="btn small dt-only" data-action="manToggle" aria-expanded="${!shut}"${M.rows.length?' disabled title="추가한 사람이 있으면 접을 수 없어요"':''}>${shut?'펼치기 ▾':'접기 ▴'}</button></div></div>
+  return `<div class="panel manp${shut?' shut':''}"><div class="spread"><h2>직접 지급 기록 <span class="hint">문파원에게 준 것</span></h2><div class="row">${M.rows.length?'<button class="btn small" data-action="manClear">모두 지우기</button>':''}<button class="btn small dt-only" data-action="manToggle" aria-expanded="${!shut}"${M.rows.length?' disabled title="추가한 사람이 있으면 접을 수 없어요"':''}>${shut?'펼치기 ▾':'접기 ▴'}</button></div></div>
     <div class="man-body col">
     <div class="fg3"><label class="f">지급한 것<input type="text" id="manName" maxlength="20" placeholder="예: 이벤트 상품"></label>
       <label class="f">종류<select id="manKind"><option value="money">금전</option><option value="item">아이템 (개수)</option></select></label>
@@ -3290,8 +3302,8 @@ function renderManual(){
 }
 function rewardLink(ms){
   const n=S.rewards.filter(r=>r.month===ms.mon).length;
-  return `<div class="panel"><div class="spread"><h2>지급 기록</h2><button class="btn small primary" data-action="gotoPayLog" data-mon="${ms.mon}">지급 기록 보기</button></div>
-    <p class="hint">${n?`${monLabel(ms.mon)}에 저장된 지급 기록이 <b>${n}건</b> 있어요.`:`${monLabel(ms.mon)}에 저장된 지급 기록이 없어요.`} 모든 달의 지급 기록은 위의 <b>🧾 지급 기록</b>에서 볼 수 있어요.</p></div>`;
+  return `<div class="panel"><div class="spread"><h2>분배 내역</h2><button class="btn small primary" data-action="gotoPayLog" data-mon="${ms.mon}">🧾 분배 내역 보기</button></div>
+    <p class="hint">${n?`${monLabel(ms.mon)}에 저장된 지급 기록이 <b>${n}건</b> 있어요.`:`${monLabel(ms.mon)}에 저장된 지급 기록이 없어요.`} 모든 달의 분배 내역은 위의 <b>🧾 분배 내역</b>에서 볼 수 있어요.</p></div>`;
 }
 function payLogData(){
   const F=S.rf,q=F.q.trim().toLowerCase();
@@ -3310,6 +3322,41 @@ function payLogData(){
   const M=recs.filter(r=>r.kind==='money');
   return {recs,list,people,unpaidN,sold:M.reduce((t,r)=>t+(r.amount||0),0),vault:M.reduce((t,r)=>t+(r.rest||0),0),paid:M.reduce((t,r)=>t+(r.amount||0)-(r.rest||0),0),items:recs.filter(r=>r.kind!=='money').reduce((t,r)=>t+(r.N||0),0)};
 }
+/* ---------- 창고 장부: 들어온 금전(+) · 나간 금전(−) · 잔액 ---------- */
+const dOf=ms=>new Date(ms+9*3600e3).toISOString().slice(0,10);
+function ledgerRows(){const L=[];
+  for(const r of S.ledger||[]){const d=r.date||(r.at?dOf(r.at):'');L.push({at:r.at||0,d,sign:r.kind==='vin'?1:-1,amt:Math.max(0,Math.round(+r.amount||0)),name:r.name||'',note:r.note||'',src:r.conv?'conv':r.src||'man',id:r.id,r})}
+  for(const r of S.rewards){if(r.kind!=='money')continue;const d=r.at?dOf(r.at):'',paid=Math.max(0,(+r.amount||0)-(+r.rest||0));
+    if(r.manual){L.push({at:r.at||0,d,sign:-1,amt:+r.amount||0,name:`직접 지급 · ${r.name||''}`,src:'pay',rid:r.id});continue}
+    if(r.mode==='vault'){L.push({at:r.at||0,d,sign:-1,amt:paid,name:`창고 금전 분배 (${md(r.from)}~${md(r.to)})`,src:'pay',rid:r.id});continue}
+    L.push({at:(r.at||0)-1,d,sign:1,amt:+r.amount||0,name:`판매 수입 · ${r.name||''}${r.qty>1?' ×'+r.qty:''}${r.gross?` (판매 ${won(r.gross)} −수수료 ${r.fee}%)`:''}`,src:'sale',rid:r.id});
+    L.push({at:r.at||0,d,sign:-1,amt:paid,name:`판매금 분배 · ${r.name||''}`,src:'pay',rid:r.id})}
+  L.sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:a.at-b.at);let bal=0;for(const x of L){bal+=x.sign*x.amt;x.bal=bal}return L}
+const vaultBalance=()=>{const L=ledgerRows();return L.length?L[L.length-1].bal:0};
+function renderLedger(){const L=ledgerRows(),bal=L.length?L[L.length-1].bal:0,cur=gameDay().slice(0,7);
+  const inM=L.filter(x=>x.d.slice(0,7)===cur&&x.sign>0).reduce((a,x)=>a+x.amt,0),outM=L.filter(x=>x.d.slice(0,7)===cur&&x.sign<0).reduce((a,x)=>a+x.amt,0);
+  const F=S.lf||'sale',C=payCfg();
+  const form=`<div class="cfg-group"><h3>창고 장부에 적기</h3>
+    <div class="seg pwv" role="tablist">${[['sale','＋ 판매 수입'],['in','＋ 기타 입금'],['out','− 기타 출금'],['set','잔액 맞추기']].map(([k,l])=>`<button role="tab" data-action="lfT" data-k="${k}" aria-selected="${F===k}">${l}</button>`).join('')}</div>
+    ${F==='sale'?`<div class="fg4"><label class="f">판매한 아이템<input type="text" id="lfName" maxlength="20" placeholder="예: 산군 도안"></label><label class="f">판매가 (개당)<input type="number" id="lfPrice" min="1" max="1000000000" step="1" placeholder="예: 25000"></label><label class="f">개수<input type="number" id="lfQty" min="1" max="999" step="1" value="1"></label><label class="f">날짜<input type="date" id="lfDate" value="${gameDay()}"></label></div>
+      <p class="hint">수수료 ${C.fee}%를 빼고 창고에 들어온 금액으로 적어요 (예: 25,000 → ${won(netOf(25000,1,C.fee))}). 수수료율은 💰 분배하기 → 판매금 분배 → 분배 기준에서 바꿔요.</p>`
+     :F==='set'?`<div class="fg3"><label class="f">지금 실제 창고 금전<input type="number" id="lfReal" min="0" max="10000000000" step="1" placeholder="게임 안 문파 창고 금액"></label><label class="f grow">메모<input type="text" id="lfNote" maxlength="40" placeholder="예: 기존 잔액"></label></div>
+      <p class="hint">장부 잔액(${won(bal)})과 실제 금액의 차이만큼 입금 또는 출금으로 적어서 맞춰요. 처음 시작할 때 기존 잔액을 넣을 때도 써요.</p>`
+     :`<div class="fg3"><label class="f">금액<input type="number" id="lfAmt" min="1" max="10000000000" step="1"></label><label class="f grow">내용<input type="text" id="lfName" maxlength="30" placeholder="${F==='in'?'예: 이벤트 상금':'예: 문파 이벤트 상품 구매'}"></label><label class="f">날짜<input type="date" id="lfDate" value="${gameDay()}"></label></div>`}
+    <div class="row"><span class="grow"></span><button class="btn primary small" data-action="lfSave">${F==='set'?'잔액 맞추기':'장부에 적기'}</button></div></div>`;
+  const P=pager('ledger',L.length,20,'');const shown=L.slice().reverse().slice(P.a,P.b);
+  const tag={sale:'판매 수입',pay:'분배',man:'기타',conv:'기타',set:'잔액 맞추기'};
+  const rows=shown.map(x=>`<tr><td class="num">${x.d?mdd(x.d):''}</td><td><span class="tag${x.sign>0?' ok':''}">${x.sign>0?'입금':'출금'}</span></td><td style="text-align:left;white-space:normal">${esc(x.name)}${x.note?`<br><span class="hint">${esc(x.note)}</span>`:''}${x.id?'':x.src==='pay'?' <span class="hint">· 분배 저장 시 자동</span>':x.src==='sale'?' <span class="hint">· 판매금 분배 저장 시 자동</span>':''}</td>
+    <td class="num ${x.sign>0?'c-o':'c-x'}"><b>${x.sign>0?'+':'−'}${won(x.amt)}</b></td><td class="num">${won(x.bal)}</td>
+    <td>${x.id&&S.isOwner?(S.confirm==='lg:'+x.id?`<button class="btn small danger" data-action="lfDel" data-id="${esc(x.id)}">정말 삭제</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small" data-action="lfAsk" data-id="${esc(x.id)}">삭제</button>`):''}</td></tr>`).join('');
+  return `<div class="panel"><div class="spread"><h2>🏦 창고 장부 <span class="hint">들어온 금전 · 나간 금전</span></h2><span class="hint">운영진만 볼 수 있어요</span></div>
+    <div class="tiles"><div class="tile"><span class="l">지금 장부 잔액</span><span class="v">${won(bal)}</span><span class="l">금전</span></div>
+      <div class="tile"><span class="l">이번 달 입금</span><span class="v c-o">+${won(inM)}</span><span class="l">금전</span></div>
+      <div class="tile"><span class="l">이번 달 출금</span><span class="v c-x">−${won(outM)}</span><span class="l">금전</span></div>
+      <div class="tile"><span class="l">기록</span><span class="v">${L.length}</span><span class="l">줄</span></div></div>
+    <div class="cfg-stack">${form}</div>
+    ${L.length?`<div class="scroll"><table class="ledger"><thead><tr><th>날짜</th><th>구분</th><th style="text-align:left">내용</th><th>금액</th><th>잔액</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>${P.html}`:'<p class="hint" style="padding:10px 2px">아직 장부 기록이 없어요. 지금 창고에 있는 금전부터 <b>잔액 맞추기</b>로 넣어 두세요.</p>'}
+    ${notes(['<b>입금</b>: 아이템 판매 수입(수수료 자동 차감) · 기타 입금. <b>출금</b>: 💰 분배하기에서 <b>지급 기록으로 저장</b>하면 나간 금액이 자동으로 적혀요','판매금 분배(판매하자마자 나누기)는 판매 수입(+)과 분배(−)가 같이 적히고, 자투리만 잔액에 남아요','<b>잔액 맞추기</b>는 게임 안 실제 창고 금액에 장부를 맞춰요. 차이만큼 입금/출금 한 줄이 생겨요','창고 금전 분배를 열면 금액 칸에 장부 잔액이 미리 채워져요'])}</div>`}
 function renderPayLog(){
   const F=S.rf,D=payLogData();
   const mons=[...new Set(S.rewards.map(r=>r.month).filter(Boolean))].sort().reverse();
@@ -3333,7 +3380,8 @@ function renderPayLog(){
   const pc=mtCur('pay',['rec','ppl','man'],'rec');
   const recs=D.list.length?`<div class="attnlist">${D.list.slice(RP.a,RP.b).map(rewardItem).join('')}</div>`:'<p class="hint">조건에 맞는 지급 기록이 없어요. 월간 정산 → 금전 분배 / 아이템 개수 분배에서 <b>지급 기록으로 저장</b>을 누르면 여기에 쌓여요.</p>';
   return `<div class="col mt-host">
-    <div class="panel"><div class="spread"><h2>지급 기록</h2><span class="hint">운영진만 볼 수 있어요</span></div>${filt}
+    <div class="panel"><div class="spread"><h2>분배 내역 <span class="hint">문파원에게 나간 금전 · 아이템</span></h2><span class="hint">운영진만 볼 수 있어요</span></div>${filt}
+      <p class="hint">창고에 <b>들어온</b> 금전(아이템 판매 수입 등)은 <button class="btn small" data-action="sview" data-k="vault">🏦 창고 장부</button>에 기록해요.</p>
       ${notes(['위에서 <b>기간(달) · 종류 · 검색어</b>로 기록을 좁혀 볼 수 있어요. 검색칸을 누르면 문파원 이름이 떠요. <b>미지급만</b>을 켜면 아직 안 준 것만 보여요','실제로 건네준 뒤 기록의 <b>지급 체크</b>를 눌러 이름을 하나씩 체크하세요','<b>문파원별 누적</b>은 고른 조건 안에서 각자 받을 금전과 아이템을 더한 값이에요','지급 체크 말고는 기록을 고칠 수 없어요. 잘못 저장했다면 문주가 지우고 다시 저장해 주세요'])}</div>
     ${mtBar('pay',[['rec',`기록 목록 ${D.list.length}`],['ppl',`문파원별 ${D.people.length}`],['man','직접 기록']],pc)}
     <div${msA(pc,'rec')}>${tiles}</div>
@@ -3414,7 +3462,7 @@ function renderVault(){const C=S.tierDraft||payCfg(),V=S.vault;const gd=gameDay(
     <div class="row">${V.saved?'':'<button class="btn small primary" data-action="saveVault">지급 기록으로 저장</button>'}<button class="btn small" data-action="copyVault">카톡용 복사</button></div>`}
   return `<div class="cfg-stack">
     <div class="cfg-group"><h3>창고 금전 입력</h3>
-      <div class="fg4"><label class="f">창고 금전 (금전)<input type="number" id="vAmt" min="1" max="1000000000" step="1" placeholder="예: 300000" value="${V?V.amount:''}"></label>
+      <div class="fg4"><label class="f">창고 금전 (금전)<input type="number" id="vAmt" min="1" max="1000000000" step="1" placeholder="예: 300000" value="${V?V.amount:(vaultBalance()>0?vaultBalance():'')}"></label>
         <label class="f">포인트 시작일<input type="date" id="vFrom" value="${from}" max="${gd}"></label>
         <label class="f">끝날<input type="date" id="vTo" value="${to}" max="${gd}"></label>
         <button class="btn primary" data-action="calcVault">분배 계산하기</button></div>
@@ -4026,7 +4074,7 @@ document.addEventListener('click',e=>{
   if(a==='gPick'){S.gPick=true;render();$('#gbox .gp-card.on')?.focus();return}
   if(a==='gClose'){if(b.classList.contains('overlay')&&e.target!==b)return;S.gPick=false;render();return}
   if(a==='gGo'){const k=b.dataset.g;if(!GUILDS[k])return;if(k===GKEY){S.gPick=false;render();return}try{localStorage.setItem('att.guild',k)}catch(_){}const u=new URL(location.href);u.searchParams.set('g',k);location.href=u.toString();return}
-  if(a==='tab'){if(b.dataset.tab==='settle')S.sview='calc';S.tab=b.dataset.tab;remember('tab',S.tab);S.confirm=null;S.wkPop=false;S.selMode=false;S.sel=new Set();render();window.scrollTo({top:0});return}
+  if(a==='tab'){if(b.dataset.tab==='settle')S.sview='table';S.tab=b.dataset.tab;remember('tab',S.tab);S.confirm=null;S.wkPop=false;S.selMode=false;S.sel=new Set();render();window.scrollTo({top:0});return}
   if(a==='openUnc'){S.mt.check='sheet';S.openSid=b.dataset.sid;S.onlyUnchecked=true;S.confirm=null;S.editSid=null;S.search='';S.hist=null;render();scrollSheet();return}
   if(a==='wkPop'){S.wkPop=true;S.wkPopOff=0;render();$('#wkbox .nv-x')?.focus();return}
   if(a==='wkPopClose'){if(b.classList.contains('overlay')&&e.target!==b)return;S.wkPop=false;render();$('.hero-wk')?.focus();return}
@@ -4276,7 +4324,7 @@ document.addEventListener('click',e=>{
   if(a==='mtab'){S.mt[b.dataset.g]=b.dataset.k;try{const o={...S.mt};delete o.check;localStorage.setItem('att.mt',JSON.stringify(o))}catch(_){}render();return}
   if(a==='leftTab'){S.leftTab=b.dataset.k;S.setTab=b.dataset.k;render();return}
   if(a==='setTab'){if(b.dataset.k==='table'||b.dataset.k==='buy')S.leftTab=b.dataset.k;S.setTab=b.dataset.k;if(b.dataset.k==='pay'||b.dataset.k==='dist')S.calcTab=b.dataset.k;render();window.scrollTo({top:0});return}
-  if(a==='calcTab'){S.calcTab=b.dataset.k;S.setTab=b.dataset.k;render();return}
+  if(a==='calcTab'){S.calcTab=b.dataset.k;S.setTab=b.dataset.k;if(S.sview!=='calc'&&can('manage'))S.sview='calc';render();return}
   if(a==='detail'){S.detail=b.dataset.mid;render();return}
   if(a==='detailClose'){if(b.classList.contains('overlay')&&e.target!==b)return;S.detail=null;render();return}
   if(a==='gotoSettle'){S.tab='settle';S.month=b.dataset.mon;S.setTab='table';S.leftTab='table';S.dist=null;S.pay=null;remember('tab','settle');render();window.scrollTo({top:0});return}
@@ -4333,6 +4381,19 @@ document.addEventListener('click',e=>{
     const draft=JSON.stringify({...C,tiers:[...C.tiers].sort((x,y)=>y.min-x.min)})!==JSON.stringify(payCfg());if(draft)S.tierDraft=C;
     const ms=monthStats(curMonth());const keep=S.config.pay;S.config.pay=C;let res;try{res=payCalc(ms,amount)}finally{S.config.pay=keep}
     S.pay={mon:ms.mon,name:$('#payName').value.trim()||'아이템',amount,price,qty,gross,fee,res,saved:false};render();return}
+  if(a==='lfT'){S.lf=b.dataset.k;render();return}
+  if(a==='lfAsk'){S.confirm='lg:'+b.dataset.id;render();return}
+  if(a==='lfDel'){const id=b.dataset.id;S.confirm=null;const r=(S.ledger||[]).find(x=>x.id===id);guard(()=>S.db.doc('rewards/'+id).delete(),'장부 기록을 지웠어요',{area:'지급',what:'창고 장부 삭제',detail:r?`${r.kind==='vin'?'+':'−'}${r.amount} ${r.name||''}`:id});return}
+  if(a==='lfSave'){if(!can('manage'))return;const F=S.lf||'sale',C=payCfg();let rec;const dt=($('#lfDate')?.value||gameDay());if(!/^\d{4}-\d{2}-\d{2}$/.test(dt)){toast('날짜를 확인해 주세요');return}
+    if(F==='sale'){const price=Math.floor(+$('#lfPrice').value),qty=Math.floor(+$('#lfQty').value||1),name=$('#lfName').value.trim().slice(0,20)||'아이템';if(!(price>0)){toast('판매가를 입력해 주세요');return}if(!(qty>=1&&qty<=999)){toast('개수는 1~999개로 넣어 주세요');return}
+      rec={kind:'vin',src:'sale',name:`판매 수입 · ${name}${qty>1?' ×'+qty:''}`,amount:netOf(price,qty,C.fee),price,qty,gross:price*qty,fee:C.fee,note:`판매 ${won(price*qty)} −수수료 ${C.fee}%`,date:dt}}
+    else if(F==='set'){const real=Math.floor(+$('#lfReal').value);if(!(real>=0)||$('#lfReal').value===''){toast('실제 창고 금전을 입력해 주세요');return}const d=real-vaultBalance();if(!d){toast('장부 잔액과 같아요');return}
+      rec={kind:d>0?'vin':'vout',src:'set',name:'잔액 맞추기',amount:Math.abs(d),note:($('#lfNote').value.trim().slice(0,40)||`실제 ${won(real)}금전에 맞춤`),date:gameDay()}}
+    else{const amt=Math.floor(+$('#lfAmt').value),name=$('#lfName').value.trim().slice(0,30);if(!(amt>0)){toast('금액을 입력해 주세요');return}if(!name){toast('내용을 적어 주세요');return}
+      rec={kind:F==='in'?'vin':'vout',src:'man',name,amount:amt,date:dt}}
+    guard(()=>S.db.collection('rewards').doc().set({...rec,month:rec.date.slice(0,7),by:myName(),at:Date.now()}),rec.kind==='vin'?`창고에 +${won(rec.amount)}금전을 적었어요`:`창고에서 −${won(rec.amount)}금전을 적었어요`,{area:'지급',what:'창고 장부 '+(rec.kind==='vin'?'입금':'출금'),detail:`${rec.name} ${won(rec.amount)}`});return}
+  if(a==='toVin'){const r=S.rewards.find(x=>x.id===b.dataset.id);if(!r||!r.manual||r.kind!=='money')return;if(S.confirm!=='tv:'+r.id){S.confirm='tv:'+r.id;render();return}S.confirm=null;
+    guard(()=>S.db.doc('rewards/'+r.id).update({kind:'vin',conv:true,convAt:Date.now(),convBy:myName()}),'창고 장부 입금으로 옮겼어요',{area:'지급',what:'직접 기록 → 창고 입금',detail:`${r.name} ${won(r.amount)}`});return}
   if(a==='payMode'){S.payMode=b.dataset.k;render();return}
   if(a==='calcVault'){const amount=Math.floor(+$('#vAmt').value),from=$('#vFrom').value,to=$('#vTo').value;if(!(amount>0)){toast('창고 금전을 입력해 주세요');return}
     if(!/^\d{4}-\d{2}-\d{2}$/.test(from)||!/^\d{4}-\d{2}-\d{2}$/.test(to)||from>to){toast('기간을 확인해 주세요');return}
@@ -4508,7 +4569,7 @@ setInterval(()=>{if(S.tab==='home'&&document.visibilityState==='visible'&&!S.nEd
       if(S.canWrite){const blk=e=>{console.warn(e);S.warnBlocked=true;render()};
         unWarn=fsnap(fcol(S.fs,'warnings'),x=>{S.warnings=x.docs.map(d=>({id:d.id,...d.data()}));render()},blk);
         unNotes=fsnap(fcol(S.fs,'notes'),x=>{S.notes=Object.fromEntries(x.docs.map(d=>[d.id,d.data()]));render()},blk);
-        unRw=fsnap(fcol(S.fs,'rewards'),x=>{S.rewards=x.docs.map(d=>({id:d.id,...d.data()}));render()},blk);
+        unRw=fsnap(fcol(S.fs,'rewards'),x=>{const all=x.docs.map(d=>({id:d.id,...d.data()}));S.rewards=all.filter(r=>r.kind!=='vin'&&r.kind!=='vout');S.ledger=all.filter(r=>r.kind==='vin'||r.kind==='vout');render()},blk);
         unLogs=fsnap(query(fcol(S.fs,'logs'),fOrder('at','desc'),fLimit(300)),x=>{S.logs=x.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.at||0)-(a.at||0));render()},e=>{console.warn(e);S.logBlocked=true;render()})}
     }
     S.authKnown=true;render();if(S.canWrite)setTimeout(sumBackfill,1500);
