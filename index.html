@@ -124,7 +124,7 @@ label.chk{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:va
   .settle-grid.d-pay [data-sec=dist],.settle-grid.d-dist [data-sec=pay]{display:none}
   .settle-grid.l-table [data-sec=buy],.settle-grid.l-buy [data-sec=table]{height:0;overflow:hidden;visibility:hidden;margin-top:-20px}
   .settle-right .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .settle-right .fg3{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .settle-right .fg3,.settle-right .fg4{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   .settle-right .fg3>.btn{grid-column:1/-1}}
 details#tierBox>summary{list-style:revert}
 .th-sort{border:0;background:none;padding:0;font:inherit;color:inherit;font-weight:600;cursor:pointer;white-space:nowrap}
@@ -3254,7 +3254,7 @@ function rewardRow(r,no){
   const pc=paidCount(r),open=S.payOpen===r.id,it=rwItems(r),unpaid=it.filter(o=>!isPaid(r,o.i));
   const kindTxt=r.manual?'직접 기록':r.kind==='money'?`분배 ${won(r.amount-(r.rest||0))} · 금고 ${won(r.rest||0)}`:r.mode==='equal'?'균등':'포인트 비례';
   const main=`<tr${open?' class="open"':''}><td class="num">${no}</td><td class="num">${monLabel(r.month)}</td><td><span class="tag${r.kind==='money'?' extra':''}">${r.kind==='money'?'금전':'아이템'}</span></td>
-    <td style="text-align:left;white-space:normal"><b>${esc(r.name)}</b><br><span class="hint">${kindTxt}</span></td><td class="num">${r.kind==='money'?won(r.amount)+'금전':won(r.N)+'개'}</td>
+    <td style="text-align:left;white-space:normal"><b>${esc(r.name)}</b><br><span class="hint">${kindTxt}</span></td><td class="num">${r.kind==='money'?won(r.amount)+'금전'+(r.gross?`<br><span class="hint">판매 ${won(r.gross)} · 수수료 ${r.fee}%</span>`:''):won(r.N)+'개'}</td>
     <td><span class="tag ${pc.n===pc.t?'ok':'no'}">${pc.n}/${pc.t}명</span></td><td style="text-align:left"><span class="hint">${esc(r.by||'')}${r.at?'<br>'+hm(r.at):''}</span></td>
     <td><span class="row" style="flex-wrap:nowrap;gap:5px;justify-content:flex-end"><button class="btn small${open?' primary':''}" data-action="payOpen" data-id="${esc(r.id)}" aria-pressed="${open}">${open?'닫기':'지급 체크'}</button><button class="btn small" data-action="copyReward" data-id="${esc(r.id)}">카톡 복사</button>
     ${S.isOwner?(S.confirm==='rw:'+r.id?`<button class="btn small danger" data-action="delReward" data-id="${esc(r.id)}">정말 삭제</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small" data-action="askDelR" data-id="${esc(r.id)}">삭제</button>`):''}</span></td></tr>`;
@@ -3366,7 +3366,8 @@ const DEFAULT_TIERS=[{min:20,pct:100},{min:10,pct:80},{min:5,pct:50}];
 const won=n=>Math.round(+n||0).toLocaleString('ko-KR');
 function payCfg(){const c=S.config.pay||{};const t=Array.isArray(c.tiers)&&c.tiers.length?c.tiers:DEFAULT_TIERS;
   const tiers=t.map(x=>({min:Math.max(0,Math.round(+x.min||0)),pct:Math.min(100,Math.max(1,Math.round(+x.pct||0)))})).sort((a,b)=>b.min-a.min);
-  return {tiers,minRate:num(c.minRate,0,0,100),exHold:c.exHold!==false}}
+  return {tiers,minRate:num(c.minRate,0,0,100),exHold:c.exHold!==false,fee:num(c.fee,10,0,50),vMul:Math.min(3,Math.max(1,Math.round((+c.vMul||1.2)*100)/100)),vMin:num(c.vMin,1,0,10000)}}
+const netOf=(price,qty,fee)=>Math.floor(price*(100-fee)/100)*qty;
 function tierOf(P,tiers){return tiers.find(t=>P>=t.min)||null}
 function payCalc(ms,amount){
   const C=payCfg();const rows=[],out=[];
@@ -3382,6 +3383,52 @@ function payCalc(ms,amount){
   const paid=rows.reduce((a,x)=>a+x.amt,0);
   return {rows,out,shares,unit,paid,rest:amount-paid,C};
 }
+/* 기간 포인트 (창고 금전 분배용): 개근 = 기간 안 정규 회차를 전부 '참여' (사전공지도 빠진 것) */
+function rangeStats(from,to){const gd=gameDay(),ss=data().sessions.filter(s=>s.date>=from&&s.date<=to&&s.date<=gd);
+  return activeMembers(data().members).map(m=>{let O=0,E=0,X=0,P=0,need=0,B=0;for(const s of ss){if(!eligible(m,s))continue;const v=effOf(s,m.id);
+      if(isBonus(s)){if(v==='O'){B++;P+=sessPts(s)}continue}need++;if(v==='O'){O++;P+=sessPts(s)}else if(v==='E')E++;else if(v)X++}
+    const T=O+E+X;return {m,O,E,X,B,P,need,T,rate:rateOf(O,X),perfect:need>0&&O===need,hold:T<minJudge()}})}
+function vaultCalc(from,to,amount,C){const rows=[],out=[];
+  for(const r of rangeStats(from,to)){let why='',v='';
+    if(r.P<=0&&r.need===0)continue;
+    if(C.exHold&&r.hold){why='판정 보류 (기록 부족)';v=`${r.T}회`}
+    else if(C.minRate>0&&(r.rate==null||r.rate*100<C.minRate)){why=`출석률 ${C.minRate}% 미만`;v=pct(r.rate)}
+    else if(r.P<Math.max(1,C.vMin)){why=`포인트 ${Math.max(1,C.vMin)}점 미만`;v=`${r.P}점`}
+    if(why)out.push({r,why,g:why,v});else rows.push({r,w:r.P*(r.perfect?C.vMul:1)})}
+  const W=rows.reduce((a,x)=>a+x.w,0);rows.forEach(x=>{x.share=W?x.w/W:0;x.amt=Math.floor(amount*x.share+1e-9)});
+  rows.sort((a,b)=>b.amt-a.amt||b.r.P-a.r.P||memberSort(a.r.m,b.r.m));const paid=rows.reduce((a,x)=>a+x.amt,0);
+  return {rows,out,W,paid,rest:amount-paid,C,from,to,reg:data().sessions.filter(s=>s.date>=from&&s.date<=to&&s.date<=gameDay()&&!isBonus(s)).length}}
+function vaultDefaultFrom(){const L=S.rewards.filter(r=>r.mode==='vault'&&r.to).map(r=>r.to).sort();return L.length?addDays(L[L.length-1],1):gameDay().slice(0,8)+'01'}
+function renderVault(){const C=S.tierDraft||payCfg(),V=S.vault;const gd=gameDay();
+  const from=V?V.from:vaultDefaultFrom(),to=V?V.to:gd;let res='';
+  if(V&&V.res){const R=V.res,np=R.rows.filter(x=>x.r.perfect).length;
+    res=`<div class="tiles">
+      <div class="tile"><span class="l">창고 금전</span><span class="v">${won(V.amount)}</span><span class="l">금전</span></div>
+      <div class="tile"><span class="l">분배 대상</span><span class="v">${R.rows.length}</span><span class="l">명 · 개근 ${np}명 (×${R.C.vMul})</span></div>
+      <div class="tile"><span class="l">기간</span><span class="v" style="font-size:18px">${md(R.from)}~${md(R.to)}</span><span class="l">정규 ${R.reg}회</span></div>
+      <div class="tile"><span class="l">문파 금고</span><span class="v">${won(R.rest)}</span><span class="l">금전 (자투리)</span></div></div>
+    ${R.rows.length?`<div class="scroll"><table class="dist pay"><thead><tr><th>닉네임</th><th>포인트</th><th>개근</th><th>출석률</th><th>비율</th><th>분배 금액</th></tr></thead><tbody>${R.rows.map(x=>`<tr><td>${esc(x.r.m.name)}</td><td class="num">${x.r.P}</td><td>${x.r.perfect?`<span class="pill-perfect">개근 ×${R.C.vMul}</span>`:`<span class="hint">빠짐 ${x.r.need-x.r.O}</span>`}</td><td class="num">${pct(x.r.rate)}</td><td class="num">${(x.share*100).toFixed(1)}%</td><td class="num"><b>${won(x.amt)}</b></td></tr>`).join('')}</tbody>
+      <tfoot><tr><td>합계</td><td></td><td></td><td></td><td></td><td><b>${won(R.paid)}</b></td></tr></tfoot></table></div>`:'<p class="hint">분배 대상이 없어요. 기간과 기준을 확인해 주세요.</p>'}
+    ${exclList('분배 제외',R.out.map(o=>({name:o.r.m.name,g:o.g,v:o.v})))}
+    ${V.saved?`<p class="hint"><b style="color:var(--good)">지급 기록으로 저장했어요.</b> <button class="btn small" data-action="gotoPayLog">지급 기록 보기</button></p>`:''}
+    <div class="row">${V.saved?'':'<button class="btn small primary" data-action="saveVault">지급 기록으로 저장</button>'}<button class="btn small" data-action="copyVault">카톡용 복사</button></div>`}
+  return `<div class="cfg-stack">
+    <div class="cfg-group"><h3>창고 금전 입력</h3>
+      <div class="fg4"><label class="f">창고 금전 (금전)<input type="number" id="vAmt" min="1" max="1000000000" step="1" placeholder="예: 300000" value="${V?V.amount:''}"></label>
+        <label class="f">포인트 시작일<input type="date" id="vFrom" value="${from}" max="${gd}"></label>
+        <label class="f">끝날<input type="date" id="vTo" value="${to}" max="${gd}"></label>
+        <button class="btn primary" data-action="calcVault">분배 계산하기</button></div>
+      <p class="hint">기간 동안 쌓은 참여 포인트에 비례해서 나눠요. 기간 안 정규 회차를 <b>전부 참여</b>한 개근자는 포인트에 <b>×${C.vMul}</b>를 곱해 더 받아요 (사전공지도 빠진 것으로 쳐요). 시작일 기본값은 지난 창고 분배 다음 날이에요.</p></div>
+    ${res?`<div class="cfg-group"><h3>계산 결과</h3>${res}</div>`:''}
+    <details class="cfg-group"${S.tierDraft?' open':''}><summary style="cursor:pointer"><h3 style="display:inline">창고 분배 기준</h3> <span class="hint">개근 ×${C.vMul} · ${Math.max(1,C.vMin)}점 미만 제외${C.minRate?` · 출석률 ${C.minRate}% 미만 제외`:''}${C.exHold?' · 판정 보류 제외':''}</span></summary>
+      <div class="fg2"><label class="f">개근 가중치 (×, 1~3)<input type="number" id="vMul" data-keep="0" min="1" max="3" step="0.1" value="${C.vMul}"></label>
+        <label class="f">최소 포인트 (미만 제외)<input type="number" id="vMin" data-keep="0" min="0" max="10000" step="1" value="${C.vMin}"></label></div>
+      <p class="hint">출석률 미만 제외 · 판정 보류 제외는 판매금 분배의 '분배 기준'과 같이 써요.</p>
+      <div class="row"><span class="grow"></span><button class="btn primary small" data-action="tierSave">기준 저장</button></div></details>
+  </div>`}
+function vaultText(r){return [`${kG()}창고 금전 분배 (${md(r.from)}~${md(r.to)})`,`💰 창고 ${won(r.amount)} · 분배 ${won(r.amount-(r.rest||0))} · 금고 ${won(r.rest||0)} (금전)`,`기준: 기간 참여 포인트 비례 · 개근 ×${r.vMul}${r.vMin>1?` · ${r.vMin}점 미만 제외`:''}${r.minRate?` · 출석률 ${r.minRate}% 미만 제외`:''}`,KL,...(r.items||[]).filter(x=>x.amt>0).map(x=>`· ${x.name} ${won(x.amt)}금전 (${x.P}점${x.perfect?' · 개근':''})`),KL].join('\n')}
+function vaultRecord(V){const R=V.res;return {kind:'money',mode:'vault',month:R.to.slice(0,7),name:'창고 금전 분배',amount:V.amount,rest:R.rest,from:R.from,to:R.to,vMul:R.C.vMul,vMin:R.C.vMin,minRate:R.C.minRate,exHold:R.C.exHold,
+  items:R.rows.map(x=>({mid:x.r.m.id,name:x.r.m.name,P:x.r.P,rate:x.r.rate,perfect:x.r.perfect,pct:Math.round(x.share*1000)/10,amt:x.amt})),excluded:R.out.map(o=>({mid:o.r.m.id,name:o.r.m.name,why:o.why}))}}
 function renderPay(ms){
   const C=S.tierDraft||payCfg();const P=S.pay&&S.pay.mon===ms.mon?S.pay:null;
   const tierRows=`<div class="tier-row tier-head"><span></span><span class="hint">포인트 (이상)</span><span class="hint">분배 비율 (%)</span><span></span></div>`+C.tiers.map((t,i)=>`<div class="tier-row"><span class="hint num">${i+1}.</span>
@@ -3392,7 +3439,7 @@ function renderPay(ms){
   let res='';
   if(P){const R=P.res;
     res=`<div class="tiles">
-        <div class="tile"><span class="l">판매 금액</span><span class="v">${won(P.amount)}</span><span class="l">금전</span></div>
+        <div class="tile"><span class="l">창고 입금 (분배 총액)</span><span class="v">${won(P.amount)}</span><span class="l">${P.gross?`판매 ${won(P.price)}×${P.qty} = ${won(P.gross)} · 수수료 ${P.fee}% −${won(P.gross-P.amount)}`:'금전'}</span></div>
         <div class="tile"><span class="l">분배 대상</span><span class="v">${R.rows.length}</span><span class="l">명 · ${R.shares.toFixed(1).replace(/\.0$/,'')}몫</span></div>
         <div class="tile"><span class="l">1몫 (100%)</span><span class="v">${won(Math.floor(R.unit))}</span><span class="l">금전</span></div>
         <div class="tile"><span class="l">문파 금고</span><span class="v">${won(R.rest)}</span><span class="l">금전 (자투리)</span></div></div>
@@ -3401,16 +3448,22 @@ function renderPay(ms){
       ${exclList('분배 제외',R.out.map(o=>({name:o.r.m.name,g:o.g||o.why,v:o.v})))}
       ${P.saved?`<p class="hint"><b style="color:var(--good)">지급 기록으로 저장했어요.</b> <button class="btn small" data-action="gotoPayLog" data-mon="${P.mon}">지급 기록 보기</button></p>`:S.locks[P.mon]?'':'<p class="hint">이 달이 아직 마감 전이에요. 마감한 뒤 다시 계산해서 저장하는 걸 권해요.</p>'}
       <div class="row">${P.saved?'':'<button class="btn small primary" data-action="savePay">지급 기록으로 저장</button>'}<button class="btn small" data-action="copyPay">카톡용 복사</button></div>`}
-  return `<div class="panel"><div class="spread"><h2>금전 분배</h2><span class="hint">${monLabel(ms.mon)} 포인트 기준</span></div>
+  const PM=S.payMode==='vault'?'vault':'sale';
+  const modeBar=`<div class="seg pwv pmode" role="tablist"><button role="tab" data-action="payMode" data-k="sale" aria-selected="${PM==='sale'}">판매금 분배</button><button role="tab" data-action="payMode" data-k="vault" aria-selected="${PM==='vault'}">창고 금전 분배</button></div>`;
+  if(PM==='vault')return `<div class="panel"><div class="spread"><h2>금전 분배</h2>${modeBar}</div>${renderVault()}</div>`;
+  return `<div class="panel"><div class="spread"><h2>금전 분배</h2><span class="row"><span class="hint">${monLabel(ms.mon)} 포인트 기준</span>${modeBar}</span></div>
     <div class="cfg-stack">
       <div class="cfg-group"><h3>판매 금액 입력</h3>
-        <div class="fg3"><label class="f">판매한 아이템<input type="text" id="payName" maxlength="20" placeholder="예: 신기 강화석"></label>
-          <label class="f">판매 금액 (금전)<input type="number" id="payAmt" min="1" max="1000000000" step="1" placeholder="예: 100000"></label>
-          <button class="btn primary" data-action="calcPay">분배 계산하기</button></div></div>
+        <div class="fg4"><label class="f">판매한 아이템<input type="text" id="payName" maxlength="20" placeholder="예: 산군 도안"></label>
+          <label class="f">판매가 (개당 금전)<input type="number" id="payPrice" min="1" max="1000000000" step="1" placeholder="예: 25000"></label>
+          <label class="f">개수<input type="number" id="payQty" min="1" max="999" step="1" value="1"></label>
+          <button class="btn primary" data-action="calcPay">분배 계산하기</button></div>
+        <p class="hint">판매 수수료 <b>${C.fee}%</b>를 빼고 문파 창고에 들어온 금액으로 분배해요 (예: 25,000 → ${won(netOf(25000,1,C.fee))}). 문파원에게 보낼 때는 수수료가 없어요. 수수료율은 아래 분배 기준에서 바꿔요.</p></div>
       ${res?`<div class="cfg-group"><h3>계산 결과</h3>${res}</div>`:''}
       <details class="cfg-group" id="tierBox"${S.tierOpen||S.tierDraft?' open':''}><summary style="cursor:pointer"><h3 style="display:inline">분배 기준</h3> <span class="hint">${C.tiers.map(t=>`${t.min}점↑ ${t.pct}%`).join(' · ')}${C.minRate?` · 출석률 ${C.minRate}% 미만 제외`:''}${S.tierDraft?' · <b>저장 안 됨</b>':''}</span></summary>
         <div class="col" style="gap:8px">${tierRows}</div>
         <div class="row"><button class="btn small" data-action="tierAdd"${C.tiers.length>=8?' disabled':''}>등급 추가</button></div>
+        <div class="fg2"><label class="f">판매 수수료 (%)<input type="number" id="payFee" data-keep="0" min="0" max="50" step="1" value="${C.fee??10}"></label></div>
         <div class="fg2"><label class="f">출석률 이 값 미만은 제외 (%, 0 = 안 씀)<input type="number" id="payMinRate" data-keep="0" min="0" max="100" step="5" value="${C.minRate}"></label>
           <label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="payExHold" data-keep="0"${C.exHold?' checked':''}> 판정 보류자 제외</label></div>
         <div class="row">${S.tierDraft?'<button class="btn small" data-action="tierCancel">되돌리기</button>':''}<span class="grow"></span><button class="btn primary small" data-action="tierSave">기준 저장</button></div>
@@ -3419,11 +3472,13 @@ function renderPay(ms){
 }
 function exclList(title,items){if(!items.length)return '';const G=new Map();items.forEach(x=>{if(!G.has(x.g))G.set(x.g,[]);G.get(x.g).push(x)});
   return `<div class="exl"><div class="spread"><b>${esc(title)} ${items.length}명</b></div>${[...G].map(([g,l])=>`<div class="exg"><span class="tag no">${esc(g)} · ${l.length}명</span><div class="exn">${l.map(x=>`<span class="exp">${esc(x.name)}${x.v?` <span class="hint">${esc(x.v)}</span>`:''}</span>`).join('')}</div></div>`).join('')}</div>`}
-function payRecord(P){const R=P.res;return {kind:'money',month:P.mon,name:P.name,amount:P.amount,rest:R.rest,tiers:R.C.tiers,minRate:R.C.minRate,exHold:R.C.exHold,items:R.rows.map(x=>({mid:x.r.m.id,name:x.r.m.name,P:x.r.P,rate:x.r.rate,pct:x.pct,amt:x.amt})),excluded:R.out.map(o=>({mid:o.r.m.id,name:o.r.m.name,why:o.why}))}}
+function payRecord(P){const R=P.res;return {kind:'money',month:P.mon,name:P.name,amount:P.amount,...(P.gross?{price:P.price,qty:P.qty,gross:P.gross,fee:P.fee}:{}),rest:R.rest,tiers:R.C.tiers,minRate:R.C.minRate,exHold:R.C.exHold,items:R.rows.map(x=>({mid:x.r.m.id,name:x.r.m.name,P:x.r.P,rate:x.r.rate,pct:x.pct,amt:x.amt})),excluded:R.out.map(o=>({mid:o.r.m.id,name:o.r.m.name,why:o.why}))}}
 function readTierForm(){
   const base=S.tierDraft||payCfg();const tiers=base.tiers.map((t,i)=>{const a=$('#tier-min-'+i),b=$('#tier-pct-'+i);return a&&b?{min:Math.round(+a.value),pct:Math.round(+b.value)}:t});
   const mr=Math.round(+($('#payMinRate')?.value??base.minRate));
-  return {tiers,minRate:mr>=0&&mr<=100?mr:0,exHold:$('#payExHold')?$('#payExHold').checked:base.exHold};
+  const fe=Math.round(+($('#payFee')?.value??base.fee??10));
+  const vm=Math.round(+($('#vMul')?.value??base.vMul??1.2)*100)/100,vn=Math.round(+($('#vMin')?.value??base.vMin??1));
+  return {tiers,minRate:mr>=0&&mr<=100?mr:0,exHold:$('#payExHold')?$('#payExHold').checked:base.exHold,fee:fe>=0&&fe<=50?fe:10,vMul:vm>=1&&vm<=3?vm:1.2,vMin:vn>=0&&vn<=10000?vn:1};
 }
 function checkTiers(C){
   for(const t of C.tiers){if(!(t.min>=0&&t.min<=10000))return '포인트는 0~10000 사이로 넣어 주세요';if(!(t.pct>=1&&t.pct<=100))return '비율은 1~100% 사이로 넣어 주세요'}
@@ -3431,8 +3486,9 @@ function checkTiers(C){
   return '';
 }
 function payTextOf(r){
+  if(r.mode==='vault')return vaultText(r);
   if(r.manual)return [`${kG()}${monLabel(r.month)} 지급`,`🎁 ${r.name} · 총 ${won(r.amount)}금전`,KL,...(r.items||[]).filter(x=>x.amt>0).map(x=>`· ${x.name} ${won(x.amt)}금전`),KL].join('\n');
-  return [`${kG()}${monLabel(r.month)} 판매금 분배`,`💰 ${r.name}`,`판매 ${won(r.amount)} · 분배 ${won(r.amount-(r.rest||0))} · 금고 ${won(r.rest||0)} (금전)`,`기준: ${(r.tiers||[]).map(t=>`${t.min}점↑ ${t.pct}%`).join(' / ')}${r.minRate?` · 출석률 ${r.minRate}% 미만 제외`:''}`,KL,...(r.items||[]).filter(x=>x.amt>0).map(x=>`· ${x.name} ${won(x.amt)}금전 (${x.P}점 · ${x.pct}%)`),KL].join('\n')}
+  return [`${kG()}${monLabel(r.month)} 판매금 분배`,`💰 ${r.name}${r.qty>1?` ×${r.qty}`:''}`,...(r.gross?[`판매 ${won(r.price)}×${r.qty} = ${won(r.gross)} · 수수료 ${r.fee}% −${won(r.gross-r.amount)} → 창고 ${won(r.amount)}`]:[]),`${r.gross?'창고 입금':'판매'} ${won(r.amount)} · 분배 ${won(r.amount-(r.rest||0))} · 금고 ${won(r.rest||0)} (금전)`,`기준: ${(r.tiers||[]).map(t=>`${t.min}점↑ ${t.pct}%`).join(' / ')}${r.minRate?` · 출석률 ${r.minRate}% 미만 제외`:''}`,KL,...(r.items||[]).filter(x=>x.amt>0).map(x=>`· ${x.name} ${won(x.amt)}금전 (${x.P}점 · ${x.pct}%)`),KL].join('\n')}
 
 /* ---------- 보상 분배 계산 ---------- */
 function renderDist(ms){
@@ -4271,12 +4327,22 @@ document.addEventListener('click',e=>{
   if(a==='tierDel'){const C=readTierForm();C.tiers.splice(+b.dataset.i,1);S.tierDraft=C;render();return}
   if(a==='tierCancel'){S.tierDraft=null;render();return}
   if(a==='tierSave'){const C=readTierForm();const err=checkTiers(C);if(err){S.tierDraft=C;render();toast(err);return}
-    C.tiers.sort((x,y)=>y.min-x.min);guard(async()=>{await saveConfig({pay:C});S.tierDraft=null;render()},'분배 기준을 저장했어요',{area:'지급',what:'금전 분배 기준 저장',detail:C.tiers.map(t=>`${t.min}점↑ ${t.pct}%`).join(' / ')});return}
-  if(a==='calcPay'){const amount=Math.floor(+$('#payAmt').value);if(!(amount>0)){toast('판매 금액을 입력해 주세요');return}
-    const C=readTierForm();const err=checkTiers(C);if(err){S.tierDraft=C;render();toast(err);return}
+    C.tiers.sort((x,y)=>y.min-x.min);guard(async()=>{await saveConfig({pay:C});S.tierDraft=null;render()},'분배 기준을 저장했어요',{area:'지급',what:'금전 분배 기준 저장',detail:C.tiers.map(t=>`${t.min}점↑ ${t.pct}%`).join(' / ')+` · 수수료 ${C.fee}%`});return}
+  if(a==='calcPay'){const price=Math.floor(+$('#payPrice').value),qty=Math.floor(+$('#payQty').value||1);if(!(price>0)){toast('판매가를 입력해 주세요');return}if(!(qty>=1&&qty<=999)){toast('개수는 1~999개로 넣어 주세요');return}
+    const C=readTierForm();const fee=C.fee??10,gross=price*qty,amount=netOf(price,qty,fee);const err=checkTiers(C);if(err){S.tierDraft=C;render();toast(err);return}
     const draft=JSON.stringify({...C,tiers:[...C.tiers].sort((x,y)=>y.min-x.min)})!==JSON.stringify(payCfg());if(draft)S.tierDraft=C;
     const ms=monthStats(curMonth());const keep=S.config.pay;S.config.pay=C;let res;try{res=payCalc(ms,amount)}finally{S.config.pay=keep}
-    S.pay={mon:ms.mon,name:$('#payName').value.trim()||'아이템',amount,res,saved:false};render();return}
+    S.pay={mon:ms.mon,name:$('#payName').value.trim()||'아이템',amount,price,qty,gross,fee,res,saved:false};render();return}
+  if(a==='payMode'){S.payMode=b.dataset.k;render();return}
+  if(a==='calcVault'){const amount=Math.floor(+$('#vAmt').value),from=$('#vFrom').value,to=$('#vTo').value;if(!(amount>0)){toast('창고 금전을 입력해 주세요');return}
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(from)||!/^\d{4}-\d{2}-\d{2}$/.test(to)||from>to){toast('기간을 확인해 주세요');return}
+    const C=readTierForm();const err=checkTiers(C);if(err){toast(err);return}
+    if(S.cutoff&&from<S.cutoff&&S.olderRange!=='all'&&S.olderRange!=='sum'){ensureAll();toast('예전 기록을 불러오는 중이에요. 잠시 뒤 다시 눌러 주세요');return}
+    S.vault={amount,from,to,res:vaultCalc(from,to,amount,C),saved:false};render();return}
+  if(a==='copyVault'){const V=S.vault;if(V&&V.res)copyText(vaultText(vaultRecord(V)));return}
+  if(a==='saveVault'){const V=S.vault;if(!V||!V.res||V.saved||V.saving)return;
+    {const R2=vaultCalc(V.from,V.to,V.amount,V.res.C);const sig=R=>JSON.stringify(R.rows.map(x=>[x.r.m.id,x.amt]));if(sig(R2)!==sig(V.res)){V.res=R2;render();toast('계산한 뒤 출석 체크가 바뀌어 다시 계산했어요. 확인하고 다시 저장해 주세요');return}}
+    V.saving=true;guard(async()=>{await S.db.collection('rewards').doc().set({...vaultRecord(V),by:myName(),email:(S.authUser&&S.authUser.email)||'',at:Date.now()})},'지급 기록을 저장했어요',{area:'지급',what:'창고 금전 분배 저장',detail:`${V.from}~${V.to} ${won(V.amount)}금전`}).then(ok=>{V.saving=false;if(ok){V.saved=true;render()}});return}
   if(a==='copyPay'){const P=S.pay;if(P)copyText(payTextOf(payRecord(P)));return}
   if(a==='savePay'){const P=S.pay;if(!P||P.saved||P.saving)return;
     {const keep=S.config.pay;S.config.pay=P.res.C;let R2;try{R2=payCalc(monthStats(P.mon),P.amount)}finally{S.config.pay=keep}
