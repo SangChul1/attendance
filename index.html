@@ -1494,6 +1494,14 @@ label.chk .nmust{margin:0 2px 0 0}
 .nlk{border:0;background:transparent;color:var(--accent);font:inherit;font-size:13px;font-weight:700;padding:2px 6px;border-radius:6px;cursor:pointer}
 .nlk:hover,.nlk:focus-visible{background:color-mix(in srgb,var(--accent) 10%,transparent)}
 .nlh .row{gap:6px;align-items:center}
+
+/* 떠난 문파원 */
+.tag.gone{background:var(--sunken);color:var(--muted);border-color:var(--line);font-weight:700}
+.gone-sec{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)}
+.gone-h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.mrow.gone,tr.gone{opacity:.72}
+.mrow.gone .gv{margin-left:auto;font-size:13px;font-weight:700;padding:4px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.gtab td,.gtab th{white-space:nowrap}
 </style>
 </head>
 <body>
@@ -1715,6 +1723,17 @@ function marksOf(s){ if(S.demo) return s.marks||{}; return Object.assign({},s.ma
 function data(){ return S.demo?demoData():{members:S.members,sessions:allSessions()} }
 function allSessions(){if(!S.older.length)return S.sessions;const ids=new Set(S.sessions.map(s=>s.id));return S.sessions.concat(S.older.filter(s=>!ids.has(s.id)))}
 function activeMembers(list){return list.filter(m=>m.active!==false).sort(memberSort)}
+/* 떠난 문파원(탈퇴·이동): 지금 상태 표시 */
+const goneAt=m=>m&&m.active===false?((m.moved?m.movedAt:m.leftAt)||''):null;
+const goneLabel=m=>m.moved?`이동→${m.movedTo||'다른 문파'}`:'탈퇴';
+const goneTag=m=>m&&m.active===false?`<span class="tag gone" title="지금 ${esc(goneLabel(m))}${goneAt(m)?' ('+goneAt(m)+')':''}">${esc(goneLabel(m))}${goneAt(m)?' '+md(goneAt(m)):''}</span>`:'';
+const goneMembers=()=>S.members.filter(m=>m.active===false).sort(memberSort);
+/* 그 회차 때는 문파원이었나: 떠난 날 전 회차 (날짜 없으면 그 회차 기록이 있을 때) */
+const wasIn=(m,s)=>{const g=goneAt(m);if(g===null)return false;return (g?s.date<g:validMark(marksOf(s)[m.id]))&&eligible(m,s)};
+function goneMonth(mon){const ss=data().sessions.filter(s=>s.date.slice(0,7)===mon&&s.date<=gameDay());const out=[];
+  for(const m of goneMembers()){let O=0,E=0,X=0,B=0,P=0,need=0;for(const s of ss){if(!wasIn(m,s))continue;const v=effOf(s,m.id);
+      if(isBonus(s)){if(v==='O'){if(s.extra)B++;P+=sessPts(s)}continue}need++;if(v==='O'){O++;P+=sessPts(s)}else if(v==='E')E++;else if(v)X++}
+    if(need||B||P)out.push({m,O,E,X,B,P,need,rate:rateOf(O,X)})}return out}
 const COLL=new Intl.Collator('ko',{numeric:true,sensitivity:'base'});
 const scriptOf=n=>{const c=String(n).trim().charAt(0);return /[가-힣ㄱ-ㅎㅏ-ㅣ]/.test(c)?0:/[A-Za-z]/.test(c)?1:2};
 function nameCmp(a,b,mode){const A=String(a??''),B=String(b??'');const ord=mode==='en'?[1,0,2]:[0,1,2];const sa=ord.indexOf(scriptOf(A)),sb=ord.indexOf(scriptOf(B));return (sa-sb)||COLL.compare(A,B)}
@@ -2309,7 +2328,11 @@ function renderSheet(members){
   const cnt={O:0,A:0,X:0,N:0};members.forEach(m=>cnt[validMark(mk[m.id])?mk[m.id]:'N']++);
   const lk=isLocked(s.date),canE=can('check')&&!lk,dis=canE?'':' disabled';
   const outL=[];for(const m of S.members){if(m.active!==false){if(eligible(m,s))continue;if(s.ex&&s.ex[m.id]===true)outL.push([m.name,'이 회차 제외',m.id]);else if(onLeave(m,s.date))outL.push([m.name,'휴식',m.id]);else if(m.joinedAt&&s.date<m.joinedAt)outL.push([m.name,md(m.joinedAt)+' 가입',m.id])}
-    else{const at=m.moved?m.movedAt:m.leftAt;if((at&&at>s.date)||validMark(mk[m.id]))outL.push([m.name,(m.moved?'이동':'탈퇴')+(at?' '+md(at):'')])}}
+}
+  const goneL=goneMembers().filter(m=>wasIn(m,s));
+  const L0={O:'참여',A:'사전공지',X:'불참'};
+  const goneHtml=goneL.length?`<div class="gone-sec"><div class="gone-h"><b>떠난 문파원</b><span class="hint">이 회차 때는 문파원 · 지금 ${(()=>{const t=goneL.filter(m=>!m.moved).length,v=goneL.length-t;return [t?`탈퇴 ${t}명`:'',v?`이동 ${v}명`:''].filter(Boolean).join(' · ')})()} · 기록만 보여요 (수정 불가)</span></div>
+    <div class="mlist gone">${goneL.map(m=>{const v=mk[m.id];return `<div class="mrow gone"><div class="nm">${avatar(m)}<span class="mn">${esc(m.name)}</span>${goneTag(m)}</div><span class="gv ${v==='O'?'c-o':v==='A'?'c-a':v==='X'?'c-x':'hint'}">${validMark(v)?L0[v]:'미체크'}</span></div>`}).join('')}</div></div>`:'';
   const q=S.search.trim().toLowerCase();
   const shown=members.filter(m=>(!q||String(m.name).toLowerCase().includes(q))&&(!S.onlyUnchecked||!validMark(mk[m.id])));
   const rows=shown.map(m=>{const v=mk[m.id]||'';const b=by[m.id];
@@ -2349,6 +2372,7 @@ function renderSheet(members){
     <div class="mlist">${rows||'<p class="hint" style="padding:12px 2px">조건에 맞는 문파원이 없어요.</p>'}</div>
     ${outL.length||canE?`<div class="sheet-out"><span class="hint">${outL.length?`이 회차 명단에서 빠진 사람 ${outL.length}명: ${outL.map(([n,r])=>`${esc(n)}<span class="dash">(${esc(r)})</span>`).join(' · ')}`:''}</span>${canE?`<button class="btn small" data-action="rosterPick" data-sid="${s.id}">＋ 문파원 넣기</button>`:''}</div>`:''}
     ${canE&&S.rosterSid===s.id?renderRosterPick(s,members):''}
+    ${goneHtml}
     ${notes([s.extra?'<b>추가 진행</b> 회차는 출석률·개근에 들어가지 않고, 참여하면 보너스 포인트만 붙어요':'','체크하지 않은 사람은 출석률 계산에서 빠지지만 그 달 <b>개근은 안 돼요</b>. 회차마다 전원을 체크해 주세요','같은 칸을 한 번 더 누르면 체크가 지워져요'])}${meta?`<p class="hint">${meta}</p>`:''}
   </div>`;
 }
@@ -2400,7 +2424,7 @@ function sessionText(s){
 /* ---------- stats ---------- */
 function computeStats(opt){
   const {members:allM,sessions:allS}=data();
-  const members=opt&&opt.all?allM.slice().sort(memberSort):activeMembers(allM);
+  const members=opt&&opt.all?allM.slice().sort(memberSort):opt&&opt.gone?goneMembers():activeMembers(allM);const GN=!!(opt&&opt.gone);
   const mid=new Map(members.map(m=>[m.id,m]));
   const from=periodFrom();
   const gd=gameDay();const sessions=(from?allS.filter(s=>s.date>=from):allS.slice()).filter(s=>s.date<=gd);
@@ -2409,7 +2433,7 @@ function computeStats(opt){
   const W=warnCfg(),mj=minJudge(),th=W.rate/100,sk=streakMin();
   const per={};members.forEach(m=>per[m.id]={m,O:0,E:0,X:0,XA:0,P:0,B:0,byC:Object.fromEntries(CONTENTS.map(c=>[c.k,{O:0,E:0,X:0}]))});
   for(const s of sessions){
-    for(const m of members){if(!eligible(m,s))continue;const v=effOf(s,m.id);if(!v)continue;const p=per[m.id];
+    for(const m of members){if(!(GN?wasIn(m,s):eligible(m,s)))continue;const v=effOf(s,m.id);if(!v)continue;const p=per[m.id];
       if(isBonus(s)){if(inF(s)&&v==='O'){if(s.extra)p.B++;else{const b=p.byC[s.content];if(b)b.O++}p.P+=sessPts(s)}continue}
       const b=p.byC[s.content];if(b){if(v==='O')b.O++;else if(v==='E')b.E++;else b.X++}
       if(!inF(s))continue;
@@ -2513,19 +2537,23 @@ function monthTable(mon){
   const rows=act.map(m=>{const c={};for(const k of ks)c[k]={n:0,o:0,e:0,x:0};const xt={n:0,o:0};
     for(const s of ss){if(!eligible(m,s))continue;const v=effOf(s,m.id);if(s.extra){xt.n++;if(v==='O')xt.o++;continue}const b=c[s.content];if(!b)continue;b.n++;if(v==='O')b.o++;else if(v==='E')b.e++;else if(v)b.x++}
     const r=mr.get(m.id);return {m,c,xt,r,need:r?r.need:0,O:r?r.O:0,rate:r?r.rate:null,P:r?r.P:0,hold:r?r.hold:false}}).filter(x=>x.need||x.xt.n);
-  const tot={};for(const k of ks){const L=ss.filter(s=>s.content===k&&!s.extra);let o=0,n=0;for(const x of rows){o+=x.c[k].o;n+=x.c[k].n}tot[k]={cnt:L.length,o,n,avg:L.length?o/L.length:0}}
-  const xo=rows.reduce((a,x)=>a+x.xt.o,0),xn=rows.reduce((a,x)=>a+x.xt.n,0),xc=ss.filter(s=>s.extra).length;
-  const sO=rows.reduce((a,x)=>a+x.O,0),sN=rows.reduce((a,x)=>a+x.need,0);let sX=0;ms.rows.forEach(r=>sX+=r.absent);
+  const gm=new Map(goneMonth(mon).map(g=>[g.m.id,g]));
+  for(const m of goneMembers()){const g=gm.get(m.id);if(!g)continue;const c={};for(const k of ks)c[k]={n:0,o:0,e:0,x:0};const xt={n:0,o:0};
+    for(const s of ss){if(!wasIn(m,s))continue;const v=effOf(s,m.id);if(s.extra){xt.n++;if(v==='O')xt.o++;continue}const b=c[s.content];if(!b)continue;b.n++;if(v==='O')b.o++;else if(v==='E')b.e++;else if(v)b.x++}
+    rows.push({m,c,xt,r:null,need:g.need,O:g.O,rate:g.rate,P:g.P,hold:false,gone:true})}
+  const tot={};for(const k of ks){const L=ss.filter(s=>s.content===k&&!s.extra);let o=0,n=0;for(const x of rows){if(x.gone)continue;o+=x.c[k].o;n+=x.c[k].n}tot[k]={cnt:L.length,o,n,avg:L.length?o/L.length:0}}
+  const xo=rows.reduce((a,x)=>a+(x.gone?0:x.xt.o),0),xn=rows.reduce((a,x)=>a+(x.gone?0:x.xt.n),0),xc=ss.filter(s=>s.extra).length;
+  const sO=rows.reduce((a,x)=>a+(x.gone?0:x.O),0),sN=rows.reduce((a,x)=>a+(x.gone?0:x.need),0);let sX=0;ms.rows.forEach(r=>sX+=r.absent);
   return {mon,ss,ks,hasX,rows,tot,xo,xn,xc,sO,sN,rate:rateOf(sO,sX)}}
 function statMonth(){
   const ml=monthList();if(!ml.length)return '<div class="panel"><p class="hint">아직 기록이 없어요.</p></div>';
   const mon=ml.includes(S.mtMon)?S.mtMon:ml[0];const T=monthTable(mon);const pr=n=>n?Math.round(n*100)+'%':'–';const hc=r=>r==null?'':r>=.7?'hi':r>=.4?'md':'lo';
   const G={name:x=>x.m.name,rate:x=>x.rate,P:x=>x.P,X:x=>x.xt.o,...Object.fromEntries(T.ks.map(k=>['c_'+k,x=>x.c[k].n?x.c[k].o/x.c[k].n:null]))};if(!S.sorts.mt)S.sorts.mt={k:'rate',d:-1};
-  const rows=applySort('mt',T.rows,G);
+  const rows=[...applySort('mt',T.rows.filter(x=>!x.gone),G),...T.rows.filter(x=>x.gone)];
   const cell=(o,n)=>n?`<td class="mt-c ${hc(o/n)}"><b class="num">${o}/${n}</b><small>${pr(o/n)}</small></td>`:'<td class="mt-c"><span class="dash">–</span></td>';
-  const body=rows.map(x=>`<tr><td style="text-align:left">${nmLink(x.m)}${x.hold?' <span class="tag">판정 보류</span>':''}${x.r&&x.r.perfect?' <span class="pill-perfect">개근</span>':''}</td>
+  const body=rows.map(x=>`<tr${x.gone?' class="gone"':''}><td style="text-align:left">${x.gone?esc(x.m.name)+' '+goneTag(x.m):nmLink(x.m)}${x.hold?' <span class="tag">판정 보류</span>':''}${x.r&&x.r.perfect?' <span class="pill-perfect">개근</span>':''}</td>
     <td class="mt-c ${hc(x.rate)}"><b class="num">${pct(x.rate)}</b><small>${x.O}/${x.need}</small></td>${T.ks.map(k=>cell(x.c[k].o,x.c[k].n)).join('')}${T.hasX?`<td class="mt-c xt"><b class="num">${x.xt.o}/${x.xt.n}</b></td>`:''}<td><b class="num">${x.P}</b></td></tr>`).join('');
-  const sum=`<tr class="mt-sum"><td style="text-align:left"><b>문파 전체</b><small class="hint"> ${T.rows.length}명</small></td><td class="mt-c ${hc(T.rate)}"><b class="num">${pct(T.rate)}</b><small>${T.sO}/${T.sN}</small></td>
+  const sum=`<tr class="mt-sum"><td style="text-align:left"><b>문파 전체</b><small class="hint"> ${T.rows.filter(x=>!x.gone).length}명${T.rows.some(x=>x.gone)?' · 떠난 문파원 제외':''}</small></td><td class="mt-c ${hc(T.rate)}"><b class="num">${pct(T.rate)}</b><small>${T.sO}/${T.sN}</small></td>
     ${T.ks.map(k=>{const t=T.tot[k];return `<td class="mt-c ${hc(t.n?t.o/t.n:null)}"><b class="num">${pr(t.n?t.o/t.n:0)}</b><small>${t.cnt}회 · 평균 ${t.avg.toFixed(1)}명</small></td>`}).join('')}${T.hasX?`<td class="mt-c xt"><b class="num">${pr(T.xn?T.xo/T.xn:0)}</b><small>${T.xc}회 · 평균 ${(T.xc?T.xo/T.xc:0).toFixed(1)}명</small></td>`:''}<td></td></tr>`;
   return `<div class="panel mtab"><div class="spread"><h2>월별 참여표 <span class="hint">운영진 · admin만 보여요</span></h2><div class="row">
       <select id="mtMon" data-keep="0" data-action="mtMon" aria-label="달 고르기">${ml.map(m=>`<option value="${m}"${m===mon?' selected':''}>${monLabel(m)}${S.locks[m]?' · 마감':''}</option>`).join('')}</select>
@@ -2535,8 +2563,8 @@ function statMonth(){
 }
 function mtCsv(){const ml=monthList();const mon=ml.includes(S.mtMon)?S.mtMon:ml[0];if(!mon)return;const T=monthTable(mon);
   const q=v=>{const t=String(v??'');return /[",\n]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t};
-  const head=['문파원','총 출석률','참여/정규',...T.ks.flatMap(k=>[(CMAP[k]?.name||k)+' 참여',(CMAP[k]?.name||k)+' 회차']),...(T.hasX?['추가 진행 참여','추가 진행 회차']:[]),'포인트','판정 보류'];
-  const lines=[head.map(q).join(',')];for(const x of T.rows)lines.push([x.m.name,pct(x.rate),x.O+'/'+x.need,...T.ks.flatMap(k=>[x.c[k].o,x.c[k].n]),...(T.hasX?[x.xt.o,x.xt.n]:[]),x.P,x.hold?'보류':''].map(q).join(','));
+  const head=['문파원','총 출석률','참여/정규',...T.ks.flatMap(k=>[(CMAP[k]?.name||k)+' 참여',(CMAP[k]?.name||k)+' 회차']),...(T.hasX?['추가 진행 참여','추가 진행 회차']:[]),'포인트','판정 보류','지금 상태'];
+  const lines=[head.map(q).join(',')];for(const x of T.rows)lines.push([x.m.name,pct(x.rate),x.O+'/'+x.need,...T.ks.flatMap(k=>[x.c[k].o,x.c[k].n]),...(T.hasX?[x.xt.o,x.xt.n]:[]),x.P,x.hold?'보류':'',x.gone?goneLabel(x.m)+(goneAt(x.m)?' '+goneAt(x.m):''):''].map(q).join(','));
   try{const blob=new Blob(['\ufeff'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`문파_월별참여표_${mon}.csv`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}catch(e){console.error(e);toast('파일을 만들지 못했어요')}}
 function renderStats(){
   if(!S.ready&&!S.demo) return loading;
@@ -2614,8 +2642,13 @@ function statMembers(st){
       <div class="row"><input type="search" id="statSearch" data-keep="0" data-action="ssearch" placeholder="닉네임 검색" value="${esc(S.ssearch)}" aria-label="닉네임 검색">
       <select id="statSort" data-keep="0" data-action="ssort" aria-label="정렬">${[['rate','출석률 순'],['main','메인 출석률 순'],['pts','포인트 순'],['name','가나다순 (한글 먼저)'],['nameEn','ABC순 (영어 먼저)']].map(([v,l])=>`<option value="${v}"${S.ssort===v?' selected':''}>${l}</option>`).join('')}</select>${S.canWrite?'<button class="btn small" data-action="csv" title="지금 기간·콘텐츠 기준 문파원별 출석률·포인트를 엑셀로 내려받아요">⬇ 엑셀(CSV)</button>':''}</div></div>
     ${notes([`이름 아래 칸은 콘텐츠별 참여/기록 횟수예요. 점 하나가 한 회차예요 (<span class="c-o">●</span> 참여 · <span class="c-a">●</span> 사전공지(면제) · <span class="c-x">●</span> 불참). 칸 색은 참여율이에요`,feat('buy')?'오른쪽 점수는 <b>출석 포인트</b>(기간 안), 아래 작은 글씨는 <b>구매 포인트</b>(지금 기준)예요':'','<b>사전공지(면제)</b>는 한 달 한도 안의 사전공지예요. 한도를 넘은 사전공지는 불참으로 세요','<b>판정 보류</b>인 문파원은 순위 맨 아래에 있어요'])}
-    <div class="rk2" style="--rows:${Math.max(1,Math.ceil(rows.length/2))}">${list||'<p class="hint">조건에 맞는 문파원이 없어요.</p>'}</div></div>`;
+    <div class="rk2" style="--rows:${Math.max(1,Math.ceil(rows.length/2))}">${list||'<p class="hint">조건에 맞는 문파원이 없어요.</p>'}</div>${statGone(q)}</div>`;
 }
+function statGone(q){const G=goneMembers();if(!G.length)return '';
+  let rows=computeStats({gone:true}).rows.filter(r=>r.T+r.B>0||r.P>0);if(q)rows=rows.filter(r=>String(r.m.name).toLowerCase().includes(q));if(!rows.length)return '';
+  const op=!!S.showGone,nt=rows.filter(r=>!r.m.moved).length,nv=rows.length-nt;
+  return `<div class="gone-sec"><button class="btn small" data-action="goneT" aria-expanded="${op}">${op?'▴':'▾'} 떠난 문파원 ${rows.length}명 ${op?'접기':'보기'} <span class="hint">(${[nt?'탈퇴 '+nt:'',nv?'이동 '+nv:''].filter(Boolean).join(' · ')})</span></button>
+    ${op?`<p class="hint">지금 탈퇴·이동한 문파원의 이 기간 기록이에요. 문파 평균·순위·분배에는 들어가지 않아요.</p><div class="scroll"><table class="gtab"><thead><tr><th>닉네임</th><th>지금</th><th>출석률</th><th>참여</th><th>사전공지</th><th>불참</th><th>포인트</th></tr></thead><tbody>${rows.map(r=>`<tr class="gone"><td>${avatar(r.m)} ${esc(r.m.name)}</td><td>${goneTag(r.m)}</td><td class="num">${pct(r.rate)}</td><td class="num">${r.O}</td><td class="num">${r.E}</td><td class="num">${r.absent}</td><td class="num">${r.P}</td></tr>`).join('')}</tbody></table></div>`:''}</div>`}
 function rankChart(rk,numOf){
   const by={},SN={};const rc=extraCfg().content,rcol=(CMAP[rc]?.color??7);
   SN[rc+'#y']={name:'요신',c:`var(--k${rcol%8})`};SN[rc+'#g']={name:'결계',c:`var(--k${(rcol+3)%8})`};SN[rc+'#o']={name:'예전 기록',c:'var(--muted)'};
@@ -3172,9 +3205,12 @@ function renderSettle(){
       <div class="tile"><span class="l">참여 문파원</span><span class="v">${ms.rows.filter(r=>r.O+r.B>0).length}</span><span class="l">명</span></div>
       <div class="tile${adm&&ms.rows.some(r=>r.fail)?' alert':''}"><span class="l">${adm?'기준 미달':'평균 포인트'}</span><span class="v">${adm?ms.rows.filter(r=>r.fail).length:(ms.rows.length?(ms.rows.reduce((a,r)=>a+r.P,0)/ms.rows.length).toFixed(1):'–')}</span><span class="l">${adm?'명':'점'}</span></div></div>
     ${ms.done?'':'<p class="hint">진행 중인 달이라 지금까지 기준이에요.</p>'}${lockBar}</div>`;
+  const gl=goneMonth(ms.mon);
+  const goneBlk=gl.length?`<div class="gone-sec"><div class="gone-h"><b>이 달에 활동한 떠난 문파원</b><span class="hint">분배 · 순위에서 빠져요</span></div><div class="scroll"><table class="gtab"><thead><tr><th>닉네임</th><th>지금</th><th>포인트</th><th>출석률</th><th>참여/정규</th><th>사전공지</th><th>불참</th></tr></thead><tbody>${gl.map(g=>`<tr class="gone"><td>${avatar(g.m)} ${esc(g.m.name)}</td><td>${goneTag(g.m)}</td><td class="num"><b>${g.P}</b></td><td class="num">${pct(g.rate)}</td><td class="num">${g.O}/${g.need}</td><td class="num">${g.E}</td><td class="num">${g.X}</td></tr>`).join('')}</tbody></table></div></div>`:'';
   const table=`<div class="panel"><h2>포인트 · 개근</h2>
     ${perf.length?`<div class="attn">${perf.map(r=>`<span class="who">${esc(r.m.name)}<span class="pill-perfect">개근</span></span>`).join('')}</div>`:'<p class="hint">이 달 개근자는 아직 없어요.</p>'}
     <div class="scroll"><table><thead><tr>${sortTh('st','rank','순위 · 닉네임',true)}${sortTh('st','P','포인트')}${sortTh('st','rate','출석률')}${sortTh('st','O','참여/정규')}${sortTh('st','E','사전공지(면제)')}${sortTh('st','X','불참')}${sortTh('st','B','추가')}</tr></thead><tbody>${rows||'<tr><td colspan="7" class="dash">기록 없음</td></tr>'}</tbody></table></div>
+    ${goneBlk}
     ${notes([`<b>▲▼</b>는 지난달(${monLabel(prev.mon)})과 비교한 변화예요. 출석률은 %p 단위예요`,`<b>포인트</b> = 참여 1회당 ${activeContents().map(c=>esc(c.short)+' '+pts(c.k)).join(' · ')}${feat('extra')?` · 추가 진행 ${pts('bonus')}`:''}`,'<b>개근</b> = 그 달 정규 회차를 모두 참여. 면제된 사전공지는 괜찮고, 체크 안 된 회차가 있으면 개근이 아니에요',adm?`<b>경고 기준</b>: ${critText()} · 정규 ${minJudge()}회 미만은 판정 보류`:''])}</div>`;
   const lt=S.leftTab==='buy'&&feat('buy')?'buy':'table';
   const ltabs=cls=>!feat('buy')?'':`<div class="subtabs ${cls}" role="tablist"><button role="tab" data-action="leftTab" data-k="table" aria-selected="${lt==='table'}">포인트 · 개근</button><button role="tab" data-action="leftTab" data-k="buy" aria-selected="${lt==='buy'}">구매 포인트 · 우선권</button></div>`;
@@ -3990,6 +4026,7 @@ document.addEventListener('click',e=>{
   if(a==='slot'){const k=b.dataset.k,dt=b.dataset.date,ex=b.dataset.extra==='1';
     if(typeAsk(k)&&!findAny(dt,k,ex)){S.slotAsk={dt,k,ex};render();return}
     S.mt.check='sheet';createSession(dt,k,ex);return}
+  if(a==='goneT'){S.showGone=!S.showGone;render();return}
   if(a==='rosterPick'){S.rosterSid=b.dataset.sid;S.rosterQ='';render();setTimeout(()=>$('#rosterQ')?.focus(),0);return}
   if(a==='rosterClose'){S.rosterSid=null;render();return}
   if(a==='rosterIn'||a==='rosterOut'){const sid=b.dataset.sid,mid=b.dataset.mid,s0=S.sessions.find(x=>x.id===sid);if(!s0||!can('check'))return;if(isLocked(s0.date)){toast('마감된 달이라 바꿀 수 없어요');return}
