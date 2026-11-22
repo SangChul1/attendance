@@ -1447,6 +1447,7 @@ label.chk .nmust{margin:0 2px 0 0}
 .rwcard .rw1{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.rwcard .rwn{font-size:15px}.rwcard .rwv{white-space:nowrap;color:var(--muted);font-size:13px}.rwcard .rwv b{font-size:17px;color:var(--ink);margin-right:1px}
 .rwcard .rw2{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:space-between}
 .rwcard .rw3{gap:5px}
+.pill-vault{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:13px;color:var(--muted);background:var(--surface)}.pill-vault b{color:var(--ink);font-size:15px}
 .rwppl{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:2px 16px;border-top:1px dashed var(--line);padding-top:6px}
 .rwppl span{display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:3px 2px;border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent);min-width:0}
 .rwppl em{font-style:normal;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rwppl b{font-weight:600;white-space:nowrap}
@@ -1718,7 +1719,7 @@ const S={ledger:[],nImgCache:{},nEditImg:null,nBig:null,nKind:'notice',nView:nul
   tab:'home',openSid:null,editSid:null,period:'4',cfilter:'all',demo:false,confirm:null,showOff:false,
   search:'',onlyUnchecked:false,mSearch:''};
 let pending={},inflight={},flushing=false,flushTimer=null;
-try{const t=localStorage.getItem('att.tab');if(['home','check','stats','settle','me','admin'].includes(t))S.tab=t;if(t==='members')S.tab='admin';const ns=localStorage.getItem('att.nsort');if(['role','ko','en'].includes(ns))S.nsort=ns;const at=localStorage.getItem('att.atab');if(['warn','members','newb','cfg','team','power','logs'].includes(at))S.atab=at;if(at==='pay'||at==='buy'){S.sview=at==='pay'?'log':'buyin'}S.me=localStorage.getItem('att.me.'+GKEY)||(GKEY==='haksal'?localStorage.getItem('att.me'):'')||'';const st=localStorage.getItem('att.stab');if(['sum','mem','trend'].includes(st))S.stab=st}catch(_){}
+try{const t=localStorage.getItem('att.tab');if(['home','check','stats','settle','pay','me','admin'].includes(t))S.tab=t;if(t==='members')S.tab='admin';const ns=localStorage.getItem('att.nsort');if(['role','ko','en'].includes(ns))S.nsort=ns;const at=localStorage.getItem('att.atab');if(['warn','members','newb','cfg','team','power','logs'].includes(at))S.atab=at;if(at==='pay'||at==='buy'){S.sview=at==='pay'?'log':'buyin'}S.me=localStorage.getItem('att.me.'+GKEY)||(GKEY==='haksal'?localStorage.getItem('att.me'):'')||'';const st=localStorage.getItem('att.stab');if(['sum','mem','trend'].includes(st))S.stab=st}catch(_){}
 try{if(!S.me){S.me=meCookie()||'';if(S.me)try{localStorage.setItem('att.me.'+GKEY,S.me)}catch(_){}}else if(meCookie()!==S.me)meCookie(S.me)}catch(_){}
 function meCookie(v){try{const n='att_me_'+GKEY;if(v===undefined){const m=document.cookie.match(new RegExp('(?:^|; )'+n+'=([^;]*)'));return m?decodeURIComponent(m[1]):''}
   document.cookie=n+'='+encodeURIComponent(v)+';max-age='+(v?400*86400:0)+';path=/;SameSite=Lax'+(location.protocol==='https:'?';Secure':'')}catch(_){return ''}}
@@ -1860,7 +1861,7 @@ function paint(el,html){
     return !f.isEqualNode(t)}});
 }
 function render(){
-  S.demo=!!S.demoT[S.tab]&&['stats','settle','me'].includes(S.tab);
+  S.demo=!!S.demoT[S.tab]&&['stats','settle','pay','me'].includes(S.tab);
   EFF=null;BADGE=null;applyContents();applyRoles();
   const app=$('#app');
   const ae=document.activeElement, aid=ae&&app.contains(ae)&&ae.id, sel=aid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
@@ -1876,18 +1877,18 @@ function render(){
   if(S.setup){app.innerHTML='<div class="panel"><div class="empty"><h3>Firebase 설정값이 비어 있어요</h3><p class="hint">index.html 위쪽 FIREBASE_CONFIG에 Firebase 콘솔의 firebaseConfig 값을 붙여 넣고 다시 올려 주세요.</p></div></div>';return}
   if(S.err==='quota'){app.innerHTML='<div class="panel"><div class="empty"><h3>오늘 무료 사용량을 다 썼어요</h3><p class="hint">Firebase 무료 요금제의 하루 읽기 한도를 넘었어요. 한국 시간 오후 4~5시쯤 초기화되면 다시 보여요. 요금은 나가지 않아요.</p></div></div>';return}
   if(S.err){app.innerHTML='<div class="panel"><div class="empty"><h3>저장소에 연결할 수 없어요</h3><p class="hint">Firestore 데이터베이스가 만들어졌는지, 보안 규칙이 게시됐는지 확인해 주세요. 잠시 후 새로고침해도 같으면 운영진에게 알려 주세요.</p></div></div>';return}
-  paint(app,S.tab==='home'?renderHome():S.tab==='check'?renderCheck():S.tab==='stats'?renderStats():S.tab==='settle'?renderSettle():S.tab==='me'?renderMe():renderAdmin());
+  paint(app,S.tab==='home'?renderHome():S.tab==='check'?renderCheck():S.tab==='stats'?renderStats():S.tab==='settle'?renderSettle('pub'):S.tab==='pay'?renderSettle('adm'):S.tab==='me'?renderMe():renderAdmin());
   const live=document.activeElement;
   for(const id in vals){const e=document.getElementById(id);if(!e||e===live||e.dataset.keep==='0')continue;if(e.type==='checkbox')e.checked=vals[id];else if(e.value!==vals[id])e.value=vals[id]}
   if(aid){const e=document.getElementById(aid);if(e&&e!==live){e.focus();if(sel&&e.setSelectionRange)try{e.setSelectionRange(sel[0],sel[1])}catch(_){}}}
-  if(S.tab==='settle')fitSettle();
+  if(S.tab==='settle'||S.tab==='pay')fitSettle();
 }
 /* 월간 정산: 왼쪽 표가 반올림 때문에 1~몇 px 넘치면 그만큼만 칸을 넓힘 */
 function fitSettle(){const g=document.querySelector('.settle-grid');if(!g)return;g.style.gridTemplateColumns='';if(innerWidth<1000)return;
   const L=g.querySelector('.settle-left');if(!L)return;let d=0;
   L.querySelectorAll('section .scroll').forEach(e=>{const x=e.scrollWidth-e.clientWidth;if(x>0&&x<=12)d=Math.max(d,x)});
   if(d)g.style.gridTemplateColumns=`minmax(0,${L.offsetWidth+d+1}px) minmax(300px,1fr)`}
-window.addEventListener('resize',()=>{if(S.tab==='settle')fitSettle()});
+window.addEventListener('resize',()=>{if(S.tab==='settle'||S.tab==='pay')fitSettle()});
 const loading='<div class="panel"><div class="empty"><h3>출석부를 불러오는 중</h3></div></div>';
 const notes=items=>{const L=items.filter(Boolean);return L.length?`<details class="notes-d"><summary><span class="ni" aria-hidden="true">i</span>설명 보기</summary><ol class="notes">${L.map(t=>`<li>${t}</li>`).join('')}</ol></details>`:''};
 function ruleItems(){return [`<b>출석률</b> = 참여 ÷ (참여 + 불참)`,excuseText(),feat('extra')&&'<b>추가 진행</b> 회차는 출석률에서 빠지고 보너스 포인트만 붙어요',`정규 회차가 <b>${minJudge()}회 미만</b>이면 판정 보류`]}
@@ -1896,10 +1897,11 @@ const TAB_ICON={
   check:'<svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="m8 12.4 2.8 2.8 5.7-6"/></svg>',
   stats:'<svg viewBox="0 0 24 24"><path d="M5 20v-8M12 20V5M19 20v-12M3.5 20.5h17"/></svg>',
   settle:'<svg viewBox="0 0 24 24"><path d="M7 3.5h10A1.5 1.5 0 0 1 18.5 5v15.5l-3-1.8-3 1.8-3-1.8-3 1.8V5A1.5 1.5 0 0 1 7 3.5Z"/><path d="M9 9h6M9 12.8h4"/></svg>',
+  pay:'<svg viewBox="0 0 24 24"><rect x="3.5" y="6" width="17" height="13" rx="2.5"/><path d="M3.5 10h17"/><path d="M15 14.5h2.5"/></svg>',
   me:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8.2" r="3.7"/><path d="M4.8 20.2c1.3-3.7 4.1-5.6 7.2-5.6s5.9 1.9 7.2 5.6"/></svg>',
   admin:'<svg viewBox="0 0 24 24"><path d="M12 3.3 19 6v5.7c0 4.3-3 7.7-7 9-4-1.3-7-4.7-7-9V6Z"/><path d="m9.2 12 2 2 3.8-4"/></svg>'};
 function renderNav(){
-  const tabs=[['home','홈'],['check','출석 체크'],['stats','통계'],['settle','월간 정산'],['me','내 출석'],...(S.authUser||(!S.authKnown&&S.tab==='admin')?[['admin',S.canWrite?'관리':S.authUser?'내 계정':'관리']]:[])];
+  const tabs=[['home','홈'],['check','출석 체크'],['stats','통계'],['settle','월간 정산'],...(S.canWrite&&!S.demo?[['pay','정산 관리']]:[]),['me','내 출석'],...(S.authUser||(!S.authKnown&&S.tab==='admin')?[['admin',S.canWrite?'관리':S.authUser?'내 계정':'관리']]:[])];
   if(!tabs.some(t=>t[0]===S.tab))S.tab='home';
   const el=$('#tabs');const html=tabs.map(([k,l])=>`<button role="tab" data-action="tab" data-tab="${k}" aria-selected="${S.tab===k}"><span class="ti" aria-hidden="true">${TAB_ICON[k]||''}</span>${l}</button>`).join('');
   if(renderNav._h!==html){el.innerHTML=html;renderNav._h=html}
@@ -3211,10 +3213,10 @@ function avatar(m){const ch=Array.from(String(m.name||'?').trim())[0]||'?';retur
 function mtCur(g,keys,def){const v=S.mt[g];return keys.includes(v)?v:def}
 function mtBar(g,items,cur){return `<div class="subtabs mtab" role="tablist">${items.map(([k,l])=>`<button role="tab" data-action="mtab" data-g="${g}" data-k="${k}" aria-selected="${cur===k}">${l}</button>`).join('')}</div>`}
 const msA=(cur,k)=>` data-ms="${k}"${cur===k?' data-on':''}`;
-function renderSettle(){
+function renderSettle(mode){const pub=mode!=='adm';
   if(!S.ready&&!S.demo) return loading;
   const ml=monthList();if(!ml.length)return `<div class="panel"><div class="empty"><h3>정산할 기록이 아직 없어요</h3><p class="hint">출석 체크를 하면 달마다 포인트와 개근이 여기에 정리돼요.</p><button class="btn" data-action="demo">예시 데이터로 미리보기</button></div></div>`;
-  const adm=S.canWrite;const ms=monthStats(curMonth());const perf=ms.rows.filter(r=>r.perfect);
+  const adm=S.canWrite&&!pub;const ms=monthStats(curMonth());const perf=ms.rows.filter(r=>r.perfect);
   const prev=monthStats(monthAdd(ms.mon,-1));const pm=new Map(prev.rows.map(r=>[r.m.id,r]));
   const dl=(a,b,f)=>{if(a==null||b==null)return '';const d=f(a-b);return d>0?` <span class="up">▲${d}</span>`:d<0?` <span class="down">▼${-d}</span>`:''};
   const SG={rank:r=>r._i,name:r=>r.m.name,P:r=>r.P,rate:r=>r.rate,O:r=>r.O,E:r=>r.E,X:r=>r.absent,B:r=>r.B};
@@ -3222,9 +3224,9 @@ function renderSettle(){
     <div class="pc1"><span class="pcn">${rankMark(r._i)} ${nmLink(r.m)}</span>${r.perfect?'<span class="pill-perfect">개근</span>':''}${r.hold?'<span class="tag">판정 보류</span>':''}${adm&&r.fail?`<span class="pill-low">기준 미달 ${valText(r)}</span>`:''}<span class="grow"></span><span class="pcv"><b>${r.P}</b>점${p?dl(r.P,p.P,x=>Math.round(x)):''}</span></div>
     <div class="pc2">${ring(r.rate)}출석 ${pct(r.rate)}${p&&!r.hold&&!p.hold?dl(r.rate,p.rate,x=>Math.round(x*100)):''}<i>·</i>참여 ${r.O}/${r.need}<i>·</i><span class="c-a">공지 ${r.E}</span><i>·</i><span class="c-x">불참 ${r.absent}</span>${r.B?`<i>·</i>추가 ${r.B}`:''}</div></div>`}).join('');
   const lk=S.locks[ms.mon];
-  const lockBar=lk?`<div class="lockbar on"><b>마감됨</b>${lk.noDist?'<span class="tag">분배 없음</span>':''}<span>${esc(lk.by||'')} · ${lk.at?hm(lk.at):''}</span><span class="grow"></span>${S.isOwner?(S.confirm==='unlock:'+ms.mon?`<button class="btn small danger" data-action="unlock" data-mon="${ms.mon}">정말 마감 풀기</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small" data-action="askUnlock" data-mon="${ms.mon}">마감 풀기</button>`):''}</div>`
+  const lockBar=pub?'':lk?`<div class="lockbar on"><b>마감됨</b>${lk.noDist?'<span class="tag">분배 없음</span>':''}<span>${esc(lk.by||'')} · ${lk.at?hm(lk.at):''}</span><span class="grow"></span>${S.isOwner?(S.confirm==='unlock:'+ms.mon?`<button class="btn small danger" data-action="unlock" data-mon="${ms.mon}">정말 마감 풀기</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small" data-action="askUnlock" data-mon="${ms.mon}">마감 풀기</button>`):''}</div>`
     :can('manage')&&ms.done?`<div class="lockbar"><span>이 달 정산이 끝났으면 마감하세요. 마감하면 이 달 출석 체크를 고칠 수 없어요.</span><span class="grow"></span>${S.confirm==='lock:'+ms.mon?`<button class="btn small primary" data-action="lock" data-mon="${ms.mon}">정말 마감</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small" data-action="askLock" data-mon="${ms.mon}">이 달 마감하기</button>`}${S.confirm==='lockN:'+ms.mon?`<button class="btn small primary" data-action="lockNo" data-mon="${ms.mon}">정말 분배 없이 마감</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small" data-action="askLockNo" data-mon="${ms.mon}" title="이 달은 보상을 나누지 않았을 때">분배 없이 마감</button>`}</div>`:'';
-  const head=`<div class="panel tint-w"><div class="spread"><h2>${monLabel(ms.mon)} 정산</h2><div class="row">
+  const head=`<div class="panel tint-w"><div class="spread"><h2>${monLabel(ms.mon)} 정산${pub?'':' <span class="tag extra">운영진용</span>'}</h2><div class="row">
       <select id="fMonth" data-keep="0" data-action="month" aria-label="정산할 달">${ml.map(m=>`<option value="${m}"${m===ms.mon?' selected':''}>${monLabel(m)}${S.locks[m]?' · 마감':''}</option>`).join('')}</select>
       <button class="btn small" data-action="copyMonth">카톡용 복사</button></div></div>
     ${S.demo?'<div class="demo-banner"><span>예시 데이터예요.</span><button class="btn small" data-action="demoOff">예시 닫기</button></div>':''}
@@ -3244,7 +3246,7 @@ function renderSettle(){
     ${notes([`<b>▲▼</b>는 지난달(${monLabel(prev.mon)})과 비교한 변화예요. 출석률은 %p 단위예요`,`<b>포인트</b> = 참여 1회당 ${activeContents().map(c=>esc(c.short)+' '+pts(c.k)).join(' · ')}${feat('extra')?` · 추가 진행 ${pts('bonus')}`:''}`,'<b>개근</b> = 그 달 정규 회차를 모두 참여. 면제된 사전공지는 괜찮고, 체크 안 된 회차가 있으면 개근이 아니에요',adm?`<b>경고 기준</b>: ${critText()} · 정규 ${minJudge()}회 미만은 판정 보류`:''])}</div>`;
   const lt=S.leftTab==='buy'&&feat('buy')?'buy':'table';
   const ltabs=cls=>!feat('buy')?'':`<div class="subtabs ${cls}" role="tablist"><button role="tab" data-action="leftTab" data-k="table" aria-selected="${lt==='table'}">포인트 · 개근</button><button role="tab" data-action="leftTab" data-k="buy" aria-selected="${lt==='buy'}">구매 포인트 · 우선권</button></div>`;
-  if(!adm)return `<div class="col">${head}${ltabs('')}${lt==='buy'?renderSettleBuy():table}</div>`;
+  if(pub||!adm)return `<div class="col">${head}${ltabs('')}${lt==='buy'?renderSettleBuy():table}${lt==='buy'?'':renderPubPay()}</div>`;
   const SV=[['table','📊 포인트표'],...(can('manage')?[['calc','💰 분배하기'],['vault','🏦 창고 장부'],['log','🧾 분배 내역']]:[]),...(can('manage')&&feat('buy')?[['buyin','🛒 구매 기록']]:[])];
   const sv=SV.some(x=>x[0]===S.sview)?S.sview:'table';
   const vbar=SV.length>1?`<div class="subtabs agrp sview" role="tablist">${SV.map(([k,l])=>`<button role="tab" data-action="sview" data-k="${k}" aria-selected="${sv===k}">${l}</button>`).join('')}</div>`:'';
@@ -3272,6 +3274,27 @@ const rwItems=r=>(r.items||[]).map((x,i)=>({x,i,v:r.kind==='money'?(x.amt||0):(x
 const isPaid=(r,i)=>!!(r.paid&&r.paid['i'+i]);
 function paidCount(r){const it=rwItems(r);return {n:it.filter(o=>isPaid(r,o.i)).length,t:it.length}}
 const rwUnit=(r,v)=>r.kind==='money'?won(v):v+'개';
+/* ---------- 문파원 공개용 분배 결과 · 창고 잔액 (pub/settle 문서) ---------- */
+function pubSummary(){const L=ledgerRows();const bal=L.length?L[L.length-1].bal:0;
+  const recs=S.rewards.slice().sort((a,b)=>(b.at||0)-(a.at||0)).slice(0,40).map(r=>{const money=r.kind==='money';
+    return {id:r.id,month:r.month||'',name:r.name||'',k:money?'m':'i',amt:money?(+r.amount||0):(+r.N||0),rest:money?(+r.rest||0):0,from:r.from||'',to:r.to||'',at:r.at||0,
+      it:rwItems(r).map(o=>[o.x.name||'',+o.v||0,isPaid(r,o.i)?1:0])}});
+  return {bal,recs}}
+let pubT=0;
+function schedulePub(){if(!S.db||S.demo||!can('manage')||!S.pubGot||!S.rwGot)return;clearTimeout(pubT);pubT=setTimeout(()=>{
+  try{const P=pubSummary();const cur=S.pub?JSON.stringify({bal:S.pub.bal,recs:S.pub.recs}):'';if(cur===JSON.stringify(P))return;
+    S.db.doc('pub/settle').set({...P,at:Date.now()}).catch(e=>console.warn('pub',e))}catch(e){console.warn('pub',e)}},1500)}
+function renderPubPay(){const P=S.pub;
+  if(!P)return `<div class="panel"><h2>분배 결과</h2><p class="hint">아직 공개된 분배 결과가 없어요. 운영진이 분배를 저장하면 여기에 나와요.</p></div>`;
+  const recs=P.recs||[],RP=pager('pubpay',recs.length,5,'');
+  const card=r=>{const money=r.k==='m',open=!!(S.pubOpen&&S.pubOpen[r.id]),u=v=>money?won(v):v+'개',n=r.it.length,paid=r.it.filter(x=>x[2]).length;
+    return `<div class="rwcard${open?' open':''}"><div class="rw1"><span class="tag">${monLabel(r.month)}</span><span class="tag${money?' extra':''}">${money?'금전':'아이템'}</span><b class="rwn">${esc(r.name)}</b><span class="grow"></span><span class="rwv"><b>${won(r.amt)}</b>${money?'금전':'개'}</span></div>
+      <div class="rw2"><span class="hint">${r.from?md(r.from)+'~'+md(r.to)+' 포인트 기준 · ':''}${n}명${money&&r.rest?` · 금고 ${won(r.rest)}`:''}${r.at?' · '+hm(r.at):''}</span><span class="tag ${paid===n?'ok':'no'}">지급 ${paid}/${n}명</span></div>
+      <div class="row rw3"><button class="btn small${open?' primary':''}" data-action="pubOpen" data-id="${esc(r.id)}" aria-expanded="${open}">받은 사람 ${n}명 ${open?'▴':'▾'}</button></div>
+      ${open?`<div class="rwppl">${r.it.map(x=>`<span class="${x[2]?'':'un'}"><em>${esc(x[0])}</em><b>${u(x[1])}${x[2]?' ✓':''}</b></span>`).join('')}</div><p class="hint" style="margin:0">✓ = 받음 · 색 있는 이름 = 아직 안 받음</p>`:''}</div>`};
+  return `<div class="panel"><div class="spread"><h2>분배 결과 <span class="hint">누가 얼마 받았는지</span></h2><span class="pill-vault">🏦 문파 창고 <b>${won(P.bal||0)}</b>금전</span></div>
+    ${recs.length?`<div class="rwlist">${recs.slice(RP.a,RP.b).map(card).join('')}</div>${RP.html}`:'<p class="hint">아직 분배 기록이 없어요.</p>'}
+    <p class="hint">창고 잔액과 분배 결과는 운영진이 기록한 내용이에요${P.at?` (${hm(P.at)} 기준)`:''}. 받은 금액이 다르면 운영진에게 알려 주세요.</p></div>`}
 function rewardCard(r,no){
   const pc=paidCount(r),open=S.payOpen===r.id,it=rwItems(r),unpaid=it.filter(o=>!isPaid(r,o.i)),money=r.kind==='money';
   const ppl=open?false:!!(S.rwPpl&&S.rwPpl[r.id]);
@@ -3390,7 +3413,8 @@ function renderPayLog(){
       <div class="tile${D.unpaidN?' alert':''}"><span class="l">아직 안 준 것</span><span class="v">${D.unpaidN}건</span><span class="l">${D.unpaidN?'미지급만 체크해서 확인':'모두 지급했어요'}</span></div></div>`;
   const hasM=D.people.some(o=>o.money),hasI=D.people.some(o=>o.item),hasU=D.people.some(o=>o.uN);
   const uTxt=o=>[o.uMoney?won(o.uMoney)+'금전':'',o.uItem?o.uItem+'개':''].filter(Boolean).join(' · ')||'–';
-  const ppl=D.people.length?`<div class="scroll"><table><thead><tr><th>닉네임</th>${hasM?'<th>받은 금전</th>':''}${hasI?'<th>받은 아이템</th>':''}<th>횟수</th>${hasU?'<th>미지급</th>':''}<th>마지막 지급</th></tr></thead><tbody>${D.people.map(o=>`<tr><td>${esc(o.name)}</td>${hasM?`<td>${o.money?won(o.money):'–'}</td>`:''}${hasI?`<td>${o.item?o.item+'개':'–'}</td>`:''}<td>${o.times}회</td>${hasU?`<td${o.uN?' style="color:var(--warn);font-weight:600"':''}>${uTxt(o)}</td>`:''}<td>${o.last?monLabel(o.last):''}</td></tr>`).join('')}</tbody></table></div>`:'<p class="hint">조건에 맞는 문파원이 없어요.</p>';
+  const PP=pager('ppl',D.people.length,14,JSON.stringify(S.rf));
+  const ppl=D.people.length?`<div class="scroll"><table><thead><tr><th>닉네임</th>${hasM?'<th>받은 금전</th>':''}${hasI?'<th>받은 아이템</th>':''}<th>횟수</th>${hasU?'<th>미지급</th>':''}<th>마지막 지급</th></tr></thead><tbody>${D.people.slice(PP.a,PP.b).map(o=>`<tr><td>${esc(o.name)}</td>${hasM?`<td>${o.money?won(o.money):'–'}</td>`:''}${hasI?`<td>${o.item?o.item+'개':'–'}</td>`:''}<td>${o.times}회</td>${hasU?`<td${o.uN?' style="color:var(--warn);font-weight:600"':''}>${uTxt(o)}</td>`:''}<td>${o.last?monLabel(o.last):''}</td></tr>`).join('')}</tbody></table></div>${PP.html}`:'<p class="hint">조건에 맞는 문파원이 없어요.</p>';
   const pc=mtCur('pay',['rec','ppl','man'],'rec');
   const recs=D.list.length?`<div class="rwlist">${D.list.slice(RP.a,RP.b).map((r,i)=>rewardCard(r,RP.a+i+1)).join('')}</div>`:'<p class="hint">조건에 맞는 지급 기록이 없어요. 월간 정산 → 금전 분배 / 아이템 개수 분배에서 <b>지급 기록으로 저장</b>을 누르면 여기에 쌓여요.</p>';
   return `<div class="col mt-host">
@@ -3400,7 +3424,7 @@ function renderPayLog(){
     ${mtBar('pay',[['rec',`기록 목록 ${D.list.length}`],['ppl',`문파원별 ${D.people.length}`],['man','직접 기록']],pc)}
     <div${msA(pc,'rec')}>${tiles}</div>
     <div${msA(pc,'man')}>${renderManual()}</div>
-    <div class="pay-grid"><div class="panel"${msA(pc,'rec')}><div class="spread"><h2>기록 목록</h2><span class="hint">${D.list.length}건</span></div>${recs}${RP.html}</div><div class="panel"${msA(pc,'ppl')}><h2>문파원별 누적</h2>${ppl}</div></div></div>`;
+    <div class="pay-grid"><div class="panel"${msA(pc,'rec')}><div class="spread"><h2>기록 목록</h2><span class="hint">${D.list.length}건</span></div>${recs}${RP.html}</div><div class="panel"${msA(pc,'ppl')}><div class="spread"><h2>문파원별 누적</h2><span class="hint">${D.people.length}명</span></div>${ppl}</div></div></div>`;
 }
 function payLogCsv(){
   const D=payLogData(),c=v=>{v=String(v??'');return /[",\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
@@ -4068,7 +4092,7 @@ document.addEventListener('click',e=>{
   if(a==='gPick'){S.gPick=true;render();$('#gbox .gp-card.on')?.focus();return}
   if(a==='gClose'){if(b.classList.contains('overlay')&&e.target!==b)return;S.gPick=false;render();return}
   if(a==='gGo'){const k=b.dataset.g;if(!GUILDS[k])return;if(k===GKEY){S.gPick=false;render();return}try{localStorage.setItem('att.guild',k)}catch(_){}const u=new URL(location.href);u.searchParams.set('g',k);location.href=u.toString();return}
-  if(a==='tab'){if(b.dataset.tab==='settle')S.sview='table';S.tab=b.dataset.tab;remember('tab',S.tab);S.confirm=null;S.wkPop=false;S.selMode=false;S.sel=new Set();render();window.scrollTo({top:0});return}
+  if(a==='tab'){if(b.dataset.tab==='pay'&&S.tab!=='pay')S.sview='table';S.tab=b.dataset.tab;remember('tab',S.tab);S.confirm=null;S.wkPop=false;S.selMode=false;S.sel=new Set();render();window.scrollTo({top:0});return}
   if(a==='openUnc'){S.mt.check='sheet';S.openSid=b.dataset.sid;S.onlyUnchecked=true;S.confirm=null;S.editSid=null;S.search='';S.hist=null;render();scrollSheet();return}
   if(a==='wkPop'){S.wkPop=true;S.wkPopOff=0;render();$('#wkbox .nv-x')?.focus();return}
   if(a==='wkPopClose'){if(b.classList.contains('overlay')&&e.target!==b)return;S.wkPop=false;render();$('.hero-wk')?.focus();return}
@@ -4272,7 +4296,7 @@ document.addEventListener('click',e=>{
   if(a==='askRoleDel'){S.confirm='role:'+b.dataset.i;render();return}
   if(a==='roleDel'){const i=+b.dataset.i;S.confirm=null;if(ROLES.length<=1)return;const gone=ROLES[i];const list=ROLES.filter((_,k)=>k!==i);const to=list[list.length-1];
     const moves={};S.members.forEach(m=>{if(m.role===gone)moves[m.id]=to});saveRoles(list,moves,`${gone} 직위를 지웠어요`+(Object.keys(moves).length?` (${Object.keys(moves).length}명은 ${to}로 바뀜)`:''),{area:'직위',what:'직위 삭제',detail:gone});return}
-  if(a==='gotoPayLog'){S.rf={mon:b.dataset.mon||'all',kind:'all',q:'',unpaid:false};S.tab='settle';S.sview='log';remember('tab','settle');S.confirm=null;S.selMode=false;S.sel=new Set();render();window.scrollTo({top:0});return}
+  if(a==='gotoPayLog'){S.rf={mon:b.dataset.mon||'all',kind:'all',q:'',unpaid:false};S.tab='pay';S.sview='log';remember('tab','pay');S.confirm=null;S.selMode=false;S.sel=new Set();render();window.scrollTo({top:0});return}
   if(a==='payLogCsv'){payLogCsv();return}
   if(a==='lpMode'){S.lp={mode:b.dataset.m,off:0};render();return}
   if(a==='lpMove'){const dd=+b.dataset.d;S.lp.off=dd===0?0:Math.max(0,S.lp.off+dd);render();return}
@@ -4321,8 +4345,8 @@ document.addEventListener('click',e=>{
   if(a==='calcTab'){S.calcTab=b.dataset.k;S.setTab=b.dataset.k;if(S.sview!=='calc'&&can('manage'))S.sview='calc';render();return}
   if(a==='detail'){S.detail=b.dataset.mid;render();return}
   if(a==='detailClose'){if(b.classList.contains('overlay')&&e.target!==b)return;S.detail=null;render();return}
-  if(a==='gotoSettle'){S.tab='settle';S.month=b.dataset.mon;S.setTab='table';S.leftTab='table';S.dist=null;S.pay=null;remember('tab','settle');render();window.scrollTo({top:0});return}
-  if(a==='gotoBuy'){S.tab='settle';S.sview='buyin';remember('tab','settle');render();window.scrollTo({top:0});return}
+  if(a==='gotoSettle'){S.tab=S.canWrite?'pay':'settle';S.sview='table';S.month=b.dataset.mon;S.setTab='table';S.leftTab='table';S.dist=null;S.pay=null;remember('tab',S.tab);render();window.scrollTo({top:0});return}
+  if(a==='gotoBuy'){S.tab='pay';S.sview='buyin';remember('tab','pay');render();window.scrollTo({top:0});return}
   if(a==='gotoWarn'){S.tab='admin';S.atab='warn';remember('tab','admin');remember('atab','warn');render();window.scrollTo({top:0});return}
   if(a==='leaveFor'){S.leaveFor=S.leaveFor===b.dataset.mid?null:b.dataset.mid;render();return}
   if(a==='noteFor'){S.noteFor=S.noteFor===b.dataset.mid?null:b.dataset.mid;render();return}
@@ -4389,6 +4413,7 @@ document.addEventListener('click',e=>{
   if(a==='toVin'){const r=S.rewards.find(x=>x.id===b.dataset.id);if(!r||!r.manual||r.kind!=='money')return;if(S.confirm!=='tv:'+r.id){S.confirm='tv:'+r.id;render();return}S.confirm=null;
     guard(()=>S.db.doc('rewards/'+r.id).update({kind:'vin',conv:true,convAt:Date.now(),convBy:myName()}),'창고 장부 입금으로 옮겼어요',{area:'지급',what:'직접 기록 → 창고 입금',detail:`${r.name} ${won(r.amount)}`});return}
 
+  if(a==='pubOpen'){S.pubOpen??={};S.pubOpen[b.dataset.id]=!S.pubOpen[b.dataset.id];render();return}
   if(a==='rwPpl'){S.rwPpl??={};S.rwPpl[b.dataset.id]=!S.rwPpl[b.dataset.id];render();return}
   if(a==='calcVault'){const amount=Math.floor(+$('#vAmt').value),from=$('#vFrom').value,to=$('#vTo').value;if(!(amount>0)){toast('창고 금전을 입력해 주세요');return}
     if(!/^\d{4}-\d{2}-\d{2}$/.test(from)||!/^\d{4}-\d{2}-\d{2}$/.test(to)||from>to){toast('기간을 확인해 주세요');return}
@@ -4556,12 +4581,13 @@ setInterval(()=>{if(S.tab==='home'&&document.visibilityState==='visible'&&!S.nEd
   db.collection('purchases').onSnapshot(snap=>{S.purchases=snap.docs.map(d=>({id:d.id,...d.data()})).filter(p=>p.mid&&p.date);S.buyBlocked=false;render()},e=>{console.warn(e);S.buyBlocked=true;render()});
   db.collection('notices').onSnapshot(snap=>{S.notices=snap.docs.map(d=>({id:d.id,...d.data()})).filter(n=>n&&(n.title||n.body));S.noticeBlocked=false;render()},e=>{console.warn(e);S.noticeBlocked=true;render()});
   db.collection('locks').onSnapshot(snap=>{S.locks=Object.fromEntries(snap.docs.map(d=>[d.id,d.data()]));render()},()=>{});
+  db.doc('pub/settle').onSnapshot(snap=>{S.pub=snap.exists?snap.data():null;S.pubGot=true;render();schedulePub()},()=>{S.pubGot=false});
   db.doc('config/main').onSnapshot(snap=>{if(snap.exists)S.config=Object.assign({...CFG0},snap.data());render()},()=>{});
   let unAdmins=null,unWarn=null,unNotes=null,unRw=null,unLogs=null;
   onAuthStateChanged(S.auth,async u=>{
     S.authKnown=false;
     S.authUser=u;S.canWrite=false;S.payOpen=null;S.man=null;S.leaveFor=null;S.noteFor=null;S.cdraft=null;S.isOwner=false;S.myNick='';S.perms=null;S.admins=[];if(unAdmins){unAdmins();unAdmins=null}
-    if(unWarn){unWarn();unWarn=null}if(unNotes){unNotes();unNotes=null}if(unRw){unRw();unRw=null}if(unLogs){unLogs();unLogs=null}S.logs=[];S.plogs=null;S.notes={};S.rewards=[];S.warnings=[];S.warnBlocked=false;S.logBlocked=false;S.hist=null;S.delLogs=null;S.dist=null;
+    if(unWarn){unWarn();unWarn=null}if(unNotes){unNotes();unNotes=null}if(unRw){unRw();unRw=null}if(unLogs){unLogs();unLogs=null}S.logs=[];S.plogs=null;S.notes={};S.rewards=[];S.rwGot=false;S.warnings=[];S.warnBlocked=false;S.logBlocked=false;S.hist=null;S.delLogs=null;S.dist=null;
     if(u){
       const email=(u.email||'').toLowerCase();
       try{const x=await getDoc(fdoc(S.fs,'admins',email));if(x.exists()){S.canWrite=true;S.myNick=x.data().nick||'';S.perms=permsOf(x.data())}}catch(_){}
@@ -4570,7 +4596,7 @@ setInterval(()=>{if(S.tab==='home'&&document.visibilityState==='visible'&&!S.nEd
       if(S.canWrite){const blk=e=>{console.warn(e);S.warnBlocked=true;render()};
         unWarn=fsnap(fcol(S.fs,'warnings'),x=>{S.warnings=x.docs.map(d=>({id:d.id,...d.data()}));render()},blk);
         unNotes=fsnap(fcol(S.fs,'notes'),x=>{S.notes=Object.fromEntries(x.docs.map(d=>[d.id,d.data()]));render()},blk);
-        unRw=fsnap(fcol(S.fs,'rewards'),x=>{const all=x.docs.map(d=>({id:d.id,...d.data()}));S.rewards=all.filter(r=>r.kind!=='vin'&&r.kind!=='vout');S.ledger=all.filter(r=>r.kind==='vin'||r.kind==='vout');render()},blk);
+        unRw=fsnap(fcol(S.fs,'rewards'),x=>{const all=x.docs.map(d=>({id:d.id,...d.data()}));S.rewards=all.filter(r=>r.kind!=='vin'&&r.kind!=='vout');S.ledger=all.filter(r=>r.kind==='vin'||r.kind==='vout');S.rwGot=true;render();schedulePub()},blk);
         unLogs=fsnap(query(fcol(S.fs,'logs'),fOrder('at','desc'),fLimit(300)),x=>{S.logs=x.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.at||0)-(a.at||0));render()},e=>{console.warn(e);S.logBlocked=true;render()})}
     }
     S.authKnown=true;render();if(S.canWrite)setTimeout(sumBackfill,1500);
