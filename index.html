@@ -1823,6 +1823,12 @@ function rkParts(t){t=String(t||'');const y=t.match(/요신[^\d]{0,6}(\d{1,3})\s
 const rkNum=v=>{const n=parseInt(String(v||'').replace(/[^\d]/g,''),10);return n>=1&&n<=999?n:null};
 const rkCompose=(y,g)=>[y&&`요신 ${y}위`,g&&`결계 ${g}위`].filter(Boolean).join(' · ');
 function rkInputs(pre,s){const P=rkParts(s&&s.rank);return `<label class="rk-f">요신<input type="text" inputmode="numeric" id="${pre}Y" data-keep="0" maxlength="3" placeholder="–" value="${P.y??''}">위</label><label class="rk-f">결계<input type="text" inputmode="numeric" id="${pre}G" data-keep="0" maxlength="3" placeholder="–" value="${P.g??''}">위</label>${P.old!=null?`<span class="hint">예전 기록: ${esc(s.rank)} (구분 없음)</span>`:''}`}
+/* 신기쟁탈전 · 미혹의 정원 등 주력 콘텐츠: 순위 한 칸 ('3위'로 저장) */
+const rkM=k=>!!k&&!rkC(k)&&MAIN.includes(k);
+const rk1Std=t=>/^\s*\d{1,3}\s*위\s*$/.test(String(t||''));
+function rk1Input(pre,s){const t=String(s&&s.rank||''),m=t.match(/(\d{1,3})\s*위/);return `<label class="rk-f">순위<input type="text" inputmode="numeric" id="${pre}N" data-keep="0" maxlength="3" placeholder="–" value="${m?m[1]:''}">위</label>${t&&!rk1Std(t)?`<span class="hint">지금 기록: ${esc(t)} · 숫자를 저장하면 'N위'로 바뀌어요</span>`:''}`}
+/* 입력칸 값 → 저장할 글자 (잘못된 숫자면 null) */
+function rk1Val(raw,old){raw=String(raw||'').trim();if(!raw)return old&&!rk1Std(old)&&!/\d\s*위/.test(old)?old:'';const n=rkNum(raw);return n&&/^\d{1,3}\s*위?$/.test(raw)?`${n}위`:null}
 function extraCfg(){
   const e=S.demo?null:S.config.extra;const okDays=a=>[...new Set((Array.isArray(a)?a:[]).filter(d=>Number.isInteger(d)&&d>=0&&d<=6))].sort();
   if(e&&CMAP[e.content])return {days:okDays(e.days),content:e.content};
@@ -2376,14 +2382,14 @@ function renderSheet(members){
       <label class="f">날짜<input type="date" id="eDate" data-keep="0" value="${esc(s.date)}"></label>
       <label class="f">콘텐츠<select id="eContent" data-keep="0">${CONTENTS.filter(x=>x.on||x.k===s.content).map(x=>`<option value="${x.k}"${x.k===s.content?' selected':''}>${esc(x.name)}</option>`).join('')}</select></label>
       <label class="f full">회차 유형<select id="eType" data-keep="0"><option value="0"${s.extra?'':' selected'}>정규 (고정) · 출석률·경고에 들어가요</option><option value="1"${s.extra?' selected':''}>추가 진행 · 불참해도 패널티 없음, 참여하면 포인트</option></select></label>
-      ${rkC(s.content)?`<div class="f full"><span>순위 (숫자만, 아는 쪽만)</span><div class="rk-in2">${rkInputs('eRk',s)}</div></div>`:`<label class="f full">순위·결과 (예: 3위, 결계 12단계)<input type="text" id="eRank" data-keep="0" maxlength="30" value="${esc(s.rank||'')}"></label>`}
+      ${rkC(s.content)?`<div class="f full"><span>순위 (숫자만, 아는 쪽만)</span><div class="rk-in2">${rkInputs('eRk',s)}</div></div>`:rkM(s.content)?`<div class="f full"><span>순위 (숫자만)</span><div class="rk-in2">${rk1Input('eRk',s)}</div></div>`:`<label class="f full">순위·결과 (예: 3위, 결계 12단계)<input type="text" id="eRank" data-keep="0" maxlength="30" value="${esc(s.rank||'')}"></label>`}
       <label class="f full">메모<textarea id="eNote" data-keep="0" maxlength="500" placeholder="예: 화요일 보강, 22시 집결">${esc(s.note||'')}</textarea></label>
       <div class="row full"><button class="btn primary" data-action="saveEdit" data-sid="${s.id}">저장</button><button class="btn" data-action="cancelEdit">취소</button></div></div>`:'';
   const meta=[s.createdBy?`만든 사람 ${esc(nameOf(s.createdBy))}`:'',s.updatedAt?`마지막 수정 ${s.updatedBy?esc(nameOf(s.updatedBy))+' · ':''}${hm(s.updatedAt)}`:''].filter(Boolean).join(' · ');
   return `<div class="panel">
     <div class="spread"><div class="row"><span class="chip" ${ck(s.content)}>${esc(c?.name||s.content)}</span>${s.extra?'<span class="tag extra">추가 진행</span>':isPO(s)?`<span class="tag extra" title="참여하면 +${pts(s.content)}점 · 출석률·경고에는 안 들어가요">점수만 +${pts(s.content)}</span>`:typeAsk(s.content)?'<span class="tag">정규</span>':''}${s.rank?`<span class="tag rank">${esc(s.rank)}</span>`:''}${canE&&typeAsk(s.content)?(S.confirm==='st:'+s.id?`<button class="btn small primary" data-action="sTypeYes" data-sid="${s.id}">${s.extra?'정규로':'추가 진행으로'} 바꾸기</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small" data-action="sTypeAsk" data-sid="${s.id}" title="이 회차를 ${s.extra?'정규(출석률·경고에 들어감)':'추가 진행(불참해도 패널티 없음)'}로 바꿔요">⇄ ${s.extra?'정규로':'추가 진행으로'}</button>`):''}</div>
       <span class="hint num">${s.date.replace(/-/g,'.')} (${DAYS[dow(s.date)]})</span></div>
-    ${!editing&&(s.content===extraCfg().content||s.rank)&&s.date<=gameDay()?`<div class="rk-in"><b>🏆 랭킹 결과</b>${canE?`${rkC(s.content)?rkInputs('rk-'+s.id,s):`<input type="text" id="rkIn-${s.id}" data-keep="0" maxlength="30" placeholder="예: 3위" value="${esc(s.rank||'')}">`}<button class="btn small primary" data-action="rkSave" data-sid="${s.id}">${s.rank?'고치기':'저장'}</button>`:`<span>${s.rank?esc(s.rank):'<span class="hint">아직 안 적었어요</span>'}</span>`}<span class="hint">${rkC(s.content)?'아는 쪽만 숫자로 적어도 돼요 · 통계 → 랭크 추이에 그려져요':'"3위"처럼 적으면 통계 → 랭크 추이에 그려져요'}</span></div>`:''}
+    ${!editing&&(s.content===extraCfg().content||rkM(s.content)||s.rank)&&s.date<=gameDay()?`<div class="rk-in"><b>🏆 랭킹 결과</b>${canE?`${rkC(s.content)?rkInputs('rk-'+s.id,s):rkM(s.content)?rk1Input('rk-'+s.id,s):`<input type="text" id="rkIn-${s.id}" data-keep="0" maxlength="30" placeholder="예: 3위" value="${esc(s.rank||'')}">`}<button class="btn small primary" data-action="rkSave" data-sid="${s.id}">${s.rank?'고치기':'저장'}</button>`:`<span>${s.rank?esc(s.rank):'<span class="hint">아직 안 적었어요</span>'}</span>`}<span class="hint">${rkC(s.content)?'아는 쪽만 숫자로 적어도 돼요 · 통계 → 랭크 추이에 그려져요':rkM(s.content)?'숫자만 적으면 돼요 · 통계 → 랭크 추이에 그려져요':'"3위"처럼 적으면 통계 → 랭크 추이에 그려져요'}</span></div>`:''}
     ${edit||(s.note?`<div class="notebox">${esc(s.note)}</div>`:'')}
     ${s.date>gameDay()?'<div class="lockbar">아직 진행 전인 회차예요. 미리 사전공지를 체크해 둘 수 있고, 그날이 지나야 통계에 들어가요.</div>':''}
     ${lk?`<div class="lockbar on">${monLabel(s.date.slice(0,7))} 정산이 마감돼서 수정할 수 없어요. admin이 마감을 풀면 고칠 수 있어요.</div>`:''}
@@ -4163,7 +4169,7 @@ document.addEventListener('click',e=>{
   if(a==='rkSave'){const sid=b.dataset.sid,old=allSessions().find(x=>x.id===sid);if(!old)return;
     let v;if(rkC(old.content)&&$('#rk-'+sid+'Y')){const yv=$('#rk-'+sid+'Y').value.trim(),gv=$('#rk-'+sid+'G').value.trim(),y=rkNum(yv),g=rkNum(gv);
       if((yv&&!y)||(gv&&!g)){toast('순위는 1~999 숫자로 적어 주세요');return}
-      v=rkCompose(y,g);if(!v&&rkParts(old.rank).old!=null)v=old.rank||''}else v=($('#rkIn-'+sid)?.value||'').trim().slice(0,30);if(v===(old.rank||'')){toast('바뀐 내용이 없어요');return}
+      v=rkCompose(y,g);if(!v&&rkParts(old.rank).old!=null)v=old.rank||''}else if($('#rk-'+sid+'N')){v=rk1Val($('#rk-'+sid+'N').value,old.rank||'');if(v==null){toast('순위는 1~999 숫자로 적어 주세요');return}}else v=($('#rkIn-'+sid)?.value||'').trim().slice(0,30);if(v===(old.rank||'')){toast('바뀐 내용이 없어요');return}
     if(isLocked(old.date)){toast('마감된 달이라 고칠 수 없어요');return}
     guard(()=>S.db.doc('sessions/'+sid).update({rank:v,updatedAt:Date.now(),updatedBy:myName()}),'랭킹 결과를 저장했어요').then(ok=>{if(ok)writeLog({type:'edit',sid,before:{date:old.date,content:old.content,extra:!!old.extra},after:{date:old.date,content:old.content,extra:!!old.extra},more:['순위·결과']})});return}
   if(a==='joinFix'){S.confirm='joinFix';render();return}
@@ -4190,7 +4196,8 @@ document.addEventListener('click',e=>{
   if(a==='edit'){S.editSid=b.dataset.sid;S.confirm=null;render();return}
   if(a==='cancelEdit'){S.editSid=null;render();return}
   if(a==='saveEdit'){const sid=b.dataset.sid;const date=$('#eDate').value;if(!date){toast('날짜를 골라 주세요');return}
-    const upd={date,content:$('#eContent').value,extra:$('#eType').value==='1',rank:$('#eRkY')?(()=>{const y=rkNum($('#eRkY').value),g=rkNum($('#eRkG').value),v=rkCompose(y,g);return v||(rkParts((allSessions().find(x=>x.id===sid)?.rank||'')).old!=null&&!$('#eRkY').value.trim()&&!$('#eRkG').value.trim()?(allSessions().find(x=>x.id===sid)?.rank||''):'')})():($('#eRank')?.value||'').trim().slice(0,30),note:$('#eNote').value.trim().slice(0,500),updatedAt:Date.now(),updatedBy:myName()};
+    const rk1=$('#eRkN')?rk1Val($('#eRkN').value,allSessions().find(x=>x.id===sid)?.rank||''):undefined;if(rk1===null){toast('순위는 1~999 숫자로 적어 주세요');return}
+    const upd={date,content:$('#eContent').value,extra:$('#eType').value==='1',rank:$('#eRkY')?(()=>{const y=rkNum($('#eRkY').value),g=rkNum($('#eRkG').value),v=rkCompose(y,g);return v||(rkParts((allSessions().find(x=>x.id===sid)?.rank||'')).old!=null&&!$('#eRkY').value.trim()&&!$('#eRkG').value.trim()?(allSessions().find(x=>x.id===sid)?.rank||''):'')})():rk1!==undefined?rk1:($('#eRank')?.value||'').trim().slice(0,30),note:$('#eNote').value.trim().slice(0,500),updatedAt:Date.now(),updatedBy:myName()};
     const old=S.sessions.find(x=>x.id===sid);
     if((old&&isLocked(old.date))||isLocked(upd.date)){toast('마감된 달로는 옮길 수 없어요');return}
     if(allSessions().some(x=>x.id!==sid&&x.date===upd.date&&x.content===upd.content&&!!x.extra===!!upd.extra)){toast('같은 날짜·콘텐츠 회차가 이미 있어요');return}
