@@ -895,6 +895,8 @@ header.top{border-radius:18px}.hero{border-radius:18px}
 .nv-x:hover{background:rgba(255,255,255,.26)}
 .nv-body{flex:1;overflow:auto;padding:24px 28px;font-size:18px;line-height:1.9;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--ink)}
 .nv-f{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:14px 20px;border-top:1px solid var(--line);background:var(--sunken)}
+/* 본문이 길어도 제목 · 아래 버튼 줄이 눌려 잘리지 않게 */
+.nv-h,.nv-f{flex-shrink:0}.nv-body{min-height:0}
 @media (max-width:600px){.nv-ov{padding:0;place-items:end center}.nv{border-radius:20px 20px 0 0;max-height:calc(92vh / var(--zoom,1))}.nv-h{padding:20px 58px 18px 20px}.nv-h h3{font-size:21px}.nv-body{padding:20px;font-size:17px}}
 
 /* 메모장 */
@@ -3304,13 +3306,17 @@ function renderPayout(){
   return `<div class="col">${st}${renderPubPay()}</div>`}
 function renderPubPay(){const P=S.pub;
   if(!P)return `<div class="panel"><h2>분배 결과</h2><p class="hint">아직 공개된 분배 결과가 없어요. 운영진이 분배를 저장하면 여기에 나와요.</p></div>`;
-  const recs=P.recs||[],RP=pager('pubpay',recs.length,5,'');
+  const all=P.recs||[],mons=[...new Set(all.map(r=>r.month).filter(Boolean))].sort().reverse();
+  const mon=mons.includes(S.pubMon)?S.pubMon:mons[0]||'';const recs=mon?all.filter(r=>r.month===mon):all,RP=pager('pubpay',recs.length,5,mon);
+  const mTot=recs.filter(r=>r.k==='m').reduce((a,r)=>a+(r.amt-(r.rest||0)),0);
+  const mbar=mons.length?`<div class="sortbar"><span class="hint">월별</span>${mons.map(m=>`<button class="th-sort${m===mon?' on':''}" data-action="pubMon" data-k="${m}">${monLabel(m)} <span class="hint">${all.filter(r=>r.month===m).length}</span></button>`).join('')}</div>`:'';
   const card=r=>{const money=r.k==='m',open=!!(S.pubOpen&&S.pubOpen[r.id]),u=v=>money?won(v):v+'개',it=(r.it||[]).map(x=>Array.isArray(x)?{n:x[0],v:x[1],p:x[2]}:x),n=it.length,paid=it.filter(x=>x.p).length;
     return `<div class="rwcard${open?' open':''}"><div class="rw1"><span class="tag">${monLabel(r.month)}</span><span class="tag${money?' extra':''}">${money?'금전':'아이템'}</span><b class="rwn">${esc(r.name)}</b><span class="grow"></span><span class="rwv"><b>${won(r.amt)}</b>${money?'금전':'개'}</span></div>
       <div class="rw2"><span class="hint">${r.from?md(r.from)+'~'+md(r.to)+' 포인트 기준 · ':''}${n}명${money&&r.rest?` · 금고 ${won(r.rest)}`:''}${r.at?' · '+hm(r.at):''}</span><span class="tag ${paid===n?'ok':'no'}">지급 ${paid}/${n}명</span></div>
       <div class="row rw3"><button class="btn small${open?' primary':''}" data-action="pubOpen" data-id="${esc(r.id)}" aria-expanded="${open}">받은 사람 ${n}명 ${open?'▴':'▾'}</button></div>
       ${open?`<div class="rwppl">${it.map(x=>`<span class="${x.p?'':'un'}"><em>${esc(x.n)}</em><b>${u(x.v)}${x.p?' ✓':''}</b></span>`).join('')}</div><p class="hint" style="margin:0">✓ = 받음 · 색 있는 이름 = 아직 안 받음</p>`:''}</div>`};
   return `<div class="panel"><div class="spread"><h2>분배 결과 <span class="hint">누가 얼마 받았는지</span></h2><span class="pill-vault">🏦 문파 창고 <b>${won(P.bal||0)}</b>금전</span></div>
+    ${mbar}${mon&&recs.length?`<p class="hint" style="margin:0 0 6px"><b>${monLabel(mon)}</b> 분배 ${recs.length}건${mTot?` · 금전 합계 <b>${won(mTot)}</b>금전`:''}</p>`:''}
     ${recs.length?`<div class="rwlist">${recs.slice(RP.a,RP.b).map(card).join('')}</div>${RP.html}`:'<p class="hint">아직 분배 기록이 없어요.</p>'}
     <p class="hint">창고 잔액과 분배 결과는 운영진이 기록한 내용이에요${P.at?` (${hm(P.at)} 기준)`:''}. 받은 금액이 다르면 운영진에게 알려 주세요.</p></div>`}
 function rewardCard(r,no){
@@ -4464,6 +4470,7 @@ document.addEventListener('click',e=>{
     guard(()=>S.db.doc('rewards/'+r.id).update({kind:'vin',conv:true,convAt:Date.now(),convBy:myName()}),'창고 장부 입금으로 옮겼어요',{area:'지급',what:'직접 기록 → 창고 입금',detail:`${r.name} ${won(r.amount)}`});return}
 
   if(a==='pubSync'){if(!can('manage'))return;if(!S.rwGot){toast('분배 기록을 불러오는 중이에요');return}pubWrite(true).then(ok=>toast(ok?'분배 결과를 공개 화면에 갱신했어요':'갱신할 수 없어요 (권한 · 로그인 확인)'),e=>toast('갱신 실패: '+((e&&e.code)||'')+' — 위 빨간 안내를 확인해 주세요'));return}
+  if(a==='pubMon'){S.pubMon=b.dataset.k;render();return}
   if(a==='pubOpen'){S.pubOpen??={};S.pubOpen[b.dataset.id]=!S.pubOpen[b.dataset.id];render();return}
   if(a==='rwPpl'){S.rwPpl??={};S.rwPpl[b.dataset.id]=!S.rwPpl[b.dataset.id];render();return}
   if(a==='calcVault'){const amount=Math.floor(+$('#vAmt').value),from=$('#vFrom').value,to=$('#vTo').value;if(!(amount>0)){toast('창고 금전을 입력해 주세요');return}
