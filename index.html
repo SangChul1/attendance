@@ -2282,9 +2282,9 @@ function dcMatch(ev,members){const byName=new Map();members.forEach(m=>byName.se
 function renderDcPanel(members){const L=(S.dcatt||[]).filter(e=>e.g===GKEY&&e.date>=iso(new Date(parseD(gameDay())-7*864e5)));if(!L.length)return '';
   const now=Date.now();
   return `<div class="panel dcp"><div class="spread"><h2>🎮 디스코드 참석 체크</h2><span class="hint">최근 7일 · 디스코드에서 [참석]을 누른 사람</span></div>
-    ${L.map(e=>{const R=dcMatch(e,members),ok=R.filter(x=>x.m),bad=R.filter(x=>!x.m),open=e.closeAt>now,k=dcContentKey(e.content),c=k?CMAP[k]:null;
+    ${L.map(e=>{const R=dcMatch(e,members),ok=R.filter(x=>x.m),bad=R.filter(x=>!x.m),open=!e.closed&&(!(e.closeAt>0)||e.closeAt>now),k=dcContentKey(e.content),c=k?CMAP[k]:null;
       const s=k?S.sessions.find(x=>x.date===e.date&&x.content===k&&!x.extra):null,mk=s?marksOf(s):{},todo=ok.filter(x=>mk[x.m.id]!=='O');
-      return `<div class="dce${S.dcOpen===e.id?' open':''}"><div class="dce-h"><span class="chip" ${k?ck(k):''}>${esc(c?c.short:e.content)}</span><b>${mdd(e.date)}</b><span class="tag ${open?'ok':''}">${open?`진행 중 · ${hm(e.closeAt)} 마감`:'마감'}</span><span class="hint">참석 ${R.length}명${bad.length?` · <b style="color:var(--seal)">못 찾음 ${bad.length}</b>`:''}</span><span class="grow"></span>
+      return `<div class="dce${S.dcOpen===e.id?' open':''}"><div class="dce-h"><span class="chip" ${k?ck(k):''}>${esc(c?c.short:e.content)}</span><b>${mdd(e.date)}</b><span class="tag ${open?'ok':''}">${open?(e.closeAt>0?`진행 중 · ${hm(e.closeAt)} 마감`:'진행 중 · 시간 제한 없음'):'마감'}</span><span class="hint">참석 ${R.length}명${bad.length?` · <b style="color:var(--seal)">못 찾음 ${bad.length}</b>`:''}</span><span class="grow"></span>
         ${!k?'<span class="hint" style="color:var(--seal)">출석부에 이 콘텐츠가 없어요 (설정 → 콘텐츠 이름 확인)</span>':todo.length?`<button class="btn small primary" data-action="dcApply" data-id="${esc(e.id)}">출석부에 반영 ${todo.length}명</button>`:ok.length?'<span class="tag ok">반영 완료</span>':''}
         <button class="btn small" data-action="dcOpen" data-id="${esc(e.id)}" aria-expanded="${S.dcOpen===e.id}">${S.dcOpen===e.id?'접기':'명단'}</button></div>
         ${S.dcOpen===e.id?`<div class="dce-b">${ok.map(x=>`<span class="dcp-n ${mk[x.m.id]==='O'?'done':''}">${esc(x.m.name)}${dcNorm(x.nick)!==dcNorm(x.m.name)?` <small class="hint">(${esc(x.nick)})</small>`:''}${mk[x.m.id]==='O'?' ✓':''}</span>`).join('')}
