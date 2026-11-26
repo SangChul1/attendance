@@ -2286,7 +2286,8 @@ function renderDcPanel(members){const L=(S.dcatt||[]).filter(e=>e.g===GKEY&&e.da
       const s=k?S.sessions.find(x=>x.date===e.date&&x.content===k&&!x.extra):null,mk=s?marksOf(s):{},todo=ok.filter(x=>mk[x.m.id]!=='O');
       return `<div class="dce${S.dcOpen===e.id?' open':''}"><div class="dce-h"><span class="chip" ${k?ck(k):''}>${esc(c?c.short:e.content)}</span><b>${mdd(e.date)}</b><span class="tag ${open?'ok':''}">${open?(e.closeAt>0?`진행 중 · ${hm(e.closeAt)} 마감`:'진행 중 · 시간 제한 없음'):'마감'}</span><span class="hint">참석 ${R.length}명${bad.length?` · <b style="color:var(--seal)">못 찾음 ${bad.length}</b>`:''}</span><span class="grow"></span>
         ${!k?'<span class="hint" style="color:var(--seal)">출석부에 이 콘텐츠가 없어요 (설정 → 콘텐츠 이름 확인)</span>':todo.length?`<button class="btn small primary" data-action="dcApply" data-id="${esc(e.id)}">출석부에 반영 ${todo.length}명</button>`:ok.length?'<span class="tag ok">반영 완료</span>':''}
-        <button class="btn small" data-action="dcOpen" data-id="${esc(e.id)}" aria-expanded="${S.dcOpen===e.id}">${S.dcOpen===e.id?'접기':'명단'}</button></div>
+        <button class="btn small" data-action="dcOpen" data-id="${esc(e.id)}" aria-expanded="${S.dcOpen===e.id}">${S.dcOpen===e.id?'접기':'명단'}</button>
+        ${S.confirm==='dcDel:'+e.id?`<button class="btn small danger" data-action="dcDelYes" data-id="${esc(e.id)}">정말 삭제</button><button class="btn small" data-action="cancel">취소</button>`:`<button class="btn small" data-action="dcDel" data-id="${esc(e.id)}" title="이 참석 기록을 출석부에서 지워요 (이미 반영한 출석 체크는 그대로)">삭제</button>`}</div>
         ${S.dcOpen===e.id?`<div class="dce-b">${ok.map(x=>`<span class="dcp-n ${mk[x.m.id]==='O'?'done':''}">${esc(x.m.name)}${dcNorm(x.nick)!==dcNorm(x.m.name)?` <small class="hint">(${esc(x.nick)})</small>`:''}${mk[x.m.id]==='O'?' ✓':''}</span>`).join('')}
           ${bad.map(x=>`<span class="dcp-n bad">${esc(x.nick)} <select data-action="dcLink" data-id="${esc(e.id)}" data-dc="${esc(x.id)}" aria-label="${esc(x.nick)} 문파원 연결"><option value="">문파원 연결…</option>${members.map(m=>`<option value="${esc(m.id)}">${esc(m.name)}</option>`).join('')}</select></span>`).join('')}
           ${bad.length?'<p class="hint" style="margin:4px 0 0;width:100%">못 찾음 = 디스코드 서버 별명이 문파원 이름과 달라요. 연결하면 다음부터 자동으로 찾아요.</p>':''}</div>`:''}</div>`}).join('')}</div>`}
@@ -4255,6 +4256,9 @@ document.addEventListener('click',e=>{
   if(a==='selNone'){S.sel=new Set();S.confirm=null;render();return}
   if(a==='bulkDelAsk'){if(S.sel.size){S.confirm='bulkDel';render()}return}
   if(a==='bulkDelYes'){S.confirm=null;deleteMany([...S.sel]);return}
+  if(a==='dcDel'){S.confirm='dcDel:'+b.dataset.id;render();return}
+  if(a==='dcDelYes'){const e=(S.dcatt||[]).find(x=>x.id===b.dataset.id);S.confirm=null;if(!e)return;
+    guard(async()=>{await S.db.doc('dcatt/'+e.id).delete()},'디스코드 참석 기록을 지웠어요',{area:'출석',what:'디스코드 참석 기록 삭제',detail:`${e.date} ${e.content} · ${Object.keys(e.ppl||{}).length}명`});return}
   if(a==='dcOpen'){S.dcOpen=S.dcOpen===b.dataset.id?null:b.dataset.id;render();return}
   if(a==='dcApply'){const e=(S.dcatt||[]).find(x=>x.id===b.dataset.id);if(!e||!can('check'))return;const k=dcContentKey(e.content);if(!k){toast('출석부에 이 콘텐츠가 없어요');return}
     if(isLocked(e.date)){toast('마감된 달이에요. 정산 관리에서 마감을 풀어 주세요');return}
