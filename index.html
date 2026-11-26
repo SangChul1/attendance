@@ -1435,6 +1435,7 @@ nav.tabs button,.subtabs button,.ntabs button{justify-content:center;text-align:
 .nmust.lg{font-size:13px;padding:2px 9px}
 label.chk .nmust{margin:0 2px 0 0}
 .vmodes[data-vm=miss] .vm-rate,.vmodes[data-vm=rate] .vm-miss{display:none}
+.panel.dcp{margin-top:16px}
 .dcp .dce{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-top:8px;background:var(--surface)}
 .dce-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.dce-b{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
 .dcp-n{border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:13px;display:inline-flex;align-items:center;gap:6px}.dcp-n.done{opacity:.55}.dcp-n.bad{border-color:var(--seal);color:var(--seal)}.dcp-n select{font-size:12px;padding:2px 4px;max-width:140px}
@@ -2296,7 +2297,7 @@ function renderCheck(){
   const today=gameDay(), d=dow(today);
   const members=activeMembers(S.members);
   const sessions=[...S.sessions].sort(sessionSort);
-  const weekP=can('check')?renderDcPanel(members)+renderWeek(members):'';
+  const weekP=can('check')?renderWeek(members)+renderDcPanel(members):'';
   let sessPg='';S.pgVisSess=null;
   let list='';
   if(!sessions.length) list='<div class="empty"><h3>아직 기록된 회차가 없어요</h3><p class="hint">위에서 오늘 진행한 콘텐츠를 누르면 회차가 만들어지고 바로 체크할 수 있어요.</p></div>';
