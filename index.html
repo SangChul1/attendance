@@ -1435,6 +1435,9 @@ nav.tabs button,.subtabs button,.ntabs button{justify-content:center;text-align:
 .nmust.lg{font-size:13px;padding:2px 9px}
 label.chk .nmust{margin:0 2px 0 0}
 .vmodes[data-vm=miss] .vm-rate,.vmodes[data-vm=rate] .vm-miss{display:none}
+.dcp .dce{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-top:8px;background:var(--surface)}
+.dce-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.dce-b{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+.dcp-n{border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:13px;display:inline-flex;align-items:center;gap:6px}.dcp-n.done{opacity:.55}.dcp-n.bad{border-color:var(--seal);color:var(--seal)}.dcp-n select{font-size:12px;padding:2px 4px;max-width:140px}
 .vopt{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:10px 0;display:flex;flex-direction:column;gap:6px}
 .vtg b{margin-left:4px;color:var(--muted)}.vtg.on{border-color:var(--accent)}.vtg.on b{color:var(--accent)}
 .sortbar{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;margin:6px 0 8px}.sortbar .th-sort{border:1px solid var(--line);border-radius:999px;padding:4px 11px;min-height:32px;background:var(--surface);font-size:13px}.sortbar .th-sort.on{border-color:var(--accent);color:var(--accent);font-weight:600}
@@ -2271,12 +2274,28 @@ function renderHome(){
     alerts=`${lockNote()}${backupNote()}${unc.length?`<div class="lockbar"><span>체크가 덜 끝난 회차가 <b>${unc.length}개</b> 있어요.</span><span class="grow"></span><button class="btn small primary" data-action="homeUnc">확인하러 가기</button></div>`:''}`}
   return `<div class="col">${roNote()}${blockNote()}${alerts}<div class="home-r1">${hero}${notice}</div><div class="home-r2${feat('buy')?'':' c2'}">${topP}${feat('buy')?topB:''}${topG}</div>${tiles}</div>`;
 }
+/* ---------- 디스코드 참석 체크 (봇이 dcatt에 저장 → 운영진이 회차에 반영) ---------- */
+const dcNorm=t=>String(t||'').replace(/\s+/g,'').toLowerCase();
+function dcContentKey(name){const n=dcNorm(name);const c=CONTENTS.find(c=>dcNorm(c.name)===n)||CONTENTS.find(c=>n&&(dcNorm(c.name).includes(n.slice(0,2))));return c?c.k:''}
+function dcMatch(ev,members){const byName=new Map();members.forEach(m=>byName.set(dcNorm(m.name),m));
+  return Object.entries(ev.ppl||{}).map(([id,p])=>{const link=(ev.link||{})[id]||(S.dcmap||{})[id];const m=link?members.find(x=>x.id===link):byName.get(dcNorm(p.n));return {id,nick:p.n||'',at:p.at||0,m}}).sort((a,b)=>a.at-b.at)}
+function renderDcPanel(members){const L=(S.dcatt||[]).filter(e=>e.g===GKEY&&e.date>=iso(new Date(parseD(gameDay())-7*864e5)));if(!L.length)return '';
+  const now=Date.now();
+  return `<div class="panel dcp"><div class="spread"><h2>🎮 디스코드 참석 체크</h2><span class="hint">최근 7일 · 디스코드에서 [참석]을 누른 사람</span></div>
+    ${L.map(e=>{const R=dcMatch(e,members),ok=R.filter(x=>x.m),bad=R.filter(x=>!x.m),open=e.closeAt>now,k=dcContentKey(e.content),c=k?CMAP[k]:null;
+      const s=k?S.sessions.find(x=>x.date===e.date&&x.content===k&&!x.extra):null,mk=s?marksOf(s):{},todo=ok.filter(x=>mk[x.m.id]!=='O');
+      return `<div class="dce${S.dcOpen===e.id?' open':''}"><div class="dce-h"><span class="chip" ${k?ck(k):''}>${esc(c?c.short:e.content)}</span><b>${mdd(e.date)}</b><span class="tag ${open?'ok':''}">${open?`진행 중 · ${hm(e.closeAt)} 마감`:'마감'}</span><span class="hint">참석 ${R.length}명${bad.length?` · <b style="color:var(--seal)">못 찾음 ${bad.length}</b>`:''}</span><span class="grow"></span>
+        ${!k?'<span class="hint" style="color:var(--seal)">출석부에 이 콘텐츠가 없어요 (설정 → 콘텐츠 이름 확인)</span>':todo.length?`<button class="btn small primary" data-action="dcApply" data-id="${esc(e.id)}">출석부에 반영 ${todo.length}명</button>`:ok.length?'<span class="tag ok">반영 완료</span>':''}
+        <button class="btn small" data-action="dcOpen" data-id="${esc(e.id)}" aria-expanded="${S.dcOpen===e.id}">${S.dcOpen===e.id?'접기':'명단'}</button></div>
+        ${S.dcOpen===e.id?`<div class="dce-b">${ok.map(x=>`<span class="dcp-n ${mk[x.m.id]==='O'?'done':''}">${esc(x.m.name)}${dcNorm(x.nick)!==dcNorm(x.m.name)?` <small class="hint">(${esc(x.nick)})</small>`:''}${mk[x.m.id]==='O'?' ✓':''}</span>`).join('')}
+          ${bad.map(x=>`<span class="dcp-n bad">${esc(x.nick)} <select data-action="dcLink" data-id="${esc(e.id)}" data-dc="${esc(x.id)}" aria-label="${esc(x.nick)} 문파원 연결"><option value="">문파원 연결…</option>${members.map(m=>`<option value="${esc(m.id)}">${esc(m.name)}</option>`).join('')}</select></span>`).join('')}
+          ${bad.length?'<p class="hint" style="margin:4px 0 0;width:100%">못 찾음 = 디스코드 서버 별명이 문파원 이름과 달라요. 연결하면 다음부터 자동으로 찾아요.</p>':''}</div>`:''}</div>`}).join('')}</div>`}
 function renderCheck(){
   if(!S.ready) return loading;
   const today=gameDay(), d=dow(today);
   const members=activeMembers(S.members);
   const sessions=[...S.sessions].sort(sessionSort);
-  const weekP=can('check')?renderWeek(members):'';
+  const weekP=can('check')?renderDcPanel(members)+renderWeek(members):'';
   let sessPg='';S.pgVisSess=null;
   let list='';
   if(!sessions.length) list='<div class="empty"><h3>아직 기록된 회차가 없어요</h3><p class="hint">위에서 오늘 진행한 콘텐츠를 누르면 회차가 만들어지고 바로 체크할 수 있어요.</p></div>';
@@ -4236,6 +4255,12 @@ document.addEventListener('click',e=>{
   if(a==='selNone'){S.sel=new Set();S.confirm=null;render();return}
   if(a==='bulkDelAsk'){if(S.sel.size){S.confirm='bulkDel';render()}return}
   if(a==='bulkDelYes'){S.confirm=null;deleteMany([...S.sel]);return}
+  if(a==='dcOpen'){S.dcOpen=S.dcOpen===b.dataset.id?null:b.dataset.id;render();return}
+  if(a==='dcApply'){const e=(S.dcatt||[]).find(x=>x.id===b.dataset.id);if(!e||!can('check'))return;const k=dcContentKey(e.content);if(!k){toast('출석부에 이 콘텐츠가 없어요');return}
+    if(isLocked(e.date)){toast('마감된 달이에요. 정산 관리에서 마감을 풀어 주세요');return}
+    guard(async()=>{let s=S.sessions.find(x=>x.date===e.date&&x.content===k&&!x.extra);const sid=s?s.id:await createSess(e.date,k,false);
+      const ok=dcMatch(e,activeMembers(S.members)).filter(x=>x.m);const mk=s?marksOf(s):{};let n=0;for(const x of ok)if(mk[x.m.id]!=='O'){queueMark(sid,x.m.id,'O');n++}
+      await S.db.doc('dcatt/'+e.id).update({appliedAt:Date.now(),appliedBy:myName()}).catch(()=>{});toast(`${n}명을 출석으로 체크했어요`)},null,{area:'출석',what:'디스코드 참석 반영',detail:`${e.date} ${e.content}`});return}
   if(a==='mark'){const s=S.sessions.find(x=>x.id===b.dataset.sid);if(!s||isLocked(s.date))return;const cur=marksOf(s)[b.dataset.mid]||null;queueMark(s.id,b.dataset.mid,cur===b.dataset.v?null:b.dataset.v);return}
   if(a==='bulk'){const s=S.sessions.find(x=>x.id===b.dataset.sid);if(!s||isLocked(s.date))return;const mk=marksOf(s);activeMembers(S.members).forEach(m=>{if(eligible(m,s)&&!validMark(mk[m.id]))(pending[s.id]??={})[m.id]=b.dataset.v});render();clearTimeout(flushTimer);flushTimer=setTimeout(flush,100);return}
   if(a==='bulkAll'||a==='bulkAllYes'){const s=S.sessions.find(x=>x.id===b.dataset.sid);if(!s||isLocked(s.date))return;const v=b.dataset.v;const mk=marksOf(s);
@@ -4519,6 +4544,8 @@ document.addEventListener('input',e=>{
 });
 document.addEventListener('change',e=>{
   const t=e.target,a=t.dataset&&t.dataset.action;
+  if(t.dataset&&t.dataset.action==='dcLink'){const mid=t.value,dc=t.dataset.dc;if(!mid||!dc)return;
+    guard(async()=>{await S.db.doc('dcmap/'+dc).set({mid,by:myName(),at:Date.now()})},'연결했어요 · 다음부터 자동으로 찾아요',{area:'출석',what:'디스코드 계정 연결',detail:dc});return}
   if(t.id==='vMode'){const w=document.querySelector('.vmodes');if(w)w.dataset.vm=t.value;return}
   if((t.id==='vFrom'||t.id==='vTo')&&!S.vault){const f=$('#vFrom').value,to=$('#vTo').value,x=$('#exBox');if(x&&f&&to&&f<=to)x.innerHTML=itemExBox(itemRecsIn(f,to));return}
   if(t.id==='nImgIn'){const fs=[...(t.files||[])];t.value='';if(fs.length)nImgAdd(fs);return}
@@ -4644,11 +4671,11 @@ setInterval(()=>{if(S.tab==='home'&&document.visibilityState==='visible'&&!S.nEd
   db.collection('locks').onSnapshot(snap=>{S.locks=Object.fromEntries(snap.docs.map(d=>[d.id,d.data()]));render()},()=>{});
   db.doc('pub/settle').onSnapshot(snap=>{S.pub=snap.exists?snap.data():null;S.pubGot=true;render();schedulePub()},e=>{S.pubGot=false;S.pubErr='읽기 실패 · '+((e&&e.code)||'')+(e&&e.message?' · '+String(e.message).slice(0,120):'');render()});
   db.doc('config/main').onSnapshot(snap=>{if(snap.exists)S.config=Object.assign({...CFG0},snap.data());render()},()=>{});
-  let unAdmins=null,unWarn=null,unNotes=null,unRw=null,unLogs=null;
+  let unAdmins=null,unWarn=null,unNotes=null,unRw=null,unLogs=null,unDc=null,unDcm=null;
   onAuthStateChanged(S.auth,async u=>{
     S.authKnown=false;
     S.authUser=u;S.canWrite=false;S.payOpen=null;S.man=null;S.leaveFor=null;S.noteFor=null;S.cdraft=null;S.isOwner=false;S.myNick='';S.perms=null;S.admins=[];if(unAdmins){unAdmins();unAdmins=null}
-    if(unWarn){unWarn();unWarn=null}if(unNotes){unNotes();unNotes=null}if(unRw){unRw();unRw=null}if(unLogs){unLogs();unLogs=null}S.logs=[];S.plogs=null;S.notes={};S.rewards=[];S.rwGot=false;clearTimeout(pubT);S.warnings=[];S.warnBlocked=false;S.logBlocked=false;S.hist=null;S.delLogs=null;S.dist=null;
+    if(unDc){unDc();unDc=null}if(unDcm){unDcm();unDcm=null}S.dcatt=[];S.dcmap={};if(unWarn){unWarn();unWarn=null}if(unNotes){unNotes();unNotes=null}if(unRw){unRw();unRw=null}if(unLogs){unLogs();unLogs=null}S.logs=[];S.plogs=null;S.notes={};S.rewards=[];S.rwGot=false;clearTimeout(pubT);S.warnings=[];S.warnBlocked=false;S.logBlocked=false;S.hist=null;S.delLogs=null;S.dist=null;
     if(u){
       const email=(u.email||'').toLowerCase();
       try{const x=await getDoc(fdoc(S.fs,'admins',email));if(x.exists()){S.canWrite=true;S.myNick=x.data().nick||'';S.perms=permsOf(x.data())}}catch(_){}
@@ -4658,6 +4685,8 @@ setInterval(()=>{if(S.tab==='home'&&document.visibilityState==='visible'&&!S.nEd
         unWarn=fsnap(fcol(S.fs,'warnings'),x=>{S.warnings=x.docs.map(d=>({id:d.id,...d.data()}));render()},blk);
         unNotes=fsnap(fcol(S.fs,'notes'),x=>{S.notes=Object.fromEntries(x.docs.map(d=>[d.id,d.data()]));render()},blk);
         unRw=fsnap(fcol(S.fs,'rewards'),x=>{const all=x.docs.map(d=>({id:d.id,...d.data()}));S.rewards=all.filter(r=>r.kind!=='vin'&&r.kind!=='vout');S.ledger=all.filter(r=>r.kind==='vin'||r.kind==='vout');S.rwGot=true;render();schedulePub()},blk);
+        unDc=fsnap(query(fcol(S.fs,'dcatt'),fOrder('openedAt','desc'),fLimit(20)),x=>{S.dcatt=x.docs.map(d=>({id:d.id,...d.data()}));render()},e=>{console.warn('dcatt',e)});
+        unDcm=fsnap(fcol(S.fs,'dcmap'),x=>{S.dcmap=Object.fromEntries(x.docs.map(d=>[d.id,(d.data()||{}).mid]));render()},e=>{console.warn('dcmap',e)});
         unLogs=fsnap(query(fcol(S.fs,'logs'),fOrder('at','desc'),fLimit(300)),x=>{S.logs=x.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.at||0)-(a.at||0));render()},e=>{console.warn(e);S.logBlocked=true;render()})}
     }
     S.authKnown=true;render();if(S.canWrite)setTimeout(sumBackfill,1500);
